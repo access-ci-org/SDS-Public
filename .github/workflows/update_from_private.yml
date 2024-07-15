@@ -13,11 +13,11 @@ jobs:
       with:
         ref: main
 
-    - name: Checkout private repository
-      uses: actions/checkout@v3
-      with:
-        repository: access-ci-org/ACCESS-SDS
-        token: ${{ secrets.PAT }}
+    - name: Clone private repo
+      run: |
+        git clone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git private-repo
+      env:
+        GIT_TERMINAL_PROMPT: 0
 
     - name: Sync files
       run: |
