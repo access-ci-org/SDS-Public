@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block styles %}
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous"> 
+        <!-- DataTables: DataTables, Buttons(Column Visibility), FixedColumn, FixedHeader, Responsive, Scroller, SearchBuilder, SearchPanes, Select-->
+        <link href="https://cdn.datatables.net/v/dt/dt-2.0.8/b-3.0.2/b-colvis-3.0.2/fc-5.0.1/fh-4.0.1/sb-1.7.1/sp-2.3.1/sl-2.0.3/datatables.min.css" rel="stylesheet">
+        <!-- Internal CSS -->
+        <link rel="stylesheet" type="text/css" href="../static/css/main.css">
+        <link rel="stylesheet" type="text/css" href="../static/css/modal.css">
+        <link rel="stylesheet" type="text/css" href="../static/css/softwareDetailsModal.css">
+        <link rel="stylesheet" type="text/css" href="../static/css/softwareTable.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link rel="stylesheet" media="all" href="//fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,70,400;0,100,400;0,100,600;0,100,800;1,100,400&amp;display=swap" />
+        <!-- JQuery -->
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+    {% endblock %}
+
+    {% block scripts %}
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+        <!-- Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <!-- Bootstrap -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+        <!-- DataTables -->
+        <script src="https://cdn.datatables.net/v/dt/dt-2.0.8/b-3.0.2/b-colvis-3.0.2/fc-5.0.1/fh-4.0.1/sb-1.7.1/sp-2.3.1/sl-2.0.3/datatables.min.js"></script>
+        <script src="https://kit.fontawesome.com/09b9625031.js" defer crossorigin="anonymous"></script>
+    {% endblock %}
+
+    <title>
+        {% block title %}
+            Software Documentation Service
+        {% endblock %}
+    </title>
+</head>
+<body id="body" style="display: flex; flex-direction: column; min-height: 100vh;">
+    <div style="flex: 1;">
+        {%block content%}
+            <div>
+                <nav>
+                    {%include 'ACCESS/nav.html'%}
+                </nav>
+            </div>
+            <br>
+            <div class="container justify-content-center">
+                <div style="height: auto;">
+                    <div class="row">
+                        <div class="col">
+                            {%block page_title %}
+                            {#page title is added here#}
+                            {% endblock%}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                        </div>
+                        <div class="col text-right">
+                            <div class="btn-group">
+                                <button id="reportIssueBtn" class="btn btn-outline-danger">
+                                    <span id="reportIssueText">Report Issue</span> 
+                                    <img width="24" height="24" src="https://img.icons8.com/fluency-systems-regular/48/webpage-click.png" alt="webpage-click"/>
+                                </button>
+                                <button id="provideFeedbackBtn" class="btn btn-outline-danger">
+                                    <span id="provideFeedbackText">Provide Feedback</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                        <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div id="alert-div" style="text-align: center;"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6" id="app_content">
+                            {%block app_content%}
+                            {#application content is added here#}
+                            {%endblock%}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+        {%endblock%}
+    </div>
+    <div>
+        {% include 'ACCESS/footer.html'%}
+    </div>
+</body>
+
+
+
+
+</html>
