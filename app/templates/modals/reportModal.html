@@ -1,0 +1,56 @@
+<div id="report-modal" class="modal modal_search"  tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content ui-widget-content" id="resizable">
+        <div class="modal-header">
+          <h5 id="report-modal-title" class="modal-title">Report</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        
+        <head>
+          <script>
+            $( function() {
+              $( "#accordion" ).accordion({
+                collapsible: true,
+                heightStyle: 'content',
+                active: false
+              });
+            } );
+          </script>
+
+          <script>
+            $( function() {
+              $( "#resizable" ).resizable();
+            } );
+          </script>
+        </head>
+
+        <div id="reportBody" class="modal-body">
+          <p>Please describe the issue you're having with the Software Documentation Service:</p>
+          <form>
+
+            <div class="form-group">
+                <p>Feedback:</label>
+                <textarea class="form-control" id="reportFeedback" rows="8"></textarea>
+            </div>
+
+            <div class="form-group">
+              <div id="accordion">
+                <h4>Report Details:</h4>
+                <div>
+                  <pre id="reportDetails"></pre>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="sendReportBtn">Send Report</button>
+        </div>
+
+      </div>
+    </div>
+  </div> 
+</div>

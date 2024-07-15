@@ -1,0 +1,2142 @@
+Software,RP Name
+7z,ookami
+abacas,anvil
+abaqus,expanse
+abinit,"bridges, expanse, faster"
+abismal,anvil
+abpoa,anvil
+abricate,anvil
+abseil,"aces, faster"
+abyss,"anvil, bridges, faster"
+accessusage,expanse
+actc,"aces, anvil, faster"
+adapterremoval,"anvil, faster"
+adios2,expanse
+adol-c,expanse
+advisor,"kyric, stampede3"
+advntr,anvil
+aesara,faster
+aflow,faster
+afplot,anvil
+afterqc,anvil
+agat,anvil
+agfusion,anvil
+ai,bridges
+aiohttp,"aces, faster"
+alfred,anvil
+alien-hunter,anvil
+alignstats,anvil
+all-architectures,ookami
+allocations,bridges
+allpathslg,anvil
+alphafold,"aces, anvil, darwin, faster"
+alphapickle,"aces, faster"
+alsa-lib,faster
+amask,stampede3
+amber,"anvil, expanse, faster"
+ambertools,"aces, faster"
+amd-rocm,darwin
+amd-uprof,darwin
+amdblis,"anvil, expanse"
+amdfftw,"anvil, expanse"
+amdlibflame,"anvil, expanse"
+amdlibm,"anvil, expanse"
+amdscalapack,"anvil, expanse"
+amduprof,"delta, expanse"
+amos,faster
+amphora2,faster
+amptk,anvil
+anaconda,"anvil, darwin, jetstream, ookami"
+anaconda2,bridges
+anaconda3,"aces, bridges, expanse, faster"
+anaconda3_cpu,delta
+anaconda3_gpu,delta
+anaconda3_mi100,delta
+anaconda3_rcpu,delta
+anaconda3_x86_64,delta
+ananse,anvil
+anchorwave,anvil
+angsd,"anvil, faster"
+annogesic,anvil
+annovar,anvil
+ansys,"bridges, faster"
+ant,"aces, expanse, faster"
+antismash,anvil
+antlr,"aces, faster"
+anvio,"anvil, bridges"
+any2fasta,"anvil, faster"
+aocc,"aces, anvil, bridges, delta, expanse, faster, ookami"
+aocc compiler,jetstream
+aocl,"bridges, darwin"
+aocl-sparse,expanse
+apptainer,jetstream
+apr,"aces, faster"
+apr-util,"aces, faster"
+arcade-learning-environment,faster
+archive-zip,faster
+archspec,"aces, faster"
+arcs,anvil
+aria2,"expanse, faster"
+aria2-1.15.1,faster
+ariba,anvil
+arm,ookami
+arm-forge,expanse
+arm-gnu-toolchain,aces
+arm-gnu-toolchaint,aces
+armadillo,"aces, delta, expanse, faster"
+arpack,"darwin, stampede3"
+arpack-ng,"aces, anvil, expanse, faster"
+arrayfire,expanse
+arriba,bridges
+arrow,"aces, faster"
+arrow-r,faster
+arviz,faster
+ascatngs,anvil
+asciinema,bridges
+ase,"aces, faster"
+asgal,anvil
+aspera-connect,"anvil, bridges"
+assembly-stats,anvil
+assimp,aces
+astropy,faster
+at-spi2-atk,"aces, faster"
+at-spi2-core,"aces, faster"
+atac-seq-pipeline,anvil
+ataqv,anvil
+atk,"aces, faster"
+atlas,darwin
+atop,delta
+atp,delta
+atram,anvil
+atropos,anvil
+attrdict3,"aces, faster"
+augur,anvil
+augustus,"anvil, bridges"
+autoconf,"aces, darwin, faster, kyric"
+autoconf-archive,kyric
+autodock,anvil
+autodock-gpu,faster
+autodock-vina,faster
+automake,"aces, faster, kyric"
+autotools,"aces, faster, kyric, stampede3"
+aws-cli,"anvil, delta"
+awscli,faster
+axl,faster
+bactopia,anvil
+bali-phy,"anvil, faster"
+bam-readcount,anvil
+bamgineer,anvil
+bamkit,faster
+bamliquidator,anvil
+bamsurgeon,anvil
+bamtools,"aces, anvil, bridges, expanse, faster"
+bamutil,anvil
+banner,delta
+barrnap,anvil
+basenji,anvil
+bat,bridges
+bayescan,anvil
+bazam,anvil
+bazel,"aces, bridges, faster"
+bbmap,"aces, anvil, bridges, faster"
+bbtools,anvil
+bcftools,"anvil, bridges, expanse, faster"
+bcl2fastq,anvil
+beagle,anvil
+beagle-lib,faster
+beast,faster
+beast1,expanse
+beast2,"anvil, expanse"
+beautifulsoup,"aces, faster"
+bedops,"anvil, bridges"
+bedtools,"aces, anvil, bridges, faster"
+bedtools2,expanse
+berkeley-db,"expanse, kyric"
+berkeley-upc,faster
+binutils,"aces, darwin, faster"
+bio-db-hts,faster
+bioawk,"anvil, faster"
+biobambam,anvil
+biocontainers,"anvil, stampede3"
+bioconvert,anvil
+bioformats,bridges
+biom-format,faster
+bioperl,"aces, faster"
+biopython,"aces, anvil, faster"
+bismark,"anvil, bridges, expanse"
+bison,"aces, faster, ookami"
+blacs,darwin
+blasr,anvil
+blast,"anvil, bridges, faster"
+blast+,"aces, faster, ookami"
+blast-plus,"anvil, expanse"
+blat,"bridges, expanse"
+blender,"aces, faster"
+blis,"aces, anvil, darwin, faster, ookami"
+blobtools,anvil
+blosc2,"aces, faster"
+bmge,anvil
+bohrium,faster
+bokeh,"aces, faster"
+boost,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, ookami, stampede3"
+boost.mpi,aces
+boost.python,"aces, faster"
+botorch,faster
+bottleneck,faster
+bowtie,"anvil, faster"
+bowtie2,"anvil, bridges, expanse, faster"
+bracken,anvil
+braker2,anvil
+brass,anvil
+breseq,anvil
+brotli,"aces, faster"
+brotli-python,aces
+brunsli,"aces, faster"
+build,faster
+busco,"anvil, bridges"
+bustools,anvil
+bwa,"aces, anvil, bridges, expanse, faster"
+bwameth,anvil
+byacc,expanse
+bzip2,"aces, expanse, faster, kyric"
+c-ares,"aces, faster"
+cactus,anvil
+cafe,anvil
+cairo,"aces, faster"
+canu,"anvil, faster"
+capstone,"aces, faster"
+captum,aces
+cartopy,"aces, faster"
+catch2,"aces, faster"
+ccache,"aces, faster"
+ccdb,delta
+cce,delta
+cce-mixed,delta
+ccl,kyric
+ccs,anvil
+cd-hit,"aces, anvil, faster"
+cdat,faster
+cdbtools,anvil
+cdo,"aces, anvil, delta, faster, stampede3"
+cdsapi,aces
+cegma,anvil
+cellbender,anvil
+cellchat,anvil
+cellphonedb,anvil
+cellranger,anvil
+cellranger-arc,anvil
+cellranger-atac,anvil
+cellranger-dna,anvil
+cellrank,anvil
+cellrank-krylov,anvil
+cellsnp-lite,anvil
+celltypist,anvil
+centrifuge,anvil
+cereal,expanse
+cesm,faster
+cesm-deps,"aces, faster"
+cffi,"aces, faster"
+cfitsio,"aces, faster"
+cfsan-snp-pipeline,anvil
+cgal,"aces, expanse, faster"
+cgns,aces
+chameleon,aces
+chapel,"faster, ookami"
+charliecloud,"aces, faster, stampede3"
+charm,darwin
+charmpp,expanse
+check,"aces, faster"
+checkm,bridges
+checkm-genome,anvil
+chemprop,aces
+chewbbaca,anvil
+chimerax,"aces, faster"
+chopper,anvil
+chromap,anvil
+cicero,anvil
+cimfomfa,aces
+circexplorer2,anvil
+circlator,anvil
+circompara2,anvil
+circos,"anvil, bridges"
+ciri2,anvil
+ciriquant,anvil
+cistem,"aces, faster"
+ckdmip,aces
+clair3,anvil
+clairvoyante,anvil
+clang,"aces, faster"
+clang-aomp,faster
+clck,kyric
+clearcnv,anvil
+clever-toolkit,anvil
+clhep,"aces, faster"
+climetlab,aces
+clip,aces
+clonalframeml,anvil
+clp,faster
+clust,anvil
+clustalw,anvil
+clustalw2,faster
+cluster-tools,ookami
+cm-pmix3,"expanse, ookami"
+cmake,"aces, anvil, darwin, delta, expanse, faster, kyric, ookami, stampede3"
+cmd,ookami
+cmjob,"expanse, ookami"
+cnvkit,anvil
+cnvnator,"anvil, faster"
+cobaya,faster
+code-server,faster
+coinfinder,anvil
+coinutils,faster
+colabfold,"aces, faster"
+colossal-ai,faster
+colossalai,faster
+compiler,kyric
+compiler-rt,kyric
+compiler-rt32,kyric
+compiler32,kyric
+compress-raw-zlib,faster
+comsol,bridges
+concoct,anvil
+conda-env,delta
+control-freec,anvil
+cooler,anvil
+coordgenlibs,"aces, faster"
+coverage,aces
+coverm,anvil
+covgen,anvil
+cp2k,"aces, anvil, bridges, expanse, faster, ookami, stampede3"
+cpe,"delta, ookami"
+cpe-nosve,ookami
+cppunit,faster
+cppy,"aces, faster"
+cpu,expanse
+cramino,anvil
+cray,delta
+crisprcasfinder,anvil
+crispresso2,anvil
+crispritz,anvil
+cross_match,anvil
+crossmap,anvil
+cryosparc,"aces, darwin"
+cryptography,"aces, faster"
+cryptsetup,kyric
+csvkit,anvil
+csvtk,anvil
+cti,delta
+cubegui,aces
+cubelib,aces
+cubewriter,aces
+cuda,"aces, anvil, bridges, darwin, delta, expanse, faster, jetstream, ookami"
+cuda-dcgm,expanse
+cuda-quantum,anvil
+cuda-samples,"aces, faster"
+cuda10.2,expanse
+cuda11.7,expanse
+cudacore,"aces, faster"
+cudf,"aces, faster"
+cudnn,"aces, anvil, bridges, darwin, delta, expanse, faster"
+cue-login-env,"anvil, delta, expanse"
+cufflinks,"anvil, expanse"
+cunit,"aces, faster"
+cupy,"aces, faster"
+cuquantum-appliance,anvil
+curl,"aces, anvil, expanse, faster, kyric, ookami"
+cusparselt,"aces, faster"
+cusz,faster
+cutadapt,"aces, anvil, bridges, faster"
+cutensor,"aces, delta, faster"
+cuttlefish,anvil
+cxxopts,stampede3
+cython,"aces, faster"
+cython-blis,aces
+cytoolz,faster
+cyvcf2,anvil
+dace,faster
+dal,kyric
+dalton,faster
+darshan-runtime,expanse
+darshan-util,expanse
+das_tool,anvil
+dask,"aces, faster"
+datasets,anvil
+db,"aces, faster"
+db_file,faster
+dbcsr,"aces, faster"
+dbd-mysql,faster
+dbg2olc,anvil
+dbus,"aces, faster"
+dbus-glib,"aces, faster"
+dcmtk,"aces, faster"
+ddt,"bridges, stampede3"
+dealii,bridges
+debreak,anvil
+debugger,kyric
+decona,faster
+deconseq,anvil
+deepbgc,anvil
+deepconsensus,anvil
+deepdiff,aces
+deepsignal2,anvil
+deeptools,anvil
+deepvariant,anvil
+default,delta
+default-environment,expanse
+default-s11,delta
+defaultmodules,expanse
+delly,anvil
+dendropy,"anvil, faster"
+desmond,"bridges, faster"
+dev-utilities,kyric
+devito,faster
+dft-d3,faster
+dftbplus,expanse
+diamond,"anvil, expanse, faster"
+diffutils,kyric
+dill,"aces, faster"
+dimemas,kyric
+dlib,faster
+dm-reverb,faster
+dm-tree,"aces, faster"
+dnaapler,anvil
+dnaio,anvil
+dnnl,kyric
+dnnl-cpu-gomp,kyric
+dnnl-cpu-iomp,kyric
+dnnl-cpu-tbb,kyric
+docker,expanse
+docker-user,aces
+dorado,aces
+dos2unix,delta
+dot,ookami
+double-conversion,"aces, faster"
+doxygen,"aces, expanse, faster, ookami"
+dpct,kyric
+dpl,kyric
+draco,"aces, faster"
+dragonflye,anvil
+drep,anvil
+drop-seq,anvil
+dropest,anvil
+dsmml,delta
+dsuite,anvil
+dualsphysics,faster
+dyninst,delta
+easybuild,"aces, faster, kyric"
+easybuild-aces,aces
+easybuild-aces-myeb,aces
+easybuild-aces-scratch,aces
+easybuild-aces-tmp,aces
+easybuild-faster,faster
+easybuild-faster-myeb,faster
+easybuild-faster-scratch,faster
+easybuild-faster-tmp,faster
+easysfs,anvil
+ecbuild,"aces, faster"
+eccodes,"aces, faster"
+edlib,faster
+edta,anvil
+eggnog-mapper,anvil
+eigen,"aces, anvil, darwin, expanse, faster, stampede3"
+einops,"aces, faster"
+elfutils,"aces, faster"
+elpa,"aces, expanse, faster, ookami"
+emacs,"aces, anvil, darwin"
+emboss,"anvil, expanse, faster"
+enchant-2,"aces, faster"
+energyplus,faster
+ensembl-vep,anvil
+entrezdirect,expanse
+epic2,anvil
+esm,faster
+esmf,"aces, expanse, faster"
+evidencemodeler,anvil
+exabayes,expanse
+exiv2,"aces, faster"
+exonerate,anvil
+expansionhunter,anvil
+expat,"aces, faster, kyric"
+expecttest,"aces, faster"
+extrae,kyric
+eztrace,aces
+fasta3,anvil
+fastai,aces
+fastani,"anvil, bridges"
+fastcore,faster
+fastp,"anvil, expanse"
+fastq-scan,anvil
+fastq-tools,bridges
+fastq_pair,anvil
+fastqc,"aces, anvil, bridges, expanse, faster"
+fastspar,anvil
+faststructure,anvil
+fasttree,"aces, anvil, expanse"
+fastx-toolkit,"anvil, bridges, expanse"
+fastx_toolkit,anvil
+fdasrsf,faster
+femzip-l,faster
+ffmpeg,"aces, anvil, bridges, expanse, faster, ookami"
+ffnvcodec,"aces, faster"
+fftw,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric"
+fftw.mpi,"aces, faster"
+fftw3,"ookami, stampede3"
+fiji,faster
+file,"aces, faster"
+filtlong,anvil
+fiona,"aces, faster"
+firefox,"aces, faster"
+firestarter,faster
+flac,"aces, faster"
+flash,"bridges, faster"
+flask,"aces, faster"
+flatbuffers,"aces, faster"
+flatbuffers-python,"aces, faster"
+flex,"aces, faster, ookami"
+flexiblas,"aces, delta, faster"
+flit,"aces, faster"
+fltk,"aces, faster"
+flye,anvil
+fms2,ookami
+foldseek,faster
+fontconfig,"aces, faster"
+formats,faster
+foss,"aces, faster"
+fosscuda,"aces, faster"
+fq,anvil
+fraggenescan,anvil
+fraggenescanrs,anvil
+freebayes,"anvil, faster"
+freeglut,"aces, faster"
+freeimage,faster
+freeipmi,ookami
+freesurfer,expanse
+freetype,"aces, faster"
+freexl,"aces, faster"
+freyja,anvil
+fribidi,"aces, faster, ookami"
+fseq,anvil
+fsl,faster
+ftp,anvil
+fujitsu,ookami
+funannotate,"anvil, bridges"
+futhark,faster
+fwdpy11,anvil
+g2clib,"aces, faster"
+g2lib,aces
+gadma,anvil
+gambit,anvil
+gamess,"bridges, expanse"
+gamma,anvil
+gangstr,anvil
+gapfiller,anvil
+gapit,anvil
+gatk,"aces, anvil, bridges, expanse, faster"
+gatk4,anvil
+gaussian,"bridges, darwin, expanse, faster"
+gaussian09,expanse
+gawk,"faster, kyric"
+gc,"aces, faster"
+gcatools,faster
+gcc,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, ookami, stampede3"
+gcc-native,delta
+gcc-native-mixed,delta
+gcc-nvptx,expanse
+gcc-runtime,delta
+gcccore,"aces, faster"
+gcccuda,"aces, faster"
+gconf,"aces, faster"
+gdal,"aces, anvil, darwin, expanse, faster"
+gdb,"aces, anvil, darwin, expanse, faster, ookami"
+gdb4hpc,delta
+gdbm,"faster, kyric"
+gdk-pixbuf,"aces, faster"
+gdrcopy,"aces, delta, faster"
+geant4,aces
+geant4-data,aces
+gemma,anvil
+gemoma,anvil
+genemark,anvil
+genemark-es,bridges
+genemarks-2,anvil
+generativemodels,aces
+genmap,anvil
+genomedata,anvil
+genomepy,anvil
+genomescope2,anvil
+genomicconsensus,anvil
+genrich,anvil
+gent,bridges
+geocube,faster
+geomview,darwin
+geopandas,"aces, faster"
+geos,"aces, anvil, darwin, expanse, faster, ookami"
+getdist,faster
+gethost,ookami
+getorganelle,anvil
+gettext,"aces, bridges, faster, kyric"
+gfaffix,anvil
+gfastats,anvil
+gfatools,anvil
+gfbf,"aces, faster"
+gffcompare,anvil
+gffread,anvil
+gffutils,anvil
+gh,"delta, expanse"
+ghostscript,"aces, anvil, faster"
+giflib,"aces, faster"
+gimmemotifs,anvil
+git,"aces, darwin, delta, expanse, faster, kyric, ookami"
+git-lfs,"aces, darwin, delta, expanse, faster"
+gitpython,faster
+gklib,"aces, stampede3"
+gl2ps,"aces, faster"
+glew,"aces, faster"
+glfw,"aces, faster"
+glib,"aces, faster"
+glib-networking,"aces, faster"
+glibc,ookami
+glimmer,anvil
+glimmerhmm,anvil
+glm,"aces, delta"
+glnexus,anvil
+globalarrays,"aces, faster"
+globus-cli,"aces, faster"
+glpk,"aces, darwin, expanse, faster"
+gmap,anvil
+gmap-gsnap,expanse
+gmp,"aces, anvil, darwin, expanse, faster, kyric, ookami"
+gmpy2,"aces, faster"
+gmt,anvil
+gnu-parallel,ookami
+gnu9,kyric
+gnuplot,"aces, anvil, darwin, delta, expanse, faster, ookami"
+gnutls,"aces, faster"
+go,"aces, darwin, expanse, faster, kyric, ookami"
+go-bootstrap,kyric
+goatools,anvil
+gobff,faster
+gobject-introspection,"aces, faster"
+golang,darwin
+gompi,"aces, faster"
+gompic,"aces, faster"
+googletest,"aces, faster"
+gpaw,anvil
+gperf,"aces, faster, ookami"
+gperftools,"aces, faster, ookami"
+gpflow,"aces, faster"
+gpu,expanse
+gpustat,"aces, faster"
+gpy,faster
+gpytorch,faster
+graalvm,faster
+grace,expanse
+gradle,faster
+grads,anvil
+graphblas,aces
+graphene,"aces, faster"
+graphicsmagick,"aces, faster"
+graphite2,"aces, faster"
+graphlan,anvil
+graphmap,anvil
+graphviz,"aces, expanse, faster"
+graphviz-python,aces
+grass,"aces, faster"
+greenlet,aces
+gridss,anvil
+groff,"aces, faster"
+gromacs,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, ookami, stampede3"
+grpc,faster
+gsd-vmd,faster
+gseapy,anvil
+gsl,"aces, anvil, darwin, delta, expanse, faster, stampede3"
+gslib,"aces, faster"
+gst-plugins-bad,"aces, faster"
+gst-plugins-base,"aces, faster"
+gstreamer,"aces, anvil, faster"
+gtdbtk,anvil
+gthumb,delta
+gtk+,faster
+gtk2,"aces, faster"
+gtk3,"aces, faster"
+gtk4,"aces, faster"
+gts,"aces, faster"
+gubbins,anvil
+guile,"aces, faster"
+guppy,"anvil, bridges"
+guppy-gpu,bridges
+gurobi,"anvil, bridges, delta"
+gurobi-dev,delta
+gymnasium,faster
+gzip,"aces, faster"
+h5py,"aces, faster"
+hadoop,"anvil, expanse"
+hail,anvil
+hap.py,anvil
+harfbuzz,"aces, faster, ookami"
+hashdeep,bridges
+hatchling,"aces, faster"
+hdbscan,faster
+hdf,"aces, anvil, expanse, faster"
+hdf-eos,aces
+hdf-eos5,aces
+hdf4,darwin
+hdf5,"aces, anvil, bridges, darwin, delta, expanse, faster, ookami, stampede3"
+helen,anvil
+help2man,"aces, faster"
+hh-suite,"aces, faster"
+hic-pro,anvil
+hicexplorer,anvil
+hifiasm,"anvil, faster"
+highway,"aces, faster"
+hipify-clang,faster
+hipsycl,faster
+hiredis,"aces, faster"
+hisat2,"aces, anvil, bridges, expanse, faster"
+hmmer,"aces, anvil, bridges, faster"
+homer,"anvil, bridges"
+homopolish,anvil
+horovod,"aces, faster"
+hossedu,faster
+how_are_we_stranded_here,anvil
+hpc toolkit,jetstream
+hpc-x,aces
+hpctoolkit,anvil
+hpcx,darwin
+hpl,"expanse, faster"
+hprc_utils,aces
+htop,"delta, faster, ookami"
+htseq,"aces, anvil, faster"
+htslib,"aces, anvil, bridges, expanse, faster"
+htstream,anvil
+https,faster
+humann,"aces, anvil"
+hunspell,"aces, faster"
+hwloc,"aces, anvil, darwin, delta, expanse, faster, kyric, ookami"
+hyper-shell,anvil
+hyperopt,aces
+hyphen,faster
+hyphy,anvil
+hypo,anvil
+hypothesis,"aces, faster"
+hypre,"aces, expanse, faster, stampede3"
+iccifort,faster
+iccifortcuda,faster
+icu,"aces, faster"
+icu4c,"darwin, kyric"
+idba,anvil
+idev,stampede3
+idl,"darwin, expanse, stampede3"
+igenomes,anvil
+igprof,aces
+igv,"anvil, faster"
+iimkl,faster
+iimpi,"aces, faster"
+iimpic,faster
+imageio,"aces, faster"
+imagej,"aces, faster"
+imagemagick,"aces, delta, expanse, faster, ookami"
+imake,aces
+imath,"aces, faster"
+imb,kyric
+imbalanced-learn,aces
+imkl,"aces, faster"
+imkl-fftw,"aces, faster"
+iml,aces
+impi,"aces, anvil, faster, stampede3"
+impute2,anvil
+infernal,"anvil, bridges"
+init_opencl,kyric
+inputproto,delta
+inq,faster
+inspector,kyric
+instrain,anvil
+intarna,anvil
+intel,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, stampede3"
+intel compiler,jetstream
+intel-advisor,bridges
+intel-ccl,bridges
+intel-compiler,bridges
+intel-compiler-rt,bridges
+intel-compiler-rt32,bridges
+intel-compiler32,bridges
+intel-compilers,"aces, faster"
+intel-dal,bridges
+intel-debugger,bridges
+intel-dev-utilities,bridges
+intel-dnnl,bridges
+intel-dnnl-cpu-gomp,bridges
+intel-dnnl-cpu-iomp,bridges
+intel-dnnl-cpu-tbb,bridges
+intel-dpct,bridges
+intel-dpl,bridges
+intel-icc,bridges
+intel-icc32,bridges
+intel-inspector,bridges
+intel-ipp-ia32,bridges
+intel-ipp-intel64,bridges
+intel-ippcp-ia32,bridges
+intel-ippcp-intel64,bridges
+intel-itac,bridges
+intel-mkl,"anvil, bridges, darwin, expanse"
+intel-mkl32,bridges
+intel-mpi,"bridges, expanse"
+intel-oclfpga,bridges
+intel-oneapi,"bridges, darwin"
+intel-oneapi-advisor,delta
+intel-oneapi-compilers,delta
+intel-oneapi-mkl,"darwin, delta"
+intel-oneapi-mpi,delta
+intel-python,"darwin, faster"
+intel-tbb,"bridges, delta, expanse"
+intel-tbb32,bridges
+intel-vtune,bridges
+intel_ai_toolkit,delta
+intel_ipp_ia32,kyric
+intel_ipp_intel64,kyric
+intel_ippcp_ia32,kyric
+intel_ippcp_intel64,kyric
+intelcuda,faster
+intelmpi,bridges
+interproscan,"anvil, faster"
+intltool,"aces, faster"
+iomkl,faster
+iompi,faster
+ior,"delta, expanse"
+iperf3,delta
+ipmitool,ookami
+ipython,"aces, faster"
+iq-tree,expanse
+iqtree,anvil
+iqtree2,anvil
+irods-icommands,bridges
+isa-l,"aces, faster"
+isl,"aces, faster"
+ismapper,anvil
+isoquant,anvil
+isoseq3,anvil
+itac,"kyric, stampede3"
+itk,"aces, faster"
+ivar,anvil
+jags,"expanse, faster"
+jansson,"aces, faster"
+jasper,"aces, expanse, faster"
+java,"aces, faster"
+jax,"aces, faster"
+jbigkit,"aces, faster"
+jcvi,anvil
+jdftx,faster
+jdk,darwin
+jellyfish,expanse
+jemalloc,"aces, faster"
+jmol,aces
+json-c,"aces, faster, kyric"
+jsoncpp,"aces, faster"
+judy,faster
+julia,"aces, anvil, bridges, darwin, delta, expanse, faster, ookami"
+junit,faster
+jupyter,"anvil, jetstream, ookami"
+jupyter-notebook,ookami
+jupyter-server,aces
+jupyterhub,jetstream
+jupyterlab,"aces, jetstream"
+jupyterlmod,aces
+jupyternotebook,aces
+kahip,"aces, faster"
+kaiju,anvil
+kakscalculator2,anvil
+kalign,"aces, faster"
+kallisto,"anvil, expanse"
+kblas-gpu,aces
+kbproto,delta
+kcachegrind,darwin
+kentutils,anvil
+keras,"aces, faster"
+khmer,anvil
+kim-api,"aces, faster"
+kineto,aces
+kissde,anvil
+kissplice,anvil
+kissplice2refgenome,anvil
+kma,anvil
+kmc,anvil
+kmer-jellyfish,anvil
+kmergenie,anvil
+kneaddata,anvil
+knime,bridges
+knitro,faster
+kokkos,"delta, expanse, ookami, stampede3"
+kover,anvil
+kraken2,"aces, anvil, bridges"
+krakentools,anvil
+kyric/containers/r,kyric
+kyric/miniconda3,kyric
+kyric/spack,kyric
+lambda,anvil
+lame,"aces, faster"
+lammps,"aces, anvil, bridges, darwin, delta, expanse, faster, ookami, stampede3"
+lapack,"darwin, ookami"
+lasso-python,aces
+last,anvil
+lastz,anvil
+latex,faster
+launcher,anvil
+lazygit,bridges
+lddt,faster
+ldhat,anvil
+ldjump,anvil
+ldsc,anvil
+learning,anvil
+leptonica,"aces, faster"
+lerc,"aces, faster"
+leveldb,aces
+lhsmdu,faster
+libaec,"aces, faster"
+libaio,"delta, faster, kyric"
+libarchive,"aces, faster"
+libatomic_ops,aces
+libbeagle,expanse
+libbsd,"delta, kyric"
+libcap-devel,ookami
+libcdms,faster
+libcerf,"aces, faster"
+libcifpp,faster
+libdap,"aces, faster"
+libdeflate,"aces, faster"
+libdrm,"aces, faster"
+libdrs,faster
+libedit,kyric
+libepoxy,"aces, faster"
+libev,"aces, faster"
+libevent,"aces, faster, kyric"
+libfabric,"aces, anvil, darwin, delta, faster, kyric, ookami"
+libffi,"aces, delta, faster, kyric, ookami"
+libflame,"anvil, faster"
+libgcrypt,"aces, faster"
+libgd,"aces, faster, ookami"
+libgeotiff,"aces, faster"
+libgit2,"aces, faster, ookami"
+libglu,"aces, faster"
+libglvnd,"aces, faster"
+libgpg-error,"aces, faster, kyric"
+libgpuarray,"aces, faster"
+libharu,faster
+libice,delta
+libiconv,"aces, anvil, expanse, faster, kyric"
+libidn,"aces, faster"
+libidn2,"aces, faster, kyric"
+libint,"aces, faster"
+libjpeg,delta
+libjpeg-turbo,"aces, expanse, faster"
+libmatheval,"expanse, faster"
+libmd,delta
+libmesh,anvil
+libnotify,ookami
+libnsl,"delta, faster"
+libogg,"aces, faster"
+libopus,"aces, faster"
+libpals,delta
+libpciaccess,"aces, expanse, faster, kyric"
+libpng,"aces, anvil, expanse, faster, ookami"
+libpsl,"aces, faster"
+libreadline,"aces, faster"
+librom,"aces, faster"
+librs,darwin
+librsvg,"aces, faster"
+librttopo,"aces, faster"
+libsci,delta
+libseccomp,kyric
+libsigsegv,"faster, kyric"
+libsm,delta
+libsndfile,"aces, delta, faster"
+libsodium,"aces, faster"
+libsoup,"aces, faster"
+libspatialindex,"aces, faster"
+libspatialite,"aces, faster"
+libssh,faster
+libszip,anvil
+libtasn1,"aces, faster"
+libtiff,"aces, anvil, faster"
+libtirpc,"aces, delta, expanse, faster"
+libtool,"aces, faster, kyric"
+libunistring,"aces, expanse, faster, kyric"
+libunwind,"aces, expanse, faster, ookami"
+libv8,anvil
+libvorbis,"aces, faster"
+libvori,"aces, faster"
+libwebp,"aces, faster"
+libwpe,"aces, faster"
+libx11,"anvil, delta"
+libxau,delta
+libxc,"aces, expanse, faster, ookami"
+libxcb,delta
+libxdmcp,delta
+libxml2,"aces, anvil, faster, kyric"
+libxscrnsaver,anvil
+libxslt,"aces, anvil, faster"
+libxsmm,"aces, faster"
+libxt,delta
+libyaml,"aces, faster"
+libzip,"aces, faster"
+lifelines,aces
+liftoff,anvil
+liftofftools,anvil
+likwid,"faster, kyric, ookami"
+lima,anvil
+linaro,ookami
+links,anvil
+lis,faster
+littlecms,"aces, faster"
+lldb,ookami
+llvm,"aces, darwin, delta, faster, ookami"
+lmdb,"aces, faster"
+lmod,"aces, bridges, delta, faster, stampede3"
+lofreq,anvil
+longphase,anvil
+longqc,anvil
+loopy,faster
+lowcharts,bridges
+lra,anvil
+ltr_finder,anvil
+ltrpred,anvil
+ltrpred(ict),anvil
+lua,"aces, expanse, faster, ookami"
+lumpy,faster
+lumpy-sv,anvil
+lvm2,kyric
+lxml,"aces, faster"
+lyveset,anvil
+lz4,"aces, faster, ookami"
+lzip,darwin
+lzma,delta
+lzo,faster
+m4,"aces, faster, kyric"
+macrel,anvil
+macs2,anvil
+macs3,anvil
+maeparser,"aces, faster"
+mafft,"aces, anvil, expanse, faster"
+mageck,"anvil, faster"
+magicblast,anvil
+magics,aces
+magma,"aces, delta, expanse, faster"
+mainmast,faster
+make,"aces, faster, kyric"
+makedepend,"aces, faster"
+makeinfo,"aces, faster"
+maker,anvil
+mako,"aces, faster"
+mamba,"aces, faster"
+manta,anvil
+map,stampede3
+mapcaller,anvil
+mapdamage2,anvil
+marginpolish,anvil
+mariadb,faster
+mash,anvil
+mashmap,anvil
+mashtree,anvil
+masurca,"anvil, faster"
+mathematica,"darwin, faster"
+matio,aces
+matlab,"aces, anvil, bridges, darwin, expanse, faster, jetstream, ookami"
+matlab-engine,faster
+matlab_unlicensed,delta
+matplotlib,"aces, faster"
+maturin,aces
+mauve,"anvil, faster"
+maven,"aces, faster"
+maxbin2,anvil
+maxquant,anvil
+mbuffer,faster
+mc,bridges
+mccortex,faster
+mcl,"anvil, faster"
+mcoutbryk,faster
+mcr,darwin
+mcscanx,anvil
+mdspan,stampede3
+mdtest,delta
+medaka,"anvil, faster"
+meep,anvil
+megadepth,anvil
+megahit,"anvil, faster"
+megan,anvil
+meme,anvil
+meme-suite,bridges
+memes,anvil
+memoryviewer,aces
+mentorgraphics,bridges
+meraculous,anvil
+mercurial,"aces, expanse, ookami"
+merqury,anvil
+meryl,anvil
+mesa,"aces, faster"
+mesa-glu,anvil
+meson,"aces, darwin, expanse, faster"
+meson-python,"aces, faster"
+metabat,anvil
+metachip,anvil
+metaphlan,anvil
+metaseq,anvil
+methyldackel,anvil
+methylpy,bridges
+metilene,anvil
+metis,"aces, delta, expanse, faster, stampede3"
+mfem,"aces, faster"
+mhm2,anvil
+microbedmm,anvil
+minialign,anvil
+miniasm,anvil
+miniconda3,"aces, faster"
+minimap2,"anvil, faster"
+minipolish,anvil
+miniprot,anvil
+minizip,"aces, faster"
+mirdeep2,"anvil, expanse"
+mirtop,anvil
+mitofinder,anvil
+mkl,"bridges, kyric, stampede3"
+mkl-service,faster
+mkl32,kyric
+mlflow,bridges
+mlst,anvil
+mmseqs2,anvil
+mob-suite,anvil
+mob_suite,anvil
+modbam2bed,anvil
+modeltest-ng,anvil
+modtree,anvil
+module-git,ookami
+module-info,ookami
+moe,faster
+mold,"aces, faster"
+molden,"expanse, faster"
+molmod,faster
+momi,anvil
+monai,aces
+monitor,anvil
+moose,faster
+mothur,"anvil, faster"
+motif,aces
+motus,anvil
+mpc,"aces, anvil, faster, kyric"
+mpfr,"aces, anvil, darwin, expanse, faster, kyric, ookami"
+mpi,kyric
+mpi4py,"aces, faster, ookami"
+mpich,"kyric, ookami"
+mpip,expanse
+mpl,stampede3
+mrbayes,"anvil, expanse"
+mrnet,delta
+mujoco,faster
+mujoco-py,faster
+multichoose,faster
+multiqc,"anvil, faster"
+mummer,faster
+mummer4,anvil
+mumps,"aces, expanse, faster"
+muparser,delta
+muscle,anvil
+musl,aces
+must,bridges
+mutmap,anvil
+mvapich,"delta, stampede3"
+mvapich-3.0rc_s11,delta
+mvapich2,"anvil, bridges, expanse, kyric, ookami"
+mvapich2-gdr,aces
+mykrobe,anvil
+n50,anvil
+namd,"aces, anvil, bridges, darwin, delta, expanse, faster, ookami, stampede3"
+namd-multicore-cuda,aces
+namd-netlrts-smp-cuda,aces
+namd-verbs-smp-cuda,aces
+namd3,delta
+nanofilt,"anvil, faster"
+nanolyse,anvil
+nanoplot,anvil
+nanopolish,anvil
+nasm,"aces, faster"
+nbo,expanse
+ncbi-amrfinderplus,anvil
+ncbi-datasets,anvil
+ncbi-genome-download,anvil
+ncbi-table2asn,anvil
+ncbi-vdb,"aces, faster"
+nccl,"aces, anvil, delta, expanse, faster"
+nccl-tests,faster
+ncdu,"bridges, ookami"
+ncftp,delta
+ncl,"aces, anvil, expanse"
+nco,"aces, anvil, expanse, faster, stampede3"
+ncurses,"aces, delta, expanse, faster, kyric, ookami"
+ncview,"anvil, bridges, expanse, stampede3"
+ndiff,delta
+netcdf,"aces, darwin, delta, faster, ookami, stampede3"
+netcdf-c,"anvil, delta, expanse"
+netcdf-c++4,"aces, faster"
+netcdf-combined,faster
+netcdf-cxx,expanse
+netcdf-cxx4,"anvil, darwin, expanse"
+netcdf-fortran,"aces, anvil, darwin, delta, expanse, faster"
+netcdf4-python,"aces, faster"
+netcdff,stampede3
+netlib-lapack,"anvil, delta, expanse"
+netlib-scalapack,"delta, expanse"
+nettle,"aces, faster"
+networkx,"aces, faster"
+neuron,expanse
+neusomatic,anvil
+newick_utils,faster
+nextalign,anvil
+nextclade,anvil
+nextdenovo,"anvil, faster"
+nextflow,"anvil, bridges, faster"
+nextpolish,"anvil, faster"
+nf-core,anvil
+ngc,anvil
+nghttp2,"aces, faster"
+nghttp3,"aces, faster"
+ngs,faster
+ngs-bits,anvil
+ngsadmix,faster
+ngsld,anvil
+ngsutils,anvil
+ngtcp2,"aces, faster"
+nibabel,aces
+ninja,"aces, darwin, expanse, faster, ookami"
+nlohmann_json,"aces, faster"
+nlopt,"aces, faster"
+nltk,faster
+nmad,aces
+node,delta
+nodejs,"aces, faster"
+nostack,expanse
+nspr,"aces, faster"
+nss,"aces, faster"
+nsync,"aces, faster"
+ntl,darwin
+nuitka,faster
+null,ookami
+numactl,"aces, anvil, expanse, faster, kyric"
+numba,"aces, faster"
+numexpr,faster
+numpy,"aces, bridges"
+nv-codec-headers,faster
+nvbio,faster
+nvcomp,faster
+nvhpc,"aces, anvil, bridges, delta, expanse, faster"
+nvhpc_latest,delta
+nvidia,ookami
+nvidia-container-cli,"aces, faster"
+nvidia-hpc-sdk,darwin
+nvshmem,"aces, faster"
+nvtop,"aces, delta, faster"
+nwchem,"anvil, bridges, delta, expanse, stampede3"
+obitools3,faster
+oclfpga,kyric
+octave,"anvil, bridges, expanse, faster, ookami"
+odgi,anvil
+ogdf,faster
+ohpc,kyric
+omb,kyric
+oneapi,faster
+onnx,"aces, faster"
+onnx-runtime,"aces, faster"
+opari2,aces
+open-data-cube-core,faster
+openai-gym,faster
+openbabel,"aces, expanse, faster"
+openblas,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, ookami"
+opencensus-python,faster
+opencv,"aces, bridges, darwin, delta, faster"
+openexr,"aces, faster"
+openfoam,"aces, anvil, bridges, expanse, faster, ookami"
+openfold,"aces, faster"
+openimageio,aces
+openjdk,"anvil, delta, expanse, kyric"
+openjpeg,"aces, faster"
+openldap,ookami
+openmm,"aces, faster"
+openmpi,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, ookami"
+openmpi+cuda,delta
+openmpi-5.0_beta,delta
+openmpi4,kyric
+openmx,faster
+openpgm,"aces, faster"
+openpmix,ookami
+openscenegraph,aces
+opensees,stampede3
+openshmemx,delta
+openssh,kyric
+openssl,"aces, faster, kyric, ookami"
+opensubdiv,aces
+opensycl,ookami
+optix,faster
+optuna,"aces, faster"
+orca,"bridges, expanse, faster"
+orthofinder,anvil
+os,kyric
+osi,faster
+osu-micro-benchmarks,"aces, delta, expanse, faster"
+otf2,aces
+p11-kit,"aces, faster"
+p4est,stampede3
+p7zip,"expanse, ookami"
+padicotm,aces
+pals,delta
+paml,anvil
+panacota,anvil
+panaroo,anvil
+pandas,faster
+pandaseq,anvil
+pandora,anvil
+pango,"aces, faster"
+pangolin,anvil
+pangraph,anvil
+panphlan,anvil
+papi,"aces, anvil, darwin, delta, expanse, kyric, ookami, stampede3"
+parabricks,"aces, anvil, faster"
+parafly,anvil
+parafold,aces
+parallel,"anvil, delta, expanse, faster"
+parallel-fastq-dump,anvil
+parallel-netcdf,"anvil, bridges, delta, expanse, stampede3"
+parallelfold,faster
+parasail,faster
+paraview,"aces, anvil, darwin, delta, expanse, faster"
+parliament2,anvil
+parmetis,"aces, delta, expanse, faster, stampede3"
+parpack,stampede3
+parsnp,anvil
+pasapipeline,anvil
+pasta,anvil
+patchelf,"aces, faster, ookami"
+pax-utils,ookami
+pblat,anvil
+pbmm2,anvil
+pbptyper,anvil
+pcangsd,"anvil, faster"
+pciutils,expanse
+pcre,"aces, faster"
+pcre2,"aces, faster, kyric, stampede3"
+pdal,"aces, faster"
+pdt,"aces, darwin"
+pdtoolkit,kyric
+peakranger,anvil
+pepper_deepvariant,anvil
+perftools,delta
+perftools-base,delta
+perftools-lite,delta
+perftools-lite-events,delta
+perftools-lite-gpu,delta
+perftools-lite-hbm,delta
+perftools-lite-loops,delta
+perftools-preload,delta
+perl,"aces, expanse, faster, kyric"
+perl-bioperl,"anvil, expanse"
+perl-bundle-cpan,"aces, faster"
+perl-bundle1-cpan,"aces, faster"
+perl-bundle2-cpan,aces
+petsc,"aces, anvil, delta, expanse, faster, ookami, stampede3"
+pftoolsv3,faster
+pggb,anvil
+pgi,"darwin, expanse"
+phast,anvil
+phd2fasta,anvil
+phdf5,"bridges, stampede3"
+phg,anvil
+phipack,anvil
+php,faster
+phrap,anvil
+phred,anvil
+phylip-suite,bridges
+phylofisher,anvil
+phylosuite,anvil
+physics-tenpy,"aces, faster"
+picard,"anvil, bridges, expanse, faster"
+picrust2,anvil
+pigz,"aces, expanse, faster"
+pillow,"aces, faster"
+pillow-simd,"aces, faster"
+pilon,"anvil, bridges, faster"
+pindel,anvil
+pioman,aces
+pirate,anvil
+piscem,anvil
+pixman,"aces, faster"
+pixy,anvil
+pkg-config,"aces, faster"
+pkgconf,"aces, faster, kyric"
+pkgconfig,"aces, faster"
+plasmidfinder,anvil
+platon,anvil
+platypus,"anvil, faster"
+plink,"anvil, expanse, faster"
+plink2,anvil
+plotly.py,"aces, faster"
+plotsr,anvil
+plumed,"aces, bridges, expanse, faster"
+ply,faster
+pmi,"delta, faster"
+pmix,"aces, darwin, faster, kyric"
+pnetcdf,"aces, darwin, faster, stampede3"
+pnetcdff,stampede3
+pocl,"aces, faster"
+poetry,"aces, faster"
+pomoxis,anvil
+poppler,"aces, faster"
+poppunk,anvil
+popscle,anvil
+popt,"faster, kyric"
+posix2ime,delta
+postgresql,"aces, faster"
+pov-ray,"aces, faster"
+pplacer,anvil
+prank,aces
+prgenv-cray,delta
+prgenv-gnu,delta
+prgenv-nvhpc,delta
+prgenv-nvidia,delta
+prinseq,anvil
+probtorch,faster
+prodigal,"anvil, bridges"
+proj,"aces, anvil, darwin, delta, faster, ookami"
+prokka,"anvil, bridges"
+proteinortho,anvil
+prothint,anvil
+protobuf,"aces, anvil, faster"
+protobuf-python,"aces, faster"
+prrte,aces
+prun,kyric
+psc.allocations.user,bridges
+pscom,faster
+psycopg2,"aces, faster"
+ptex,aces
+pugixml,"aces, faster"
+puk,aces
+pukabi,aces
+pullseq,anvil
+purge_dups,anvil
+pv,faster
+pvactools,anvil
+pwanalyzer,ookami
+py-ase,expanse
+py-cached-property,expanse
+py-cftime,expanse
+py-cpuinfo,aces
+py-cutadapt,expanse
+py-cycler,expanse
+py-cython,"expanse, kyric"
+py-dask,expanse
+py-dendropy,expanse
+py-et-xmlfile,expanse
+py-gsd,expanse
+py-h5py,expanse
+py-htseq,expanse
+py-jdcal,expanse
+py-jupyter-core,expanse
+py-jupyterlab,expanse
+py-kiwisolver,expanse
+py-matplotlib,expanse
+py-mpi4py,"anvil, expanse"
+py-netcdf4,expanse
+py-numba,expanse
+py-numexpr,expanse
+py-numpy,expanse
+py-openpyxl,expanse
+py-pandas,expanse
+py-petsc4py,expanse
+py-phonopy,expanse
+py-pillow-simd,expanse
+py-pip,expanse
+py-pybind11,expanse
+py-pycuda,expanse
+py-pyparsing,expanse
+py-pysam,expanse
+py-pyscf,expanse
+py-python-dateutil,expanse
+py-pytz,expanse
+py-pyyaml,expanse
+py-scikit-learn,expanse
+py-scikit-optimize,expanse
+py-scipy,expanse
+py-seaborn,expanse
+py-setuptools,"expanse, kyric"
+py-setuptools-scm,expanse
+py-six,expanse
+py-slepc4py,expanse
+py-statsmodels,expanse
+py-sympy,expanse
+py-tables,expanse
+py-virtualenv,expanse
+py-xlrd,expanse
+py3dmol,aces
+pyani,anvil
+pybedtools,anvil
+pybigwig,"anvil, faster"
+pybind11,"aces, faster"
+pycairo,"aces, faster"
+pycharm,faster
+pychopper,anvil
+pycoqc,anvil
+pycuda,"aces, faster"
+pydantic,"aces, faster"
+pydicom,aces
+pyensembl,anvil
+pyfaidx,"anvil, faster"
+pyfr,aces
+pygenometracks,anvil
+pygenomeviz,anvil
+pygobject,"aces, faster"
+pymc3,faster
+pyomo,faster
+pyopencl,faster
+pyopengl,"aces, faster"
+pyproj,"aces, faster"
+pypy,faster
+pyqt5,"aces, faster"
+pyranges,anvil
+pyro-api,faster
+pyro-ppl,faster
+pysam,"aces, anvil, faster"
+pyspoa,faster
+pystan,faster
+pytensor,aces
+pytesseract,aces
+pytest,"aces, faster"
+pytest-flakefinder,"aces, faster"
+pytest-rerunfailures,"aces, faster"
+pytest-shard,"aces, faster"
+pytest-xdist,"aces, faster"
+pythia,aces
+python,"aces, anvil, bridges, darwin, delta, expanse, faster, kyric, ookami, stampede3"
+python-bundle-pypi,"aces, faster"
+python-isal,"aces, faster"
+python-parasail,faster
+python3,ookami
+python37,ookami
+python_cacher,stampede3
+pytorch,"aces, anvil, faster, ookami"
+pytorch-geometric,"aces, faster"
+pytorch-lightning,"aces, faster"
+pytorch3d,faster
+pyvcf3,anvil
+pyyaml,"aces, faster"
+pyzmq,aces
+qca,"aces, faster"
+qcat,faster
+qchem,"expanse, faster"
+qd,ookami
+qe,stampede3
+qemu,anvil
+qgis,"aces, faster"
+qhull,"aces, expanse, faster"
+qiime2,"aces, anvil, faster"
+qjson,aces
+qrupdate,"expanse, faster"
+qscintilla,"aces, faster"
+qt,"anvil, expanse"
+qt5,"aces, faster"
+qt5webkit,"aces, faster"
+qtkeychain,"aces, faster"
+qtlseq,anvil
+qualimap,anvil
+quantum-espresso,"anvil, expanse, ookami"
+quantum_espresso,anvil
+quantumespresso,"aces, bridges, faster, ookami"
+quast,anvil
+quickmirseq,anvil
+qwt,"aces, faster"
+r,"aces, anvil, darwin, delta, expanse, faster, jetstream, kyric, ookami"
+r-acepack,expanse
+r-affy,expanse
+r-affyio,expanse
+r-annotate,expanse
+r-annotationdbi,expanse
+r-askpass,expanse
+r-assertthat,expanse
+r-backports,expanse
+r-base64,expanse
+r-base64enc,expanse
+r-beanplot,expanse
+r-bh,expanse
+r-bibtex,expanse
+r-biobase,expanse
+r-bioc,darwin
+r-biocgenerics,expanse
+r-biocmanager,expanse
+r-biocparallel,expanse
+r-biomart,expanse
+r-biostrings,expanse
+r-bit,expanse
+r-bit64,expanse
+r-bitops,expanse
+r-blob,expanse
+r-bumphunter,expanse
+r-bundle-bioconductor,faster
+r-cellchat,anvil
+r-checkmate,expanse
+r-cli,expanse
+r-clipr,expanse
+r-cluster,expanse
+r-codetools,expanse
+r-colorspace,expanse
+r-cran,darwin
+r-crayon,expanse
+r-curl,expanse
+r-data-table,expanse
+r-dbi,expanse
+r-delayedarray,expanse
+r-delayedmatrixstats,expanse
+r-deseq2,expanse
+r-digest,expanse
+r-doparallel,expanse
+r-dorng,expanse
+r-dplyr,expanse
+r-ellipsis,expanse
+r-evaluate,expanse
+r-fansi,expanse
+r-fdb-infiniummethylation-hg19,expanse
+r-foreach,expanse
+r-foreign,expanse
+r-formatr,expanse
+r-formula,expanse
+r-futile-logger,expanse
+r-futile-options,expanse
+r-genefilter,expanse
+r-geneplotter,expanse
+r-genomeinfodb,expanse
+r-genomeinfodbdata,expanse
+r-genomicalignments,expanse
+r-genomicfeatures,expanse
+r-genomicranges,expanse
+r-geoquery,expanse
+r-ggplot2,expanse
+r-glue,expanse
+r-gridbase,expanse
+r-gridextra,expanse
+r-gtable,expanse
+r-hdf5array,expanse
+r-highr,expanse
+r-hmisc,expanse
+r-hms,expanse
+r-htmltable,expanse
+r-htmltools,expanse
+r-htmlwidgets,expanse
+r-httpuv,expanse
+r-httr,expanse
+r-illuminaio,expanse
+r-iranges,expanse
+r-iterators,expanse
+r-jpeg,expanse
+r-jsonlite,expanse
+r-kernsmooth,expanse
+r-knitr,expanse
+r-labeling,expanse
+r-lambda-r,expanse
+r-later,expanse
+r-lattice,expanse
+r-latticeextra,expanse
+r-lazyeval,expanse
+r-limma,expanse
+r-locfit,expanse
+r-lumi,expanse
+r-magrittr,expanse
+r-maptools,expanse
+r-markdown,expanse
+r-mass,expanse
+r-matrix,expanse
+r-matrixstats,expanse
+r-mclust,expanse
+r-memoise,expanse
+r-methylumi,expanse
+r-mgcv,expanse
+r-mime,expanse
+r-minfi,expanse
+r-misc3d,expanse
+r-multtest,expanse
+r-munsell,expanse
+r-nleqslv,expanse
+r-nlme,expanse
+r-nmf,expanse
+r-nnet,expanse
+r-nor1mix,expanse
+r-openssl,expanse
+r-org-hs-eg-db,expanse
+r-pillar,expanse
+r-pkgconfig,expanse
+r-pkgmaker,expanse
+r-plogr,expanse
+r-plyr,expanse
+r-png,expanse
+r-preprocesscore,expanse
+r-prettyunits,expanse
+r-progress,expanse
+r-promises,expanse
+r-purrr,expanse
+r-quadprog,expanse
+r-r6,expanse
+r-rcolorbrewer,expanse
+r-rcpp,expanse
+r-rcpparmadillo,expanse
+r-rcurl,expanse
+r-readr,expanse
+r-registry,expanse
+r-reshape,expanse
+r-reshape2,expanse
+r-rhdf5,expanse
+r-rhdf5lib,expanse
+r-rhtslib,expanse
+r-rlang,expanse
+r-rnaseq,anvil
+r-rngtools,expanse
+r-rpart,expanse
+r-rsamtools,expanse
+r-rsqlite,expanse
+r-rstudio,anvil
+r-rstudioapi,expanse
+r-rtracklayer,expanse
+r-s4vectors,expanse
+r-scales,expanse
+r-scrime,expanse
+r-scrnaseq,anvil
+r-shiny,expanse
+r-siggenes,expanse
+r-snow,expanse
+r-sourcetools,expanse
+r-sp,expanse
+r-stringi,expanse
+r-stringr,expanse
+r-studio,jetstream
+r-studio-server,darwin
+r-summarizedexperiment,expanse
+r-survival,expanse
+r-sys,expanse
+r-tibble,expanse
+r-tidyr,expanse
+r-tidyselect,expanse
+r-txdb-hsapiens-ucsc-hg19-knowngene,expanse
+r-utf8,expanse
+r-vctrs,expanse
+r-viridis,expanse
+r-viridislite,expanse
+r-withr,expanse
+r-xfun,expanse
+r-xml,expanse
+r-xml2,expanse
+r-xtable,expanse
+r-xvector,expanse
+r-yaml,expanse
+r-zeallot,expanse
+r-zlibbioc,expanse
+r_flexiblas,delta
+r_tamu,"aces, faster"
+racon,"anvil, faster"
+ragel,faster
+ragout,anvil
+ragtag,anvil
+randfold,expanse
+rapidjson,"aces, faster"
+rapids,aces
+rapidsai,anvil
+rapmap,anvil
+rasterio,faster
+rasusa,anvil
+raven-assembler,anvil
+raxml,"anvil, bridges, expanse, faster"
+raxml-ng,"anvil, expanse, faster"
+ray-project,"aces, faster"
+rclone,"bridges, darwin, expanse, faster, ookami"
+rdflib,"aces, faster"
+rdkit,aces
+re2,"aces, faster"
+re2c,"aces, faster"
+readline,"delta, expanse, kyric, ookami"
+readline-devel,ookami
+reapr,anvil
+rebaler,anvil
+reciprocal_smallest_distance,anvil
+recycler,anvil
+redis,"aces, faster"
+redis-py,"aces, faster"
+reframe,aces
+regtools,anvil
+relion,"anvil, expanse"
+remora,stampede3
+repeatmasker,anvil
+repeatmodeler,anvil
+repeatscout,anvil
+resfinder,anvil
+revbayes,anvil
+rich,bridges
+rioxarray,faster
+rising,aces
+rlwrap,faster
+rmats,anvil
+rmats2sashimiplot,anvil
+rnaindel,anvil
+rnalysis,faster
+rnapeg,anvil
+rnaquast,anvil
+rnaview,bridges
+roary,anvil
+rocm-cmake,faster
+rocm-compilersupport,faster
+rocm-smi,faster
+rocr-runtime,faster
+roct-thunk-interface,faster
+root,"aces, faster"
+rsem,"anvil, faster"
+rseqc,anvil
+rstudio,"anvil, expanse, ookami"
+ruamel.yaml,faster
+ruby,"aces, faster"
+run_dbcan,anvil
+rush,anvil
+rust,"aces, darwin, delta, faster, ookami"
+sage,anvil
+salmon,"anvil, expanse, faster"
+sambamba,"anvil, faster"
+samblaster,"anvil, expanse, faster"
+samclip,anvil
+samplot,anvil
+samtools,"aces, anvil, bridges, expanse, faster"
+sanitizers4hpc,delta
+sanitytool,stampede3
+scafacos,"aces, faster"
+scalapack,"aces, bridges, darwin, faster, ookami"
+scalasca,"aces, kyric, ookami"
+scanpy,anvil
+scarches,anvil
+scgen,anvil
+schrodinger,faster
+scikit-bio,faster
+scikit-build,"aces, faster"
+scikit-cuda,aces
+scikit-fda,faster
+scikit-image,"aces, faster"
+scikit-learn,"aces, faster"
+scipy,faster
+scipy-bundle,"aces, faster"
+scipy_tamu,faster
+scirpy,anvil
+scnic,faster
+scons,"aces, darwin, faster"
+score-p,aces
+scorep,kyric
+scotch,"aces, expanse, faster"
+scvelo,anvil
+scvi-tools,anvil
+sdl,"aces, faster"
+sdl2,"aces, faster"
+sdsc,expanse
+seaborn,faster
+segalign,anvil
+segmentation-models,faster
+seidr,anvil
+sentencepiece,aces
+sepp,"anvil, faster"
+seqcode,anvil
+seqkit,anvil
+seqyclean,anvil
+serf,"aces, faster"
+settarg,"aces, bridges, delta, faster, stampede3"
+setuptools,aces
+setuptools-rust,"aces, faster"
+shadow,kyric
+shap,aces
+shapeit4,anvil
+shapeit5,anvil
+shapely,"aces, faster"
+shared,"expanse, ookami"
+shasta,anvil
+shigeifinder,anvil
+shorah,anvil
+shortstack,anvil
+shovill,anvil
+sicer,anvil
+sicer2,anvil
+siesta,"expanse, ookami"
+signalp4,anvil
+signalp6,anvil
+simug,anvil
+singlem,anvil
+singularity,"darwin, jetstream, kyric, ookami"
+singularitypro,expanse
+sionlib,"aces, kyric"
+sip,faster
+ska,anvil
+skewer,anvil
+sklearn,ookami
+slamdunk,anvil
+slepc,"aces, expanse, faster"
+slurm,"expanse, ookami"
+slurm-env,delta
+smoove,anvil
+smrt-link,faster
+snakemake,"anvil, faster"
+snap,anvil
+snap-aligner,anvil
+snappy,"aces, faster"
+snaptools,anvil
+snippy,anvil
+snp-dists,anvil
+snp-sites,anvil
+snpeff,anvil
+snpgenie,anvil
+snphylo,anvil
+snpsift,anvil
+soapdenovo2,"anvil, expanse"
+sortmerna,anvil
+souporcell,anvil
+sourmash,anvil
+spaceranger,anvil
+spack,"faster, ookami"
+spacy,aces
+spades,"aces, anvil, bridges, expanse, faster"
+spark,"anvil, bridges, expanse, faster"
+sparsehash,faster
+spdlog,ookami
+speedseq,faster
+spglib,"aces, faster"
+spglib-python,"aces, faster"
+spice-server,anvil
+spoa,faster
+sprng,expanse
+sprod,anvil
+spython,"aces, faster"
+sqlite,"aces, delta, expanse, faster, kyric"
+squashfs,kyric
+squashfs-tools,darwin
+squeezemeta,anvil
+squid,anvil
+sra-toolkit,"aces, bridges, faster"
+sra-tools,anvil
+sratoolkit,"anvil, expanse"
+srst2,anvil
+stacks,"anvil, expanse, faster"
+star,"aces, anvil, bridges, expanse, faster"
+star-fusion,bridges
+staramr,anvil
+starfusion,anvil
+starpu,aces
+stat,delta
+stata,darwin
+statsmodels,"aces, faster"
+strace,faster
+stream,anvil
+stringdecomposer,anvil
+stringtie,"anvil, expanse"
+strique,anvil
+structure,"anvil, faster"
+strumpack,faster
+subread,anvil
+subversion,"aces, delta, expanse, faster"
+suite-sparse,expanse
+suitesparse,"aces, faster"
+sundials,"aces, faster"
+superlu,expanse
+superlu-dist,expanse
+superlu_dist,"aces, faster"
+survivor,anvil
+svaba,anvil
+svtools,anvil
+svtyper,"anvil, faster"
+swat,anvil
+swig,"aces, anvil, faster, stampede3"
+sympy,"aces, faster"
+synthcity,aces
+syri,anvil
+sz,faster
+sz3,faster
+szip,"aces, darwin, faster"
+t-coffee,anvil
+tabix,expanse
+tacc,stampede3
+tacc-apptainer,stampede3
+taichi,faster
+talon,anvil
+tar,kyric
+targetp,anvil
+tassel,anvil
+tau,"darwin, expanse, kyric, ookami"
+taxonkit,anvil
+tbb,"aces, faster, kyric"
+tbb32,kyric
+tcl,"aces, anvil, delta, expanse, faster"
+tclap,faster
+tcltk,darwin
+tcsh,"aces, faster"
+template,ookami
+tensorboard,"aces, faster"
+tensorboardx,"aces, faster"
+tensorflow,"aces, anvil, darwin, faster"
+tensorflow-probability,"aces, faster"
+tensorrt,"aces, faster"
+tesseract,aces
+tetranscripts,anvil
+texlive,"aces, anvil, darwin, ookami"
+tfold,darwin
+theano,"aces, faster"
+thermo-calc,faster
+tiara,anvil
+tiff,"aces, faster"
+tiger,bridges
+tigmint,anvil
+time,"aces, delta, faster"
+tinker-hp,delta
+tk,"aces, anvil, delta, faster"
+tkinter,"aces, faster"
+tmux,aces
+tobias,anvil
+tombo,anvil
+tomli,faster
+tophat,anvil
+torchani,anvil
+torchinfo,faster
+torchsampler,aces
+torchtext,aces
+torchvision,"aces, faster"
+tornado,aces
+totalview,anvil
+tpmcalculator,anvil
+tqdm,"aces, faster"
+transabyss,anvil
+transdecoder,anvil
+transformers,faster
+transrate,anvil
+transvar,anvil
+trax,anvil
+treetime,anvil
+trilinos,"aces, stampede3"
+trim-galore,anvil
+trim_galore,"aces, faster"
+trimal,"anvil, faster"
+trimmomatic,"anvil, bridges, expanse"
+trinity,"anvil, bridges, expanse"
+trinotate,anvil
+trnascan-se,"anvil, bridges"
+trtools,anvil
+trust4,anvil
+trycycler,anvil
+twisted,"aces, faster"
+typing-extensions,"aces, faster"
+ucc,"aces, faster"
+ucc-cuda,"aces, faster"
+ucsc_genome_toolkit,anvil
+ucsctest,faster
+ucsctools,faster
+ucx,"aces, anvil, bridges, darwin, expanse, faster, kyric, ookami"
+ucx-cuda,"aces, faster"
+udbuild,darwin
+udunits,"aces, darwin, faster, stampede3"
+umi_tools,anvil
+unicycler,anvil
+unison,faster
+unzip,"aces, faster"
+upcxx,faster
+usefulaf,anvil
+utf8proc,"aces, faster"
+util-linux,"aces, faster, kyric, ookami"
+util-linux-uuid,"anvil, kyric"
+util-macros,kyric
+vadr,anvil
+valgrind,"aces, anvil, darwin, expanse, kyric, ookami"
+valgrind4hpc,delta
+vardict-java,anvil
+varlociraptor,anvil
+varscan,anvil
+vartrix,anvil
+vasp,"aces, anvil, bridges, expanse, faster, stampede3"
+vasp6,expanse
+vatools,anvil
+vawk,faster
+vcf-kit,anvil
+vcf2maf,"anvil, bridges"
+vcf2phylip,anvil
+vcf2tsvpy,anvil
+vcftools,"anvil, bridges, expanse, faster"
+velocyto.py,anvil
+velvet,anvil
+vep,faster
+veryfasttree,anvil
+vesta,aces
+vg,anvil
+viennarna,anvil
+virtualenv,"aces, faster"
+virtualgl,faster
+visidata,bridges
+visit,"anvil, bridges, darwin, delta, faster, ookami"
+vlc,anvil
+vmd,"aces, anvil, darwin, expanse, faster, stampede3"
+voro++,"aces, faster"
+vpl,kyric
+vscode,"aces, anvil"
+vsearch,anvil
+vtk,"aces, anvil, faster"
+vtune,"aces, darwin, faster, kyric, stampede3"
+vulkansdk,"aces, faster"
+wannier90,"anvil, expanse, faster"
+wayland,"aces, faster"
+waylandpp,"aces, faster"
+webkitgtk+,"aces, faster"
+weblogo,anvil
+webproxy,"aces, faster"
+westpa,delta
+wget,aces
+wgss,darwin
+whatshap,anvil
+wiggletools,anvil
+winnowmap,anvil
+wpebackend-fdo,"aces, faster"
+wps,"expanse, faster"
+wrf,"aces, darwin, expanse, faster"
+wtdbg,anvil
+wxpython,"aces, faster"
+wxwidgets,"aces, faster"
+x11,"aces, faster"
+x264,"aces, faster"
+x265,"aces, faster"
+xalt,"anvil, stampede3"
+xarray,"aces, faster"
+xcb-util-image,anvil
+xcb-util-keysyms,anvil
+xcb-util-renderutil,anvil
+xcb-util-wm,anvil
+xclock,delta
+xdinfo,"bridges, darwin"
+xdist,"aces, faster"
+xdresourceid,"bridges, darwin"
+xdusage,"bridges, darwin"
+xerces-c,delta
+xerces-c++,"aces, faster"
+xextproto,delta
+xgboost,aces
+xit,bridges
+xml-libxml,"aces, faster"
+xorg-macros,"aces, faster"
+xpmem,"aces, ookami"
+xprop,"aces, faster"
+xproto,"aces, delta, faster"
+xtalopt,faster
+xtrans,delta
+xvfb,"aces, faster"
+xxd,"aces, faster"
+xz,"aces, delta, expanse, faster, kyric"
+yacs,"aces, faster"
+yaff,faster
+yaml,ookami
+yasm,"aces, faster"
+yaxt,faster
+z3,"aces, faster"
+zarr,"aces, faster"
+zebulon,faster
+zeromq,"aces, faster"
+zfp,faster
+zip,"aces, faster"
+zlib,"aces, anvil, expanse, faster, kyric"
+zluda,darwin
+zoltan,bridges
+zsh,ookami
+zstd,"aces, expanse, faster, kyric"
