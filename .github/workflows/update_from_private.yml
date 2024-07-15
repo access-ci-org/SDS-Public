@@ -8,20 +8,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout public repo
+    - name: Checkout public repository
       uses: actions/checkout@v3
       with:
         ref: main
-    - name: Checkout private repo
+
+    - name: Checkout private repository
       uses: actions/checkout@v3
-      with: 
-        repository: access-ci-org/ACCESS-SDS
+      with:
+        repository: your-username/private-repo-name
         token: ${{ secrets.PAT }}
         path: private-repo
 
     - name: Sync files
       run: |
         rsync -av --exclude='.git' private-repo/ .
+
     - name: Commit and push changes
       run: |
         git config --global user.name 'github-actions[bot]'
@@ -29,6 +31,5 @@ jobs:
         git add .
         git commit -m "Update from private repo"
         git push origin main
-
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
