@@ -16,6 +16,7 @@ jobs:
     - name: Clone private repo
       run: |
         git clone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git
+        ls
       env:
         GIT_TERMINAL_PROMPT: 0
 
