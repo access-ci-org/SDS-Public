@@ -15,13 +15,14 @@ jobs:
 
     - name: Clone private repo
       run: |
-        git clone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git private-repo
+        git clone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git
       env:
         GIT_TERMINAL_PROMPT: 0
 
     - name: Sync files
       run: |
-        rsync -av --exclude='.git' --exclude='.github' .
+        rsync -av --exclude='.git' --exclude='.github' /ACCESS-SDS .
+        rm -r ACCESS-SDS
 
     - name: Commit and push changes
       run: |
