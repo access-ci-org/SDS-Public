@@ -18,7 +18,7 @@ jobs:
       with:
         repository: access-ci-org/ACCESS-SDS
         token: ${{ secrets.PAT }}
-        path: ../ACCESS-SDS
+        path: private-sds-repo
 
     - name: Install rclone
       run: |
@@ -26,8 +26,8 @@ jobs:
 
     - name: Sync files
       run: |
-        rclone sync ../ACCCESS-SDS/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md'
-        rm -r ../ACCESS-SDS
+        rclone sync private-sds-repo/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md'
+        rm -r private-sds-repo
 
     - name: Commit and push changes
       run: |
