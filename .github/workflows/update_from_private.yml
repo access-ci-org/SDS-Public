@@ -19,8 +19,6 @@ jobs:
       run: |
         mkdir -p ../priavte-sds-repo
         git clone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git ../private-sds-repo
-      env:
-        GITHUB_TOKEN: ${{ secrets.PAT }}
         
     - name: Install rclone
       run: |
