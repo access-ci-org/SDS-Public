@@ -8,12 +8,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout public repository
+    - name: Checkout public repository main branch
       uses: actions/checkout@v3
       with:
         ref: main
 
     - name: Checkout private repository
+      # Must clone the directory into a file outside of where the current public repo is
+      # This prevents overlapping directory issue with rclone (exit code 7)
       run: |
         mkdir -p ../priavte-sds-repo
         git clone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git ../private-sds-repo
@@ -25,6 +27,10 @@ jobs:
         curl https://rclone.org/install.sh | sudo bash
 
     - name: Sync files
+      # exclude the .git directory
+      # exclude the .github directory because it would overwrite this github action as well
+      # exclude readme. Since this is a public-facing repo, it will have a different readme with less technical info
+      # Remove the private-sds-repo directory just in case it tries to push that directory as well
       run: |
         rclone sync ../private-sds-repo/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md'
         rm -r ../private-sds-repo
