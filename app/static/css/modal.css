@@ -1,0 +1,42 @@
+/* Custom styles for the whole modal */
+.modal-content {
+    background-color: #1a5b6e !important;
+    border: 4px #154e5fee solid !important;
+    border-radius: 5px !important;
+}
+
+.modal-header{
+    border-bottom:0;
+    background-color: #1a5b6e;
+    color: white;
+}
+
+.modal-body {
+    padding: 15px;
+    font-size: 1.1em;
+    background-color:white;
+    border:white 1px solid;
+}
+
+.modal-footer {
+    background-color:white;
+    border:white 1px solid;
+}
+
+/* Changes the 'X' in modals to solid white */
+.close{
+    color: white;
+    opacity: 1;
+}
+.modal-header .close:hover {
+    color: #adfbff;
+    opacity: 1;
+}
+
+/* JQueryUI Accordion */
+.ui-state-default,
+.ui-state-active{
+    background: #1c6277 !important;
+    border: 2px #154e5fee solid !important;
+    color:white !important;
+}
