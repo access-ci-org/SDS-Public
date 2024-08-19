@@ -27,7 +27,7 @@ def software_search():
     return render_template("software_search.html",table=table)
 
 # 'Example Use' Modal Route
-@app.route("/example_use/<software_name>")
+@app.route("/example_use/<path:software_name>")
 def get_example_use(software_name):
     
     if software_name == '7-Zip':

@@ -21,24 +21,24 @@ RP_URLS = {
 # Here, for the RPs that do this, we're using an algorithm to point to their
 #   specific software pages.
 
-#################################################################
-#   create_full_doc_url                                         #
-#       Generates RP-specific documentation links for the table #
-#       Args:                                                   #
-#           software_name: software as it appears on the table  #
-#           rp_names: list of RPs with the software installed   #
-#       Return:                                                 #
-#           combined_urls: string of formatted RP URLs          #
-#################################################################
+#################################################################################
+#   create_full_doc_url                                                         #
+#       Generates RP-specific documentation links for the table                 #
+#       Args:                                                                   #
+#           software_name {string}: software name as it appears on the table    #
+#           rp_names {string}: string of RPs with the software installed        #
+#       Return:                                                                 #
+#           combined_urls {string}: combined list of formatted RP URLs          #
+#################################################################################
 def create_full_doc_url(software_name, rp_names):
     has_individual_software_page = ['Anvil','Bridges-2','DARWIN']   # RPs that have specific links per software
-    rp_list = rp_names.split(',')                                     # For software installed on multiple systems,
+    rp_list = rp_names.split(',')                                   # For software installed on multiple systems,
                                                                     #   split the RPs into a list for processing
 
     urls=[]
     for rp in rp_list:
-        rp_name = rp.strip()                 # Strip off any whitespace 
-        rp_url = RP_URLS.get(rp_name)         # Grab URL from rp_urls dictionary based on rpName
+        rp_name = rp.strip()            # Strip off any whitespace 
+        rp_url = RP_URLS.get(rp_name)   # Grab URL from rp_urls dictionary based on rpName
 
         # For software with specific links
         if rp_name in has_individual_software_page:        

@@ -123,32 +123,41 @@ else
     check_status
 
 
-    colored_echo "Conda installed successfully."
+    colored_echo "Conda installed successfully"
 
     # Clean up after itself
     rm -rf conda.sh
 fi
 
+# clean conda
+colored_echo "Cleaning conda"
+conda clean -a -y
+check_status
+
 # Create a virtual environment
 colored_echo "Creating a virtual Python environment..."
-conda create -n $ENV_NAME python=$PYTHON_VERSION -y
+conda create --prefix=./env/$ENV_NAME python=$PYTHON_VERSION -y
 check_status
+colored_echo "Virtual environment '$ENV_NAME' created successfully"
 
 
-colored_echo "Virtual environment '$ENV_NAME' created successfully."
-
-colored_echo "Installing Requirements"
-# Upgrade pip
-pip install --upgrade pip
-
-# Install requirements
-conda env update -f env.yaml
+colored_echo "Updating conda env configs..."
+# remove env prefix from shell prompts
+conda config --set env_prompt '({name})'
 check_status
-
+# add env to config (env is now found by --name, -n)
+conda config --append envs_dirs ./env/
+check_status
+colored_echo "Conda env configs updated"
 
 # Activate the virtual environment
 colored_echo "Activating your new virtual environment..."
 conda activate $ENV_NAME
 check_status
+colored_echo "Virtual environment '$ENV_NAME' activated"
 
-colored_echo "Virtual environment '$ENV_NAME' is now active."
+colored_echo "Installing Requirements..."
+# Install requirements
+conda env update -f env.yaml --prune
+check_status
+colored_echo "Requirements Installed"

@@ -65,7 +65,7 @@ COMMON_ACRONYMS_DICT = {
 #       Converts AI-generated JSON software files into a uniform format #
 #        for to facilitate programmatic manipulation                    #
 #       Parameters:                                                     #
-#           file: the file to be formatted                              #
+#           file {file}: the file to be formatted                       #
 #########################################################################
 def json_sanitizer(file):
     file_name = file.split('JSON/')[1]

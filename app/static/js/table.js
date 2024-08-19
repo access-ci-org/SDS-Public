@@ -40,9 +40,16 @@ $(document).ready(function()
     const loginButton = shadowRoot.querySelector('li:last-child button');
     loginButton.remove();
 
-    $("#app_content").removeClass()
-    $("#app_content").addClass('col')
+    $("#app_content").removeClass();
+    $("#app_content").addClass('col');
 
+    // Update ACCESS Support Link in ShadowHost Header
+    // https://github.com/access-ci-org/access-ci-ui
+    const ACCESS_SUPPORT_URL = "https://support.access-ci.org/"
+    const HEADER_SHADOW_HOST = document.getElementById('header');
+    const HEADER_SHADOW_ROOT = HEADER_SHADOW_HOST.shadowRoot;
+    const ACCESS_LOGO_HREF = HEADER_SHADOW_ROOT.querySelector('.access');
+    ACCESS_LOGO_HREF.href = ACCESS_SUPPORT_URL;
 
 /*/////////////////////////////////////////////////////////////////////////////////////////////////////////
     STATIC TABLE                                                                                        //
@@ -71,7 +78,7 @@ $(document).ready(function()
             $('.scrollText-div').html("Hover your mouse to the edge of the table to scroll")          
         },
         searchPanes: {
-            columns: [1,2,5,9],
+            columns: [1,6,7,9],
             //threshold: 0.8,
             initCollapsed: true,
             cascadePanes: false,    // Reflects one change in the searchPanes filters across all Panes.
@@ -108,7 +115,36 @@ $(document).ready(function()
                 collectionLayout: 'two-column',
                 popoverTitle: 'Show/Hide Columns',
             },
-                'colvisRestore' 
+                'colvisRestore',
+            /*{
+                extend: 'collection',
+                text: 'Export',
+                popoverTitle: 'Export Rows',
+                autoClose: true,
+                buttons: [
+                    'copy', 
+                    'excel',
+                    'csv', 
+                    {
+                        extend: 'pdf',
+                        orientation: 'landscape',
+                        pageSize: "A2",
+                        title: "Exported Software List",
+                        download: 'open',
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                            modifier: {
+                                page: 'current'
+                            },
+                        },
+                        customize: function(doc) {
+                            doc.content[1].layout = "borders";
+                        }
+                    },
+                    'print',
+                ],
+            },*/
+
         ], 
         stateSave: false,   // Toggle for saving table options between page reloads
         stateDuration:-1,   // How long to save 
@@ -176,7 +212,7 @@ $(document).ready(function()
                                 return rowData[1].toLowerCase().includes('stampede3');
                         }}                        
             ]}},             
-            {   targets: [2],           
+            {   targets: [6],           
                 searchPanes: {
                     name: 'Software Type',
                     className: 'noShadow',
@@ -242,7 +278,7 @@ $(document).ready(function()
                                 return rowData[2].toLowerCase().includes('utility');
                         }},
             ]}},   
-            {   targets: [5],               
+            {   targets: [7],               
                 searchPanes: {
                     name: 'Research Area',
                     className: 'noShadow',
@@ -526,7 +562,7 @@ $(document).ready(function()
                     return '<button class="btn btn-info example-use-btn" type="button">Use Example</button>';
             }},
             {   // Columns with clickable URLs
-                targets: [7,10,11,12,13], 
+                targets: [2,5,10,12,13], 
                 render: function(data, type, row) {
                     if (type === 'display' && data) {
                         return makeLinkClickable(data);
@@ -534,15 +570,15 @@ $(document).ready(function()
             }}, 
             { width: '65px', targets: [1], className: 'dt-center' },    // RP Names
             { width: '100px', targets: [16], className: 'dt-center'},   // Example Use Button
-            { width: '100px', targets: [5], className: 'dt-center'},    // Research Area
-            { width: '110px', targets: [2,4], className: 'dt-center'},  // Software Type, Research Field
-            { width: '115px', targets: [3], className: 'dt-center'},    // Software Class
+            { width: '100px', targets: [7], className: 'dt-center'},    // Research Area
+            { width: '110px', targets: [6,11], className: 'dt-center'},  // Software Type, Research Field
+            { width: '115px', targets: [15], className: 'dt-center'},    // Software Class
             { width: '120px', targets: [14], className: 'dt-center'},   // Version Info
-            { width: '110px', targets: [6], className: 'dt-center'},    // Research Discipline
+            { width: '110px', targets: [8], className: 'dt-center'},    // Research Discipline
             { width: '180px', targets: [9], className: 'dt-center'},    // General Tags
-            { width: '300px', targets: [10,11,12,13], className: 'dt-center'}, // Software Links
-            { width: '400px', targets: [8,15], className: 'dt-center'}, // Core Features, AI Description
-            { width: '500px', targets: [7], className: 'dt-center'},    // Software Description
+            { width: '300px', targets: [5,10,12,13], className: 'dt-center'}, // Software Links
+            { width: '400px', targets: [3,4], className: 'dt-center'}, // AI Description, Core Features
+            { width: '500px', targets: [2], className: 'dt-center'},    // Software Description
         ],
     });
 
@@ -720,76 +756,77 @@ $(document).ready(function()
         }})
     })
 
+/*////////////////////////////////////////////////////////////////
+    Function for URL identification for quick access to modals //
+*///////////////////////////////////////////////////////////////
+    function getURLParameter(name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search) || [,""])[1].replace(/\+/g, '%20')) || null;
+    }
+    
 /*///////////////////////////////////////////////
     Event Listener for Software Details Modal //
 *//////////////////////////////////////////////
-    staticTable.on('click', 'a[data-target$="#softwareDetails-modal"]', function(e){
-        // Prevent webpage scrolling to top behind modal
-        e.preventDefault();
+    function showModalForSoftware(softwareName) {
+        // Find the row that matches the software name
+        staticTable.rows().every(function() {
+            var row = this.data();
+            if (row[0] === softwareName) { // Assuming the software name is in the first column
+                // Trigger the modal logic
+                var encodedSoftwareName = encodeURIComponent(softwareName);
+                $.ajax({
+                    url: "/example_use/" + encodedSoftwareName,
+                    type: "GET",
+                    success: function(response) {
+                        var useHtml = converter.makeHtml(response.use);
+                        $("#modalExampleTitle").text('Example Use for ' + softwareName);
+                        $('#modalExampleUse').html(useHtml);
+                        document.querySelectorAll('#modalExampleUse pre Code').forEach((block) => {
+                            hljs.highlightElement(block);
+                        });
 
-        // Grab the row of the clicked software 
-        const row = staticTable.row(e.target.closest('tr'));
+                        // Populate the softwareDetails modal
+                        $('#softwareDetails-modal-title').html("Software Details: " + row[0]);
+                        $('#softwareDetailsName').text(row[0]);
+                        $('#softwareDetailsRPs').text(row[1]);
+                        $('#softwareDetailsType').html(row[6]);
+                        $('#softwareDetailsClass').html(row[15]);
+                        $('#softwareDetailsField').html(row[11]);
+                        $('#softwareDetailsArea').html(row[7]);
+                        $('#softwareDetailsDiscipline').html(row[8]);
+                        $('#softwareDetailsDescription').html(makeLinkClickable(row[2]));
+                        $('#softwareDetailsWebpage').html(makeLinkClickable(row[10]));
+                        $('#softwareDetailsDocumentation').html(makeLinkClickable(row[5]));
+                        $('#softwareDetailsExamples').html(makeLinkClickable(row[12]));
+                        $('#softwareDetailsRPDocs').html(makeLinkClickable(row[13]));
+                        $('#softwareDetailsVersions').html(row[14]);
+                        $('#softwareDetailsCoreFeat').html(row[4]);
+                        $('#softwareDetailsTags').text(row[9]);
+                        $('#softwareDetailsAIDesc').text(row[3]);
 
-        // Stage the row info to be injected into the modal
-        const rowData = row.data();
-        
-        // Prevents rare situation of malforned Description spawning multiple dividers
-        if (!rowData[6].includes('<hr>'))
-        {
-            rowData[6] = rowData[6].replace('Description Source', '<hr>Description Source');
-        }
-
-        rowData[7] = rowData[7].replaceAll('<br>', '<hr>');
-        // Visually separate multiple entries with line divider
-        rowData[12] = rowData[12].replaceAll('<br>', '<hr>');
-        rowData[13] = rowData[13].replaceAll('<br>', '<hr>');
-        rowData[14] = rowData[14].replaceAll('<br>', '<hr>');
-
-        // Populate the softwareDetails modal
-        // Curated
-        $('#softwareDetails-modal-title').html("Software Details: " + rowData[0]);
-        $('#softwareDetailsName').text(rowData[0]);
-        $('#softwareDetailsRPs').text(rowData[1]);
-        $('#softwareDetailsType').html(rowData[2]);
-        $('#softwareDetailsClass').html(rowData[3]);
-        $('#softwareDetailsField').html(rowData[4]);
-        $('#softwareDetailsArea').html(rowData[5]);
-        $('#softwareDetailsDiscipline').html(rowData[6]);
-        $('#softwareDetailsDescription').html(makeLinkClickable(rowData[7]));
-        $('#softwareDetailsWebpage').html(makeLinkClickable(rowData[10]));
-        $('#softwareDetailsDocumentation').html(makeLinkClickable(rowData[11]));
-        $('#softwareDetailsExamples').html(makeLinkClickable(rowData[12]));
-        $('#softwareDetailsRPDocs').html(makeLinkClickable(rowData[13]));
-        $('#softwareDetailsVersions').html(rowData[14]);
-
-        // AI
-        $('#softwareDetailsCoreFeat').html(rowData[8]);
-        $('#softwareDetailsTags').text(rowData[9]);
-        $('#softwareDetailsAIDesc').text(rowData[15]);
-
-        // Inject Example Use into Modal
-        var softwareName = rowData[0];
-        var encodedSoftwareName = encodeURIComponent(softwareName);
-        $.ajax({
-            url: "/example_use/"+encodedSoftwareName,
-            type:"GET",
-            success: function(response){
-
-                var useHtml = converter.makeHtml(response.use)
-                $("#modalExampleTitle").text('Example Use for ' + softwareName)
-                $('#modalExampleUse').html(useHtml);
-
-                document.querySelectorAll('#modalExampleUse pre Code').forEach((block)=>{
-                    hljs.highlightElement(block)
-                })
-            },
-            error: function(xhr, status, error){
-                console.error("Error fetching example use: ", error);
+                        // Show modal
+                        $('#softwareDetails-modal').modal('show');
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching example use: ", error);
+                    }
+                });
             }
-        })
-        // Show modal
-        $('#softwareDetails-modal').modal('show');
-    })   
+        });
+    }
+
+    // Check initial URL for parameter
+    var initialSoftwareName = getURLParameter('software');
+    if (initialSoftwareName) {
+        showModalForSoftware(initialSoftwareName);
+    }
+
+    // Modify the URL when a modal is opened
+    staticTable.on('click', 'a[data-target$="#softwareDetails-modal"]', function(e) {
+        e.preventDefault();
+        var softwareName = $(this).text(); // Assuming the software name is the text of the link
+        history.pushState(null, '', '?software=' + encodeURIComponent(softwareName));
+        showModalForSoftware(softwareName);
+    });
 });
 
 /*//////////////////////////////

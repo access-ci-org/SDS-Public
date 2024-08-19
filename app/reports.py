@@ -6,10 +6,10 @@ from datetime import datetime
 #       Processing for 'Report Issue' button functionality, #
 #       allowing users to report problems to the team       #
 #       Parameters:                                         #
-#           issue_report: contents of AJAX call             #
+#           issue_report {JSON}: contents of AJAX call      #
 #       Return:                                             #
-#           report: finished user report, ready to send     #
-#                   to the server                           #
+#           report {dict}: finished user report, ready to   #
+#                   send to the server                      #
 #############################################################
 def sanitize_and_process_reports(issue_report):
     # Get user-submitted feedback from modal

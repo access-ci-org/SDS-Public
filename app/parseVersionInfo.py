@@ -6,6 +6,8 @@ RP_NAMES = [
     'jetstream', 'kyric', 'ookami', 'stampede-3'
 ]
 
+KNOWN_NESTED_SOFTWARES = [ 'ai' ]
+
 # Skip RPs that don't currently have spider outputs
 SKIPPED_RPS = {'DARWIN'}
 
@@ -15,15 +17,15 @@ SPIDER_POSTFIX = '_spider_output.txt'
 OUTPUT_DIRECTORY = './data/CSV/versionInfo.csv'
 
 
-#################################################################
-#   parse_version_info                                          #
-#       Converts a module_spider line into a formatted tuple    #
-#       Args:                                                   #
-#           line: single line taken from a module_spider file   #
-#       Return:                                                 #
-#           software: software name                             #
-#           versions: cleaned up version information as a list  #
-#################################################################
+#############################################################################
+#   parse_version_info                                                      #
+#       Converts a line from module_spider output into a formatted tuple    #
+#       Args:                                                               #
+#           line {string}: single line taken from a module_spider file      #
+#       Return:                                                             #
+#           software {string}: software name                                #
+#           versions {list}: cleaned up version information                 #
+#############################################################################
 def parse_version_info(line):
     # Split the input into two parts for processing
     software, versions = line.split(": ") 
@@ -38,16 +40,16 @@ def parse_version_info(line):
     return software, versions
 
 
-#########################################################################
-#   spider_to_dictionary                                                #
-#       Creates a Dictionary from a module_spider file                  #
-#       Args:                                                           #
-#           input_file: single module_spider file                       #
-#       Functions:                                                      #
-#           parse_version_info: Processing per line of the file         #
-#       Return:                                                         #
-#           version_info_dict: Dictionary of software:version tuples    #           
-#########################################################################
+#####################################################################
+#   spider_to_dictionary                                            #
+#       Creates a Dictionary from a module_spider file              #
+#       Args:                                                       #
+#           input_file {file}: single module_spider file            #
+#       Functions:                                                  #
+#           parse_version_info: Processing per line of the file     #
+#       Return:                                                     #
+#           version_info_dict {dict}: Software : Version tuples     #           
+#####################################################################
 def spider_to_dictionary(input_file):
     version_info_dict = {}
     with open(input_file, 'r') as infile:
@@ -58,7 +60,23 @@ def spider_to_dictionary(input_file):
                 # Strip off whitespace from tuple                        
                 software, versions = parse_version_info(line.strip()) 
                 # Add tuple to dictionary  
-                version_info_dict[software] = versions                  
+                version_info_dict[software] = versions  
+
+
+                # For Bridges-2 Nested Softwares inside Modules
+                if software in KNOWN_NESTED_SOFTWARES:
+                    # Split into individual softwares
+                    versions = versions.split(",")
+                    for version in versions:
+                        # Grab software name
+                        softwareName = version.split("-")[0].strip()
+                        # Sanitize software name
+                        softwareName = softwareName.split("_")[0].strip()
+                        # Sanitize version info
+                        softwareVersion = version.split("-")[1].strip()
+                        # Add to dictionary
+                        version_info_dict[softwareName] = softwareVersion
+
         infile.close()
         return version_info_dict
 
@@ -69,7 +87,7 @@ def spider_to_dictionary(input_file):
 #       Functions:                                                  #
 #           spider_to_dictionary: Create individual RP Dictionaries #
 #       Return:                                                     #
-#           rp_dict: Dictionary -> {RP Name:RP Dictionary}          #
+#           rp_dict {dict}: Dictionary of {RP Name : RP Dictionary} #
 #####################################################################
 def generate_rp_dictionaries():
     rp_dict = {}
@@ -90,7 +108,8 @@ def generate_rp_dictionaries():
 #       Functions:                                                  #
 #           generate_RP_dictionaries: Create Dictionary per RP      #
 #       Return:                                                     #
-#           df: DataFrame with Combined Version Info                #
+#           df {pandas.DataFrame}: DataFrame with Combined          #
+#                Version Info                                       #
 #####################################################################
 def convert_rp_dict_to_df():
     combined_VI_dict = {}
