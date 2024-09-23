@@ -368,3 +368,7 @@ button.dt-button.buttons-print {
     border: 3px #0a404980 outset !important;
     border-radius: 5px;
 }
+
+#softwareTable {
+    display: none;  /* Table is initially hidden to save load times*/
+  }

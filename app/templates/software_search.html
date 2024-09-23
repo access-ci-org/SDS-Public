@@ -7,17 +7,19 @@
     
     <!-- DataTable Behaviors -->
     <script type="module" src="{{url_for('static', filename='js/table.js')}}"></script>
-    <!-- lastUpdated Timestamp -->
-    <script type="module" src="{{url_for('static', filename='js/lastUpdated.js')}}"></script>
     <!-- Report/Feedback Buttons --> 
     <script type="module" src="{{url_for('static', filename='js/issueReporting.js')}}"></script>
     <!-- Report Instructions Alert Messagebox -->    
     <script type="module" src="{{url_for('static', filename='js/alerts.js')}}"></script>
+    <!--  -->
+    <script type="module" src="{{url_for('static', filename='js/navbarFooter.js')}}"></script>
+    <!--  -->
+    <script type="module" src="{{url_for('static', filename='js/modals/softwareDetailsModal.js')}}"></script>
+    <!--  -->
+    <script type="module" src="{{url_for('static', filename='js/modals/exampleUseModal.js')}}"></script>
     
 {% endblock %}
 
-
-{% set url = url_for(request.endpoint)%}
 {%block page_title %}
 <div style="text-align: center;">
     <br>
@@ -29,6 +31,11 @@
 
 {% block app_content %}
 
+<script>
+// set columnMap var so JS files can use it
+    var columnMap = '{{ column_map|tojson }}'
+</script>
+
 <div class="table-responsive table-container">
     <div class="table-responsive" id="softwareTableDiv" style="width: 85vw;">
         {{table|safe}}
@@ -36,7 +43,7 @@
 </div>
 
 <div>
-    <strong>Last Updated: <span id="lastUpdated"></span></strong>
+    <strong>Last Updated: <span id="lastUpdated"> {{last_updated}}</span></strong>
 </div>
     
 {% include '/modals/exampleUseModal.html' %}

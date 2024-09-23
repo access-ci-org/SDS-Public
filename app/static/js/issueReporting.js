@@ -226,7 +226,12 @@ $("#sendReportBtn").on('click', function()
       },
       error: function(xhr, status, error) 
       {
+        $('#report-modal').modal('hide');
         console.error('Error reporting issue:', error);
+        if (xhr.responseText){
+          var errorResponse = JSON.parse(xhr.responseText)
+          console.error('Server error message:', errorResponse.error)
+        }
         showAlert('Failed to report issue. Please try again.', 'danger');
       }
     });
@@ -250,7 +255,7 @@ $("#sendFeedbackBtn").on('click', function()
   {
     url: '/user-feedback',
     type: 'POST',
-    data: JSON.stringify({ feedbackForm: userFeedback }), // There's no cell data for this report, only what the user types into the form
+    data: JSON.stringify({ feedback: userFeedback }), // There's no cell data for this report, only what the user types into the form
     contentType: 'application/json',
     success: function(response) 
     {
@@ -259,7 +264,12 @@ $("#sendFeedbackBtn").on('click', function()
     },
     error: function(xhr, status, error) 
     {
+      $('#report-modal').modal('hide');
       console.error('Error sending feedback:', error);
+      if (xhr.responseText){
+        var errorResponse = JSON.parse(xhr.responseText)
+        console.error('Server error message:', errorResponse.error)
+      }
       showAlert('Failed to send feedback. Please try again.', 'danger');
     }
   });

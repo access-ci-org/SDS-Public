@@ -2,8 +2,6 @@
 .vscode/
 env/
 __pycache__/
-logic/__pycache__/
-models/__pycache__/
 sqlite_db.db
 venv/
 formInfo.log
@@ -11,4 +9,6 @@ formInfo.log
 queryInfo.log
 reports/
 app/reports/
+!app/logic/reports
 app/feedback
+api_response.json

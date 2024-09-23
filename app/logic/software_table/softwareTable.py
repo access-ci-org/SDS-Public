@@ -4,9 +4,9 @@ import os
 import pandas as pd
 import numpy as np
 
-from app.makeRPDocLinks import create_full_doc_url
-from app.parseVersionInfo import add_version_info_to_table
-from app.parseJSONInfo import json_sanitizer
+from app.logic.software_table.makeRPDocLinks import create_full_doc_url
+from app.logic.software_table.parseVersionInfo import add_version_info_to_table
+from app.logic.software_table.parseJSONInfo import json_sanitizer
 
 CURATED_INPUT_DIRECTORY = './data/CSV/ACCESS_Software.csv'
 CURATED_OUTPUT_DIRECTORY = './data/CSV/staticTable.csv'
