@@ -5,6 +5,7 @@ from app.logic.reports.feedback import sanitize_and_process_feedback, save_user_
 from app.logic.example_use import find_example_use
 from app.logic.software_table.softwareTable import create_software_table
 from app.logic.lastUpdated import get_last_updated
+from app.logic.convert_markdown import convert_markdown_to_html
 import re
 
 import pandas as pd
@@ -38,10 +39,13 @@ def software_search():
 def get_example_use(software_name):
     
     example_use = find_example_use(software_name)
+
     if example_use:
-        return (jsonify({"use": example_use}))
-    
-    return (jsonify({"use": '**Unable to find use case record**'}))
+        example_use_html = convert_markdown_to_html(example_use)
+    else:
+        example_use_html = convert_markdown_to_html('**Unable to find use case record**')
+
+    return (jsonify({"use": example_use_html}))
 
 # 'Report Issue' Button Route
 @app.route("/report-issue", methods=['POST'])

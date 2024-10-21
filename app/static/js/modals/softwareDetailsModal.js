@@ -1,6 +1,5 @@
-import { converter } from "./exampleUseModal.js";
 import { makeLinkClickable } from "../table.js";
-
+import { COLUMN_MAP } from "../table.js";
 
 /*////////////////////////////////////////////////////////////////
     Function for URL identification for quick access to modals //
@@ -23,31 +22,28 @@ export function showModalForSoftware(softwareName, staticTable) {
                 url: "/example_use/" + encodedSoftwareName,
                 type: "GET",
                 success: function(response) {
-                    var useHtml = converter.makeHtml(response.use);
+                    var useHtml = response.use;
                     $("#modalExampleTitle").text('Example Use for ' + softwareName);
                     $('#modalExampleUse').html(useHtml);
-                    document.querySelectorAll('#modalExampleUse pre Code').forEach((block) => {
-                        hljs.highlightElement(block);
-                    });
 
                     // Populate the softwareDetails modal
                     $('#softwareDetails-modal-title').html("Software Details: " + row[0]);
-                    $('#softwareDetailsName').text(row[0]);
-                    $('#softwareDetailsRPs').text(row[1]);
-                    $('#softwareDetailsType').html(row[6]);
-                    $('#softwareDetailsClass').html(row[15]);
-                    $('#softwareDetailsField').html(row[11]);
-                    $('#softwareDetailsArea').html(row[7]);
-                    $('#softwareDetailsDiscipline').html(row[8]);
-                    $('#softwareDetailsDescription').html(makeLinkClickable(row[2]));
-                    $('#softwareDetailsWebpage').html(makeLinkClickable(row[10]));
-                    $('#softwareDetailsDocumentation').html(makeLinkClickable(row[5]));
-                    $('#softwareDetailsExamples').html(makeLinkClickable(row[12]));
-                    $('#softwareDetailsRPDocs').html(makeLinkClickable(row[13]));
-                    $('#softwareDetailsVersions').html(row[14]);
-                    $('#softwareDetailsCoreFeat').html(row[4]);
-                    $('#softwareDetailsTags').text(row[9]);
-                    $('#softwareDetailsAIDesc').text(row[3]);
+                    $('#softwareDetailsName').text(row[COLUMN_MAP['Software']]);
+                    $('#softwareDetailsRPs').text(row[COLUMN_MAP["RPName"]]);
+                    $('#softwareDetailsType').html(row[COLUMN_MAP["SoftwareType"]]);
+                    $('#softwareDetailsClass').html(row[COLUMN_MAP["SoftwareClass"]]);
+                    $('#softwareDetailsField').html(row[COLUMN_MAP["ResearchField"]]);
+                    $('#softwareDetailsArea').html(row[COLUMN_MAP["ResearchArea"]]);
+                    $('#softwareDetailsDiscipline').html(row[COLUMN_MAP["ResearchDiscipline"]]);
+                    $('#softwareDetailsDescription').html(makeLinkClickable(row[COLUMN_MAP["SoftwareDescription"]]));
+                    $('#softwareDetailsWebpage').html(makeLinkClickable(row[COLUMN_MAP["SoftwaresWebPage"]]));
+                    $('#softwareDetailsDocumentation').html(makeLinkClickable(row[COLUMN_MAP["SoftwareDocumentation"]]));
+                    $('#softwareDetailsExamples').html(makeLinkClickable(row[COLUMN_MAP["ExampleSoftwareUse"]]));
+                    $('#softwareDetailsRPDocs').html(makeLinkClickable(row[COLUMN_MAP["RPSoftwareDocumentation"]]));
+                    $('#softwareDetailsVersions').html(row[COLUMN_MAP["VersionInfo"]]);
+                    $('#softwareDetailsCoreFeat').html(row[COLUMN_MAP["CoreFeatures"]]);
+                    $('#softwareDetailsTags').text(row[COLUMN_MAP["GeneralTags"]]);
+                    $('#softwareDetailsAIDesc').text(row[COLUMN_MAP["AIDescription"]]);
 
                     // Show modal
                     $('#softwareDetails-modal').modal('show');

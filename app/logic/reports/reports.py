@@ -68,7 +68,7 @@ def save_user_report(issue_report):
         with open(report_file, 'w') as f:
             json.dump(issue_report, f, indent=4)
         
-        return False
+        return True
     
     except Exception as e:
         print(e)
