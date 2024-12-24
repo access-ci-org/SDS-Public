@@ -45,6 +45,9 @@ $(document).ready(function()
                         <"d-flex px-3"B>\
                     >\
                     <"d-flex justify-content-between align-items-center flex-grow-1"\
+                        <"#toggleSearchTools">\
+                    >\
+                    <"d-flex justify-content-between align-items-center flex-grow-1"\
                         <"d-flex justify-content-start">\
                         <"d-flex scrollText-div">\
                     f>\
@@ -93,6 +96,7 @@ $(document).ready(function()
                 popoverTitle: 'Show/Hide Columns',
             },
                 'colvisRestore',
+                
             /*{
                 extend: 'collection',
                 text: 'Export',
@@ -569,6 +573,7 @@ $(document).ready(function()
             { width: '500px', targets: [COLUMN_MAP["SoftwareDescription"]], className: 'dt-center'},
         ],
         initComplete: function() {
+            $('#toggleSearchTools').html(`<button id="toggleFiltersButton" class="dtsp-toggleButton">Show Search Tools</button>`)
             $('.scrollText-div').html("Hover your mouse to the edge of the table to scroll");
             $('#softwareTable').show(); // show the table (it is initially hidden to save load time)
             var table = this.api();
@@ -746,3 +751,21 @@ export function makeLinkClickable(data)
         return '<a href="' + url + '" target="_blank">' + spacedUrl + '</a>';
     });
 }
+
+/*///////////////////////////////////////////////////////////////
+    Creates the Button to Hide/Show the Search Panes //
+*//////////////////////////////////////////////////////////////
+
+$(document).ready(function() {
+    // Initially hide the search panes
+    $('.dtsp-panesContainer , .dtsb-searchBuilder').addClass('d-none');
+
+    $('#toggleFiltersButton').on('click', function() {
+        // Toggle visibility of the elements
+        $('.dtsp-panesContainer , .dtsb-searchBuilder').toggleClass('d-none');
+
+        // Toggle button text between "Show Filters" and "Hide Filters"
+        const buttonText = $(this).text() === 'Show Search Tools' ? 'Hide Search Tools' : 'Show Search Tools';
+        $(this).text(buttonText);
+    });
+});

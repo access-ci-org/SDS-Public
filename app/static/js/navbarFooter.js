@@ -1,4 +1,4 @@
-import {header, siteMenus, footer, footerMenus, universalMenus} from "https://esm.sh/@access-ci/ui@0.2.0"
+import {header, siteMenus, footer, footerMenus, universalMenus} from "https://esm.sh/@access-ci/ui@0.3.1"
 
 export const siteItems = [{
     name: "ACCESS Resource Advisor",

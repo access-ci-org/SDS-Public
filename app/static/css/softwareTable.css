@@ -197,7 +197,8 @@ div.dtsp-panesContainer div.dtsp-searchPanes div.dtsp-searchPane {
 /* SearchPanes Visbility Buttons */
 .dtsp-collapseAll,
 .dtsp-showAll,
-.dtsp-clearAll{
+.dtsp-clearAll,
+#toggleFiltersButton {
     background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
     background-color: #1a5b6e !important;
     color: white;
@@ -209,7 +210,9 @@ div.dtsp-panesContainer div.dtsp-searchPanes div.dtsp-searchPane {
     padding-left: 18px !important;
     padding-right: 17px !important;
     margin: 2px;
+
 }
+
 div.dtsp-panesContainer button.dtsp-collapseAll.dtsp-disabledButton,
 div.dtsp-panesContainer button.dtsp-showAll.dtsp-disabledButton,
 div.dtsp-panesContainer button.dtsp-clearAll.dtsp-disabledButton{
@@ -218,12 +221,16 @@ div.dtsp-panesContainer button.dtsp-clearAll.dtsp-disabledButton{
     border: 3px #144655 inset !important;
     color: rgba(255, 255, 255, 0.5);
 }
+
+
 .dtsp-collapseAll:hover,
 .dtsp-showAll:hover,
-.dtsp-clearAll:hover{
+.dtsp-clearAll:hover,
+#toggleFiltersButton:hover{
     background-color: rgb(90, 143, 161) !important;
     border-radius: 4px !important;
 }
+
 
 div.dtsp-topRow{
     background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
