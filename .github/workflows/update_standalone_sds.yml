@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout public repository 
-        uses: actions/ceckout@v3
+        uses: actions/checkout@v3
         with:
           ref: stand-alone
 
