@@ -29,13 +29,16 @@ jobs:
         run: |
           rclone sync ../stand-alone-private/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**' --exclude='.gitattributes' --exclude='TODOS.md'
           rm -r ../stand-alone-private
-      
+
       - name: Commit and push changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           git commit -m "Update from private repo"
-          git push origin stand-alone
+          # Add public repo as teh target
+          git remote add SDS-Public https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git
+          git fetch 
+          git push SDS-Public stand-alone:stand-alone
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
