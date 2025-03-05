@@ -37,8 +37,8 @@ jobs:
           git add .
           git commit -m "Update from private repo"
           # Add public repo as teh target
-          git remote add SDS-Public https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/SDS-Public
-          git fetch 
+          git remote add SDS-Public https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/SDS-Public.git
+          git fetch SDS-Public
           git push SDS-Public stand-alone:stand-alone
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
