@@ -1,0 +1,41 @@
+name: Update Standalone SDS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update-standalone-public-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout public repository 
+        uses: actions/ceckout@v3
+        with:
+          ref: stand-alone
+
+      - name: Clone private repository
+        run: |
+          mkdir -p ../stand-alone-private
+          git clone -b stand-alone https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/ACCESS-SDS.git ../stand-alone-private
+
+      - name: Install rclone
+        run: |
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Sync files
+        # exclude the .git directory
+        # exclude the .github directory because it would overwrite this github action as well
+        # Remove the private-sds-repo directory just in case it tries to push that directory as well
+        run: |
+          rclone sync ../private-sds-repo/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**' --exclude='.gitattributes' --exclude='TODOS.md'
+          rm -r ../private-sds-repo
+      
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "Update from private repo"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
