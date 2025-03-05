@@ -30,7 +30,7 @@ jobs:
       # exclude readme. Since this is a public-facing repo, it will have a different readme with less technical info
       # Remove the private-sds-repo directory just in case it tries to push that directory as well
       run: |
-        rclone sync ../private-sds-repo/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**'
+        rclone sync ../private-sds-repo/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**' --exclude='xdmod/**' --exclude'confluence/**'
         rm -r ../private-sds-repo
 
     - name: Commit and push changes
