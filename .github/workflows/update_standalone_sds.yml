@@ -25,10 +25,10 @@ jobs:
       - name: Sync files
         # exclude the .git directory
         # exclude the .github directory because it would overwrite this github action as well
-        # Remove the private-sds-repo directory just in case it tries to push that directory as well
+        # Remove the stand-alone-private directory just in case it tries to push that directory as well
         run: |
-          rclone sync ../private-sds-repo/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**' --exclude='.gitattributes' --exclude='TODOS.md'
-          rm -r ../private-sds-repo
+          rclone sync ../stand-alone-private/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**' --exclude='.gitattributes' --exclude='TODOS.md'
+          rm -r ../stand-alone-private
       
       - name: Commit and push changes
         run: |
