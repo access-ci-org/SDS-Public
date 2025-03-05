@@ -1,17 +1,16 @@
 name: Update Standalone SDS
-
 on:
   workflow_dispatch:
-
 jobs:
   update-standalone-public-branch:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout public repository 
+      - name: Checkout public repository
         uses: actions/checkout@v3
         with:
           ref: stand-alone
+          repository: access-ci-org/SDS-Public
+          token: ${{ secrets.PAT }}
 
       - name: Clone private repository
         run: |
@@ -35,10 +34,7 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
-          git commit -m "Update from private repo"
-          # Add public repo as teh target
-          git remote add SDS-Public https://sandesh-l:${{ secrets.PAT }}@github.com/access-ci-org/SDS-Public.git
-          git fetch SDS-Public
-          git push SDS-Public stand-alone:stand-alone
+          git commit -m "Update from private repo" || echo "No changes to commit"
+          git push origin stand-alone
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
