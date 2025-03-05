@@ -152,8 +152,9 @@ colored_echo "Conda env configs updated"
 
 # Activate the virtual environment
 colored_echo "Activating your new virtual environment..."
-conda activate $ENV_NAME
+conda run -n  $ENV_NAME
 check_status
+conda activate $ENV_NAME
 colored_echo "Virtual environment '$ENV_NAME' activated"
 
 colored_echo "Installing Requirements..."

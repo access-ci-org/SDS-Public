@@ -1,6 +1,9 @@
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, Any
+from app.models.userReports import UserReports
 import json
+
 
 #############################################################
 #   define_and_process_reports                              #
@@ -12,36 +15,32 @@ import json
 #           report {dict}: finished user report, ready to   #
 #                   send to the server                      #
 #############################################################
-def sanitize_and_process_reports(issue_report):
-    # Get user-submitted feedback from modal
-    user_form = issue_report.get('formReport', '')
-    
-    # Store reportDetails from issueReporting.py into report_details
-    report_details = issue_report['reportDetails']
+def sanitize_and_process_reports(
+    issue_report: Dict[str, Any], report_type: str
+) -> Dict[str, Any]:
 
     # Generate timestamp
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Separate report_details into its component parts                  
-    page_url = report_details['pageUrl']
-    element_type = report_details.get('elementType', '')
-    element_class = report_details.get('elementClass', '')
-    element_text = report_details.get('elementText', '')
-    table_cell_info = report_details.get('tableCellInfo', {})
-    custom_issue = report_details.get('customIssue', '')
-
     # Create the report to be submitted
+    if report_type == "feedback":
+        report = {
+            "datetime": current_datetime,
+            "user_message": issue_report.get("userMessage", ""),
+            "report_type": report_type,
+        }
+        return report
+
     report = {
         "datetime": current_datetime,
-        "pageUrl": page_url,
-        "elementType": element_type,
-        "elementClass": element_class,
-        "elementText": element_text,
-        "tableCellInfo": table_cell_info,
-        "userForm": user_form,
-        "customIssue": custom_issue,
+        "user_message": issue_report.get("userMessage", ""),
+        "element_text": issue_report.get("cellText", ""),
+        "row_name": issue_report.get("rowName", ""),
+        "row_index": issue_report.get("rowIndex", ""),
+        "column_name": issue_report.get("columnName", ""),
+        "column_index": issue_report.get("columnIndex", ""),
+        "report_type": report_type,
     }
-
     return report
 
 
@@ -56,21 +55,34 @@ def sanitize_and_process_reports(issue_report):
 #       True{bool}: If report was successfully saved                    #
 #       False{bool}: If there was an error saving the report            #
 #########################################################################
-def save_user_report(issue_report):
-    
-    try:
-        # cwd Returns the current working directory. 
-        # In our case it returns the cwd of where the application was run from (the app dir) not this .py file
-        report_folder = Path.cwd() / "reports" / issue_report['datetime'] # create a path object for new feedback location
-        report_folder.mkdir(parents=True, exist_ok=True)
-        report_file = report_folder / "report.json"
+def save_user_report(issue_report: Dict[str, Any]) -> bool:
 
-        with open(report_file, 'w') as f:
+    try:
+        report_type = issue_report["report_type"]
+
+        report_folder = (
+            Path.cwd() / report_type / issue_report["datetime"]
+        )  # create a path object for new feedback location
+        report_folder.mkdir(parents=True, exist_ok=True)
+        report_file = report_folder / f"{report_type}.json"
+
+        with open(report_file, "w") as f:
             json.dump(issue_report, f, indent=4)
-        
+
+        issue_report["datetime"] = datetime.strptime(
+            issue_report["datetime"], "%Y-%m-%d_%H-%M-%S"
+        )
+        UserReports.create(**issue_report)
+
         return True
-    
+
+    except KeyError:
+        print(
+            f"Improperly formatted issue_report. One or multiple keys missing: \n{issue_report}"
+        )
+        return False
+
     except Exception as e:
         print(e)
-        
+
         return False

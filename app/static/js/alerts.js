@@ -9,8 +9,8 @@ export function showAlert(alertMsg, alertType)
     $("#alert-div").append(     // Appends new alert to html element with ID: alert-div 
         `<div class="alert alert-${alertType} alert-dismissible fade show" id="alert" role="alert">
             ${alertMsg}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true"></span>
             </button>
         </div>`
         // Dynamic Bootstrap Alert based on ${alertType}

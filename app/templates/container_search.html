@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+    {{super()}}
+    <script type="module" src="{{url_for('static', filename='js/container_search.js')}}"></script>
+{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    <link rel="stylesheet" type="text/css" href="../static/css/container_search.css">
+
+{% endblock%}
+
+{% block page_title %}
+<div style="text-align: center;">
+    <br>
+    <h2 id="page_title">Container Search</h2>
+    <br>
+</div>
+{% endblock %}
+
+{% block app_content %}
+    <script>
+        const container_data = '{{ container_data|tojson }}'
+    </script>
+
+    <div class="search-container">
+        <div class="mb-4">
+            <div class="position-relative">
+                <div class="input-group mb-3">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <div class="search-input-container">
+                        <div id="tagContainer" class="tag-container"></div>
+                        <input type="text" id="searchInput" class="search-input" placeholder=" Search containers or software...">
+                    </div>
+                    <select id="resourceSelect" class="form-select">
+                        <option value="all">All Resources</option>
+                        {% for resource in resources %}
+                            <option value="{{ resource }}">{{ resource }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="masonry-grid" id="containerGrid">
+            <!-- Container cards will be inserted here -->
+        </div>
+    </div>
+
+{% include '/modals/containerDetailsModal.html' %}
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block page_title%}
+    <div style="text-align: center;">
+        <br>
+        <h2 id="page_title">Login</h2>
+        <br>
+    </div>
+{% endblock %}
+
+{% block app_content %}
+    <form id="loginForm" method="post" role="form" action="{{url_for('auth.login')}}">
+        <div class="mb-3">
+            <input type="text" class="form-control" id="username" placeholder="Username" name="username" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" class="form-control" id="password" placeholder="Password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+{% endblock %}

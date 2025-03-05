@@ -1,0 +1,22 @@
+.draggable-row {
+    cursor: move;
+}
+
+.dragging {
+    opacity: 0.5;
+}
+
+.insertion-point {
+    height: 0;
+    margin: 0;
+    border: none;
+    transition: all 0.2s;
+}
+
+.insertion-point.active {
+    height: 20px;
+    margin: 10px 0;
+    background: rgba(13, 110, 253, 0.1);
+    border: 2px dashed #0d6efd;
+    border-radius: 4px;
+}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+    {{super()}}
+    <script type="module" src="{{url_for('static', filename='js/viewReports.js')}}"></script>
+{% endblock %}
+
+{% block page_title %}
+<div style="text-align: center;">
+    <br>
+    <h2 id="page_title">User Reports</h2>
+    <br>
+</div>
+{% endblock %}
+
+{%block app_content %}
+
+{%if user_reports%}
+{% set table_headers = user_reports[0].keys()%}
+{% endif %}
+{% set remove_cols = ['id', 'resolved']%}
+
+<table id="report-table" class="table table-hover table-bordered">
+    <thead style="background: var(--primary-color); color:white">
+        <th>Resolved</th>
+        {% for header in table_headers %}
+            {%if not header in remove_cols%}
+                <th scope="col" class="dt-center">{{header}}</th>
+            {%endif%}
+        {% endfor %}
+    </thead>
+    <tbody>
+        {% for report in user_reports%}
+            <tr>
+                <td>
+                    <input type="checkbox" class="resolve-checkbox" data-report-id="{{ report.id }}" {% if report.resolved %}checked{% endif %}>
+                </td>
+                {% for header in table_headers%}
+                    {%if not header in remove_cols%}
+                        <td>{{report[header]}}</td>
+                    {%endif%}
+                {% endfor %}
+            </tr>
+        {% endfor%}
+    </tbody>
+</table>
+{%endblock%}

@@ -1,0 +1,10 @@
+all
+.
+y
+activate
+deactivate
+config
+add
+pipconfig.txt
+add-apt-repository
+software-properties-common

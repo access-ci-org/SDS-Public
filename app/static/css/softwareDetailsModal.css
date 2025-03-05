@@ -10,26 +10,26 @@
     display:flex;
     flex-direction: column;
     width: auto;
-    border:#154e5fee 4px solid;
+    border:black 4px solid;
 }
 .softwareDetailsModal .modal-header{
-    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
-    border: 3px #154e5fd5 solid;
+    background: var(--secondary-color) !important;
+    border: 3px var(--secondary-color) solid;
     border-radius: 5px;
 }
 .softwareDetailsModal .modal-body{
     padding: 0;
-    background-color: #1a5b6e;
+    background-color: color-mix(in srgb, var(--secondary-color) 50%, black);
     font-size:1em;
-    border: 1px #144352 solid;
+    border: 1px color-mix(in srgb, var(--primary-color) 100%, black) solid;
 }
 
 /* Custom class to format collapsable columns*/
 #softwareDetailsBody .borderColumn{
-    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
-    background-color:#1a5b6e !important;
+    background: var(--secondary-color) !important;
+    background-color:var(--secondary-color) !important;
     color:white;
-    border: 3px #154e5fd5 solid;
+    border: 3px color-mix(in srgb, var(--primary-color) 90%, black) solid;
     border-radius: 6px;
     font-size:1.03em;
     padding-top:15px;
@@ -40,10 +40,10 @@
 }
 /* Custom class for 'Example Use' */
 #softwareDetailsBody .borderExample{
-    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%) !important;
-    background-color:#1a5b6e !important;
+    background:var(--secondary-color)!important;
+    background-color:var(--secondary-color) !important;
     color:white;
-    border: 3px #154e5fd5 solid;
+    /* border: 3px color-mix(in srgb, var(--primary-color) 90%, black) solid; */
     border-radius: 6px;
     font-size:1.04em;
     padding-top:15px;
@@ -54,23 +54,34 @@
 }
 /* Custom class for collapsable row headers */
 #softwareDetailsBody .borderCell{
-    background-color:#1a5b6e;
+    background-color:var(--secondary-color);
     cursor:pointer;
     color:white;
-    border: 3px #154e5fd5 solid;
     border-radius: 6px;
 }
+#softwareDetailsBody .row{
+    border: 3px color-mix(in srgb, var(--secondary-color) 50%, black) solid;
+}
+
 /* Custom class for collapsable row data */
 #softwareDetailsBody .borderValue{
-    background-color:#107180;
+    background-color:color-mix(in srgb, var(--secondary-color) 70%, white);
+    /* margin-top: 0.25rem; */
+    /* margin-bottom: 0.25rem; */
     color:white;
-    border: 3px #0c5a66d5 solid;
     border-radius: 6px;
+    display: flex;
+    align-items: center;
 
 }
 /* Increase contrast of links inside softwareDetails modal */
 #softwareDetailsBody a {
-    color: #adfbff;
+     color: white;
+}
+/* Adjust apdding for text elements */
+#softwareDetailsBody p {
+    margin-top: 0.3rem;
+    margin-bottom: 0.3rem;
 }
 /* Line Spacer inside Modal */
 #softwareDetailsBody hr{
@@ -78,5 +89,5 @@
     height:1px;
     margin-top: 4px;
     margin-bottom: 4px;
-    background-color:#0c5a66d5;
+    /* background-color:#0c5a66d5; */
 }

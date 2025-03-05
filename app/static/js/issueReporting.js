@@ -11,16 +11,8 @@ var issueReport = {}        // Report Object
 var reportingIssue = false; // State Controller
 var selectedElement = null; // Event Target
 
-/*////////////
-  Functions //
-*/////////////
-
 // EVENT HANDLERS //
 ////////////////////
-
-//function handleClick(event){}
-// Mouse Click Event Listener
-// This functionality is implemented elsewhere now
 
 function handleMouseMove(event)
 // Mouse Movement Event Listener
@@ -118,13 +110,7 @@ function handleIssueReportClick(event)
     event.stopPropagation();  // Prevents Event Propagation, meaning one Event (in this case, clicking) will not trigger other Event Listeners
     $('body').off('mousemove', handleMouseMove); // Disable 'handleMouseMove' event (i.e. Stop drawing outline/don't update Target)
 
-    // Prepare Page URL
-    var pageUrl = window.location.href;
 
-    // Capture Table Metadata                  
-    var elementType = selectedElement.tagName.toLowerCase();
-    //var elementId = selectedElement.id;                       // Do we have unique IDs per element?                   
-    var elementClass = selectedElement.className;
     var elementText = $(selectedElement).text().trim();       // Content of Target Element, Trimmed of Whitespace
 
     // Prepare an Object to capture Table Cell information
@@ -136,7 +122,6 @@ function handleIssueReportClick(event)
     var $table = $row.closest('table');
 
     // Stage Cell Metadata 
-    var tableId = $table.attr('id');
     var rowIndex = $row.index();
     var columnIndex = $cell.index();
     var rowName = $row.find('td:first-child').text().trim();
@@ -145,32 +130,16 @@ function handleIssueReportClick(event)
     // Create a tableCellInfo Object
     tableCellInfo = 
     {
-        tableId: tableId,
-        rowIndex: rowIndex,
-        columnIndex: columnIndex,
-        rowName: rowName,
-        columnName: columnName
-    };
-
-    // Create an issueReport Object from Table Metadata and Cell Metadata
-    issueReport = 
-    {
-      pageUrl: pageUrl,
-      elementType: elementType,
-      //elementId: elementId,
-      elementClass: elementClass,
-      elementText: elementText,
-      tableCellInfo: tableCellInfo,
+      rowName: rowName,
+      rowIndex: rowIndex,
+      columnName: columnName,
+      columnIndex: columnIndex,
+      elementText: elementText
     };
 
     // Create a formatted string for the report details
     var reportDetails = 
-      "Page URL: " + issueReport.pageUrl + "\n" +
-      "Element Type: " + issueReport.elementType + "\n" +
-      //"Element ID: " + issueReport.elementId + "\n" +
-      "Element Class: " + issueReport.elementClass + "\n" +
-      "Element Text: " + issueReport.elementText + "\n" +
-      "Table Cell Info: " + JSON.stringify(issueReport.tableCellInfo, null, 2);
+    "Table Cell Info: " + JSON.stringify(tableCellInfo, null, 2)
     
     // Place reportDetails Object information into reportDetails Element
     $("#reportDetails").text(reportDetails);
@@ -178,6 +147,7 @@ function handleIssueReportClick(event)
     // Display Modal containing reportDetails element
     $("#report-modal").modal('show');
 
+    issueReport = {elementText: elementText, ...issueReport, ...tableCellInfo}
     // Finish Reporting Routine
     exitReportingState();
   }
@@ -206,7 +176,7 @@ $("#reportIssueBtn").on('click',function(event)
 // >Inside 'Report Issue' Modal
 $("#sendReportBtn").on('click', function() 
 {
-    var userForm = $('#reportFeedback').val();
+    var userMessage = $('#reportFeedback').val();
 
     // In jQuery, AJAX exchanges data with a server
     // In this case, we're packaging the bug report and sending it to our server for manual review
@@ -214,7 +184,7 @@ $("#sendReportBtn").on('click', function()
     {
       url: '/report-issue',                                                         // Where the report goes (server endpoint)
       type: 'POST',                                                                 // POST-request: data sent TO server (create or update)
-      data: JSON.stringify({ formReport: userForm, reportDetails: issueReport }),   // Combining everything into a JSON file { field: value }
+      data: JSON.stringify({ userMessage: userMessage, ...issueReport }),   // Combining everything into a JSON file { field: value }
       contentType: 'application/json',                                              // Telling the server to expect a JSON file
       success: function(response) 
       {
@@ -223,6 +193,7 @@ $("#sendReportBtn").on('click', function()
         // Clear Objects
         issueReport = {};
         $("#reportDetails").text(' ');
+        $("#reportFeedback").val('');
       },
       error: function(xhr, status, error) 
       {
@@ -249,18 +220,19 @@ $("#provideFeedbackBtn").on('click', function()
 // >Inside 'Provide Feedback' Modal
 $("#sendFeedbackBtn").on('click', function() 
 {
-  var userFeedback = $("#provideFeedback").val();
+  var userMessage = $("#provideFeedback").val();
 
   $.ajax(
   {
     url: '/user-feedback',
     type: 'POST',
-    data: JSON.stringify({ feedback: userFeedback }), // There's no cell data for this report, only what the user types into the form
+    data: JSON.stringify({ userMessage: userMessage }), // There's no cell data for this report, only what the user types into the form
     contentType: 'application/json',
     success: function(response) 
     {
       $("#feedback-modal").modal('hide');
       showAlert('Feedback reported successfully!', 'success');
+      $("#provideFeedback").val('');
     },
     error: function(xhr, status, error) 
     {

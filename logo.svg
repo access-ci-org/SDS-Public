@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <!-- Extremely thin white border -->
+  <rect width="200" height="100" fill="white" />
+  
+  <!-- Background covers almost everything -->
+  <rect x="5" y="5" width="290" height="190" fill="#f8f9fa" rx="2" />
+  
+  <!-- Logo Container - expanded to use more space -->
+  <g transform="translate(15, 20) scale(1.8)">
+    <!-- Modern SDS lettermark -->
+    <text x="75" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="60" fill="#0066cc" text-anchor="middle">SDS</text>
+    
+    <!-- Abstract document icon integrated with the S -->
+    <path d="M25 40 L50 15 L50 65 L25 40" fill="#0066cc" opacity="0.8" />
+    
+    <!-- Dot element for balance -->
+    <circle cx="150" cy="50" r="8" fill="#0066cc" />
+  </g>
+</svg>
