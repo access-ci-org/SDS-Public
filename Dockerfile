@@ -4,6 +4,8 @@ WORKDIR .
 
 RUN mkdir /sds/
 
+RUN apt-get update && apt-get install -y libmagic1
+
 COPY . /sds/
 
 RUN cd /sds && \

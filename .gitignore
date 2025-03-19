@@ -2,7 +2,7 @@
 .vscode/
 env/
 __pycache__/
-sqlite_db.db
+sds_db.db
 venv/
 formInfo.log
 .DS_Store
@@ -22,4 +22,4 @@ spider_data
 data/
 logs/*
 *.swp
-aaa.csv
+software.csv

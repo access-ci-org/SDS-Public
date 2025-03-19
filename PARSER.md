@@ -30,16 +30,22 @@ The parser for the `module spider` command takes in seven key arguments:
 section_separator: Regex pattern to split the file content into sections.
     A section is an entry of software name, versions, and descriptions (if availabe).
     Defaults to '\n(?=\s{2}[\/\w.-]+(?:/[\w-])*:)'.
+
 name_version_pattern: Regex pattern to extract software name and version from section.
     Defaults to '([\w/.-]+(?:-[\w/-]+)?): (.+)'.
+
 name_pattern: Regex pattern to further refine software name.
     Defaults to '([^/]+)(?=/.*)'
+
 version_separator: Regex pattern to split multiple versions.
     Defaults to '[,]'.
+
 version_cleaner: Regex pattern to split version string. Last item from the split will be used
     Defaults to '/'.
+
 spider_description_separator: Separator for spider descriptions.
     Defaults to '----'.
+
 custom_name_version_parser: Custom function to parse
     name and version. If provided, it should accept and return (name, versions, software_info).
     Defaults to None.

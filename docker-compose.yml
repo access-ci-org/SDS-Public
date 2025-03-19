@@ -6,11 +6,14 @@ services:
     container_name: sds
     networks:
       - app_network
-    # Don't expose ports to the host directly, only to nginx
-    # If you need direct access for debugging, uncomment:
     ports:
       - "8080:8080"
-
+    volumes:
+      - ./container_data:/sds/container_data
+      - ./software.csv:/sds/software.csv
+      - ./spider_data:/sds/spider_data
+      # Add any other files or directories you want to mount
+      # - ./local_path:/container_path
   nginx:
     image: nginx:latest
     container_name: nginx

@@ -2,8 +2,21 @@ from pathlib import Path
 import re
 from typing import Optional
 import yaml
+import magic
 from app.cli_loading import custom_halo
 
+def is_text_file(file_path: Path) -> bool:
+    """
+    Checks whether a givn file is a text file or not
+
+    Args:
+        file_path (pathlib.Path): Path object to a file
+    Retruns:
+        bool: True or False based on file content
+    """
+    mime = magic.Magic(mime=True)
+    file_type = mime.from_file(str(file_path))
+    return file_type.startswith('text/')
 
 def get_decoded_value(dictionary: dict, key: str, default: str = ""):
     """
@@ -202,9 +215,9 @@ def parse_spider_output(spider_output_dir: Path) -> dict[str, list[dict[str, any
                     f"Item {file_path} inside {spider_output_dir} is not a file. Skipping"
                 )
                 continue
-            if file_path.suffix != ".txt":
+            if not is_text_file(file_path):
                 print(
-                    f"Item {file_path} inside {spider_output_dir} is not a .txt file. Skipping"
+                    f"Item {file_path} inside {spider_output_dir} is not a text file. Skipping"
                 )
                 continue
             resource_name = dir_path.stem
@@ -217,5 +230,4 @@ def parse_spider_output(spider_output_dir: Path) -> dict[str, list[dict[str, any
                     file_path, **lmod_parsing
                 )
 
-    # print(resource_software_info['lcc'])
     return resource_software_info

@@ -489,7 +489,7 @@ def main() -> None:
                 process_csv_data(csv_path, blacklist)
             else:
                 logger.error(f"{csv_path} is not a file")
-                sys.exit(1)
+                # sys.exit(1)
 
         if app.config["USE_API"]:
             api_key = app.config["API_KEY"]
