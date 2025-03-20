@@ -60,7 +60,7 @@ export function onViewContainerClick(e, table){
                         <i class="fa-solid fa-note-sticky"></i>
                         Notes
                     </div>
-                    <div class="small">
+                    <div class="small p-2 bg-light rounded" style="max-height: 150px; overflow-y: auto; white-space: pre-line;">
                         ${value['notes'] || '<span class="text-muted fst-italic">No notes available</span>'}
                     </div>
                 </div>

@@ -153,7 +153,7 @@ document.addEventListener('click', async(e) => {
                     defFileElement.textContent = response.definition_file;
                     defFileElement.classList.remove('text-muted');
                 } else {
-                    defFileElement.innerHTML = '<span class="text-muted">No definition file available</span>';
+                    defFileElement.innerHTML = '<span class="text-muted">Unknown definition file location</span>';
                 }
 
                 // Optional fields - Container File
@@ -162,7 +162,7 @@ document.addEventListener('click', async(e) => {
                     containerFileElement.textContent = response.container_file;
                     containerFileElement.classList.remove('text-muted');
                 } else {
-                    containerFileElement.innerHTML = '<span class="text-muted">No container file available</span>';
+                    containerFileElement.innerHTML = '<span class="text-muted">Unknown container file location</span>';
                 }
 
                 // Update notes

@@ -1,7 +1,5 @@
-import argparse, json, sys, logging
+import argparse, json, sys
 from pathlib import Path
-from typing import Optional
-from peewee import Model
 
 import requests
 import pandas as pd
@@ -16,23 +14,12 @@ from app.models.userReports import UserReports
 from app.models.users import Users
 from app.models.containers import Container
 from app.models.softwareContainer import SoftwareContainer
-from app.logic.parse_spider import parse_spider_output
-from app.logic.parse_containers import parse_container_files
 from app.cli_loading import custom_halo
 from app.app_logging import logger
-
-
-class DataProcessingError(Exception):
-    """Custom exception for data processing error"""
-
-    def __init__(
-        self, message: str, level: int = logging.ERROR, exec_info: Exception = None
-    ):
-        super().__init__(message)
-        self.level = level
-        self.exec_info = exec_info
-        # Log the error when it's created
-        logger.log(self.level, message, exc_info=exec_info)
+from parsers.exceptions import DataProcessingError
+from parsers.utils import process_software, update_software_resource
+from parsers.lmod.process_spider_output import process_spider_data
+from parsers.container.process_container_file import process_container_data
 
 
 @custom_halo(text="Recreating database tables")
@@ -64,219 +51,13 @@ def recreate_table() -> None:
             raise
 
 
-def clean_versions(version_string: str) -> str:
-    logger.debug(f"Cleaning version string: {version_string}")
-    versions = [v.strip() for v in str(version_string).split(",") if v.strip()]
-    unqiue_versions = sorted(set(versions))
-    return ", ".join(unqiue_versions)
-
-
-def update_software_resource(
-    software_id: Model, resource_id: Model, versions: str
-) -> Model:
-    logger.debug(
-        f"Updating software resource. Software ID: {software_id}, Resource ID: {resource_id}"
-    )
-    try:
-        sr_id, created = SoftwareResource.get_or_create(
-            software_id=software_id, resource_id=resource_id
-        )
-        final_versions = (
-            versions
-            if created
-            else clean_versions(f"{sr_id.software_version}, {versions}")
-        )
-        logger.info(
-            f"{'Creating' if created else 'Updating'} software resource with versions: {final_versions}"
-        )
-        (
-            SoftwareResource.update(
-                {SoftwareResource.software_version: final_versions}
-            ).where(SoftwareResource.id == sr_id)
-        ).execute()
-
-        return sr_id
-    except Exception as e:
-        logger.error(f"Error updating software resource: {e}", exc_info=True)
-        raise e
-
-
-def process_software(
-    name: str, blacklist: set[str], description: Optional[str] = None
-) -> Model:
-    logger.debug(f"Processing software: {name}")
-    try:
-        name = name.lower()
-        if name in blacklist:
-            raise DataProcessingError(
-                f"Software {name} is blacklisted. Skipping", level=logging.WARNING
-            )
-
-        existing_software = Software.get_or_none(Software.software_name == name)
-
-        if existing_software:
-            # Add description if it doesn't exit
-            if description and not existing_software.software_description:
-                logger.info(f"Updating description for software: {name}")
-                (
-                    Software.update({Software.software_description: description})
-                    .where(Software.id == existing_software)
-                    .execute()
-                )
-            return existing_software
-
-        logger.info(f"Create new software entry: {name}")
-        # Add new software
-        software_data = {
-            "software_name": name,
-            "software_description": description or "",
-        }
-        software_id = Software.insert(software_data).execute()
-        return Software.get_by_id(software_id)
-
-    except DataProcessingError:
-        raise  # its already logged just raise the error again
-    except Exception as e:
-        raise DataProcessingError(
-            f"Unexpected error processign software {name}",
-            level=logging.ERROR,
-            exec_info=e,
-        ) from e
-
-
-def get_container_name(c_info: dict[str, any]) -> str:
-    logger.debug(f"Getting container name from info: {c_info}")
-    if c_info.get("container_name"):
-        return c_info["container_name"]
-
-    file_path = c_info.get("definition_file") or c_info.get("container_file")
-    if not file_path:
-        raise DataProcessingError("No container name or file information found")
-    return file_path.split("/")[-1].split(".")[0]
-
-
-def process_container(container_info: dict[str, any], container_name: str) -> Model:
-    logger.debug(f"Processing container: {container_name}")
-    try:
-        container_data = {
-            "container_name": container_name,
-            "definition_file": container_info.get("definition_file", ""),
-            "container_file": container_info.get("container_file", ""),
-            "resource_id": container_info.get("resource_id", ""),
-            "notes": container_info.get("notes", ""),
-        }
-
-        container = Container.get_or_none(
-            Container.container_name == container_data["container_name"],
-            Container.resource_id == container_data["resource_id"],
-        )
-
-        if not container:
-            logger.info(f"Creating new container: {container_name}")
-            container = Container.insert(container_data).execute()
-        else:
-            logger.info(f"Found existing container: {container_name}")
-
-        return container
-    except Exception as e:
-        logger.error(f"Error processing container {container_name}: {e}", exc_info=True)
-        raise
-
-
-def update_software_container(
-    software_id: Model, container_id: Model, resource_id: Model, versions: str
-) -> None:
-    logger.debug(
-        f"Updating software container. Software ID: {software_id}, Container ID: {container_id}"
-    )
-    try:
-        sc_id, created = SoftwareContainer.get_or_create(
-            software_id=software_id, container_id=container_id
-        )
-        final_versions = (
-            versions
-            if created
-            else clean_versions(f"{sc_id.software_versions}, {versions}")
-        )
-
-        logger.info(
-            f"{'Creating' if created else 'Updating'} software container with versions: {final_versions}"
-        )
-        (
-            SoftwareContainer.update(
-                {SoftwareContainer.software_versions: final_versions}
-            )
-            .where(SoftwareContainer.id == sc_id)
-            .execute()
-        )
-    except Exception as e:
-        logger.error(f"Error updating software container: {e}", exc_info=True)
-        raise e
-
-
-@custom_halo(text="Processing moduel spider data")
-def process_spider_data(spider_path: Path, blacklist: set[str]) -> None:
-    logger.info(f"Processing spider data from: {spider_path}")
-    try:
-        data = parse_spider_output(spider_path)
-        with db.atomic():
-            for resource, software_info in data.items():
-                logger.debug(f"Processing resource: {resource}")
-                r_id, _ = Resource.get_or_create(resource_name=resource)
-
-                for s_info in software_info:
-                    try:
-                        s_id = process_software(
-                            s_info["name"], blacklist, s_info.get("description")
-                        )
-                        update_software_resource(
-                            s_id, r_id, ", ".join(s_info["versions"])
-                        )
-                    except DataProcessingError as e:
-                        logger.warning(f"Skipping entry: {str(e)}")
-                        continue
-    except Exception as e:
-        raise DataProcessingError(f"Spider data processnig failed: {str(e)}") from e
-
-
-@custom_halo(text="Processing container data")
-def process_container_data(container_dir_path: Path, blacklist: set[str]) -> None:
-    logger.info(f"Processing container data from: {container_dir_path}")
-    # container_data = parse_container_files(container_dir_path)
-    try:
-        container_data = parse_container_files(container_dir_path)
-        with db.atomic():
-            for resource, container_info in container_data.items():
-                logger.debug(f"Processing resource: {resource}")
-                r_id, _ = Resource.get_or_create(resource_name=resource)
-
-                for c_info in container_info:
-                    try:
-                        c_info["resource_id"] = r_id
-                        container_name = get_container_name(c_info)
-                        c_id = process_container(c_info, container_name)
-
-                        s_id = process_software(c_info["software_name"], blacklist)
-                        update_software_resource(
-                            s_id, r_id, c_info["software_versions"]
-                        )
-
-                        update_software_container(
-                            s_id, c_id, r_id, c_info["software_versions"]
-                        )
-                    except DataProcessingError as e:
-                        logger.warning(
-                            f"Skipping container/software entry: {c_info} \n{str(e)}"
-                        )
-                        continue
-    except Exception as e:
-        raise DataProcessingError(f"Container data processing failed: {str(e)}") from e
-
-
 @custom_halo(text="Processing csv data")
 def process_csv_data(csv_path: Path, blacklist: set[str]) -> None:
     logger.info(f"Processing CSV data from: {csv_path}")
     try:
+        # Check if file is empty
+        if csv_path.stat().st_size == 0:
+            return
         df = pd.read_csv(csv_path, skipinitialspace=True)
 
         # additional whitespace cleaning

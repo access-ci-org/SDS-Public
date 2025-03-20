@@ -64,11 +64,39 @@ def clean_package_matches(matches):
     # cleaned.append(' '.join(cleaned_words))
     return cleaned_words
 
+def extract_help_message(content: str, file_type: str ="auto") -> str:
+
+    if file_type == "auto":
+        if "%post" in content:
+            file_type = "singularity"
+        elif "FROM" in content and "RUN" in content:
+            file_type = "containerfile"
+        else:
+            file_type = "unknown"
+
+    content = remove_comments(content, file_type)
+
+    if file_type == "singularity":
+        help_pattern = r'%help\s*(.*?)(?=(%\w+|\Z))'
+        match = re.search(help_pattern, content, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+
+    elif file_type in ["containerfile", "dockerfile"]:
+        # Extract LABEL instruction
+        help_labels = re.findall(r'LABEL\s+(?:help|description|usage)="([^"]+)"', content)
+        help_labels.extend(re.findall(r'LABEL\s+(?:help|description|usage)=\'([^\']+)\'', content))
+
+        if help_labels:
+            return '\n'.join(help_labels)
+
+    return ""
+
 
 def extract_packages_strings(content, file_type="auto"):
     patterns = [
         # Package manager installations
-        r"^\s*(?:apt-get|apt|yum|pip|conda)\s+(?:-[a-zA-Z]*\s+)*(?:install)\s*(?:-[a-zA-Z]*\s+)*(?:-[nc]\s+[\w.-]+\s+)*(?:-c\s+[\w.-]+\s+)*([a-zA-Z0-9._+=-]+(?:\s+[a-zA-Z0-9._+=-]+)*)$",
+        r"^\s*(?:apt-get|apt|dnf|yum|pip|conda)\s+(?:-[a-zA-Z]*\s+)*(?:install)\s*(?:-[a-zA-Z]*\s+)*(?:-[nc]\s+[\w.-]+\s+)*(?:-c\s+[\w.-]+\s+)*([a-zA-Z0-9._+=-]+(?:\s+[a-zA-Z0-9._+=-]+)*)$",
         # Install scripts
         r"install(?:-[a-z-]+)?.sh\s+([a-zA-Z0-9._=-]+)",
         # Conda sepcific captures for conda create
@@ -143,6 +171,7 @@ def parse_container_def(file_path: Path) -> List[Dict[str, Any]]:
         content = file.read()
 
     package_strings = extract_packages_strings(content)
+    help_message = extract_help_message(content)
 
     parsed_data = []
     for package_string in package_strings:
@@ -151,7 +180,7 @@ def parse_container_def(file_path: Path) -> List[Dict[str, Any]]:
             "definition_file": f"{file_path.stem}{file_path.suffix}",
             "container_file": "",
             "container_description": "",
-            "notes": "",
+            "notes": help_message,
         }
         if package_string.startswith(("http://", "https://")):
             data["software_name"] = package_string

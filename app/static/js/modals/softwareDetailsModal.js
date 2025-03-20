@@ -15,7 +15,6 @@ export function showModalForSoftware(softwareName, staticTable) {
     // Find the row that matches the software name
     staticTable.rows().every(function() {
         var row = this.data();
-        // console.log(row)
         if (row['software_name'] === softwareName) { // Assuming the software name is in the first column
 
             if (use_ai_info.toLowerCase() === 'true') {
