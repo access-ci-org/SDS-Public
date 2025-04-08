@@ -1,19 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
-  <!-- Extremely thin white border -->
-  <rect width="200" height="100" fill="white" />
-  
-  <!-- Background covers almost everything -->
-  <rect x="5" y="5" width="290" height="190" fill="#f8f9fa" rx="2" />
-  
-  <!-- Logo Container - expanded to use more space -->
-  <g transform="translate(15, 20) scale(1.8)">
-    <!-- Modern SDS lettermark -->
-    <text x="75" y="50" font-family="Arial, sans-serif" font-weight="bold" font-size="60" fill="#0066cc" text-anchor="middle">SDS</text>
-    
-    <!-- Abstract document icon integrated with the S -->
-    <path d="M25 40 L50 15 L50 65 L25 40" fill="#0066cc" opacity="0.8" />
-    
-    <!-- Dot element for balance -->
-    <circle cx="150" cy="50" r="8" fill="#0066cc" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="400" fill="#ffffff" rx="20" ry="20"/>
+
+  <!-- Simple Magnifying Glass -->
+  <g>
+    <!-- Glass Circle -->
+    <circle cx="180" cy="180" r="100" fill="#1b365d" opacity="0.95"/>
+    <circle cx="180" cy="180" r="80" fill="#ffffff" opacity="0.98"/>
+
+    <!-- Handle -->
+    <rect x="250" y="250" width="90" height="25" fill="#1b365d" opacity="0.95" transform="rotate(45, 250, 250)"/>
+
+    <!-- Binary Code Element in Center -->
+    <g transform="translate(150, 165)">
+      <text font-family="monospace" font-size="46" text-anchor="middle" fill="#324a6d">01</text>
+    </g>
   </g>
 </svg>

@@ -100,7 +100,7 @@ def extract_packages_strings(content, file_type="auto"):
         # Install scripts
         r"install(?:-[a-z-]+)?.sh\s+([a-zA-Z0-9._=-]+)",
         # Conda sepcific captures for conda create
-        r"conda\s+create\s+.*?-c\s+\S+\s+((?:\S*[^-]\S*\s+)*)",
+        r"conda\s+create\s+.*?-c\s+\S+\s+(\S+?=[a-zA-Z0-9._=-]+)",
         # installs from tar
         r"tar\s+(?:-[a-zA-Z]+\s*)+\s+(?!v\d+)(?!v.)([a-zA-Z][a-zA-Z0-9._=-]*).tar",
     ]
@@ -191,32 +191,55 @@ def parse_container_def(file_path: Path) -> List[Dict[str, Any]]:
     return parsed_data
 
 
-def parse_container_files(container_dir: Path) -> Dict[str, Any]:
+def parse_container_files(container_data: Path) -> Dict[str, Any]:
     resource_container_info = {}
-    for dir_path in container_dir.iterdir():
-        num_processed_containers = 0  # TODO remove this
+
+    # Helper function to recursively process directories
+    def process_directory(dir_path, resource_name):
+        results = []
+        for item_path in dir_path.iterdir():
+            if item_path.is_dir():
+                # Recursively process subdirectories
+                nested_results = process_directory(item_path, resource_name)
+                results.extend(nested_results)
+            else:
+                # Process file
+                if item_path.suffix == ".csv":
+                    parsed_data = parse_csv_container(item_path)
+                elif item_path.suffix == ".def":
+                    parsed_data = parse_container_def(item_path)
+
+                    # Add the full path to the container_file field
+                    if parsed_data:
+                        for item in parsed_data:
+                            # Use relative path from the container_dir for consistency
+                            try:
+                                resource_dir = container_data / resource_name
+                                rel_path = item_path.relative_to(resource_dir)
+
+                                item["definition_file"] = '/' + str(rel_path)
+                            except ValueError:
+                                # If relative_to fails, use the absolute path
+                                item["definition_file"] = str(item_path)
+                else:
+                    print(f"Unknown file type: {item_path.suffix}. Skipping")
+                    continue
+
+                if parsed_data:
+                    results.extend(parsed_data)
+
+        return results
+
+    # Process each resource directory
+    for dir_path in container_data.iterdir():
         if not dir_path.is_dir():
             print(f"Item {dir_path} not inside a resource directory. Skipping")
             continue
 
-        for file_path in dir_path.iterdir():
-            num_processed_containers += 1
-            if file_path.is_dir():
-                print(f"Item {file_path} inside {dir_path} is not a file. Skipping")
-                continue
-            resource_name = dir_path.stem
-            parsed_data = None
-            if file_path.suffix == ".csv":
-                parsed_data = parse_csv_container(file_path)
-            elif file_path.suffix == ".def":
-                parsed_data = parse_container_def(file_path)
-            else:
-                print(f"Unknown file type: {file_path.suffix}. Skipping")
-                continue
-            if not parsed_data:
-                continue
-            if resource_name in resource_container_info:
-                resource_container_info[resource_name] += parsed_data
-            else:
-                resource_container_info[resource_name] = parsed_data
+        resource_name = dir_path.stem
+        parsed_data = process_directory(dir_path, resource_name)
+
+        if parsed_data:
+            resource_container_info[resource_name] = parsed_data
+
     return resource_container_info

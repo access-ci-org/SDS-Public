@@ -41,8 +41,20 @@ def process_container(container_info: dict[str, any], container_name: str) -> Mo
 
         if not container:
             logger.info(f"Creating new container: {container_name}")
-            container = Container.insert(container_data).execute()
+            container = Container.create(**container_data)
         else:
+            updates = {}
+            if container_data['notes'] and container_data['notes'] not in container.notes:
+                updates['notes'] = f"{container.notes}\n{container_data['notes']}"
+            if container_data['definition_file'] and not container.definition_file:
+                updates['definition_file'] = container_data['definition_file']
+            if container_data['container_file'] and not container.container_file:
+                updates['container_file'] = container_data['container_file']
+            if updates:
+                (Container
+                .update(updates)
+                .where(Container.id == container.id)
+                .execute())
             logger.info(f"Found existing container: {container_name}")
 
         return container
@@ -98,14 +110,15 @@ def process_container_data(container_dir_path: Path, blacklist: set[str]) -> Non
                         container_name = get_container_name(c_info)
                         c_id = process_container(c_info, container_name)
 
-                        s_id = process_software(c_info["software_name"], blacklist)
-                        update_software_resource(
-                            s_id, r_id, c_info["software_versions"]
-                        )
+                        if c_info["software_name"]:
+                            s_id = process_software(c_info["software_name"], blacklist)
+                            update_software_resource(
+                                s_id, r_id, c_info["software_versions"]
+                            )
 
-                        update_software_container(
-                            s_id, c_id, r_id, c_info["software_versions"]
-                        )
+                            update_software_container(
+                                s_id, c_id, r_id, c_info["software_versions"]
+                            )
                     except DataProcessingError as e:
                         logger.warning(
                             f"Skipping container/software entry: {c_info} \n{str(e)}"

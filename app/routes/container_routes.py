@@ -5,7 +5,7 @@ from app.logic.containers import get_all_containers, get_container_info
 from . import container_bp
 
 
-@container_bp.route("/search_container", methods=["POST", "GET"])
+@container_bp.route("/containers", methods=["POST", "GET"])
 def search_container():
     resources = [resource.resource_name for resource in Resource.select()]
     container_data = get_all_containers()

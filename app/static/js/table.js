@@ -36,6 +36,7 @@ $(document).ready(function()
             enabled: true,
             style: 'multi', // Select multiple rows, deselect by clicking again
         },
+        ordering: false,
         fixedColumns: true, // Makes first column 'fixed' to the left side of the table when scrolling
         fixedHeader: true,  // Makes column headers 'fixed' to the top of the table when scrolling
         // autowidth: false,
@@ -47,9 +48,9 @@ $(document).ready(function()
             [10, 25, 50, 250, 500, -1],
             [10, 25, 50, 250, 500, 'All']
         ],
-        // DOM: 'P' = searchPanes, 'Q' = searchBuilder. The rest is various layout and formatting options.
+        // DOM: Various layout and formatting options.
         // For example: 'p' affects the paging style at the bottom of the table.
-        dom: 'Q<"d-flex flex-column flex-md-row justify-content-between"\
+        dom: '<"d-flex flex-column flex-md-row justify-content-between"\
                     <"d-flex flex-column flex-md-row"\
                         <"d-flex mb-3 mb-md-0"l>\
                         <"d-flex px-3"B>\
@@ -72,12 +73,6 @@ $(document).ready(function()
                 colvis: 'Show/Hide Columns',
                 colvisRestore: 'Restore All'
             },
-            searchBuilder: {
-                title: {    // Change text for searchBuilder Title
-                    0: 'Advanced Search',       // Zero filters selected
-                    _: 'Advanced Search (%d)'   // Any other number (%d is a placeholder for the number)
-                }
-            }
         },
         buttons: [
             {   // Edit Column Visibility Buttons
@@ -89,19 +84,6 @@ $(document).ready(function()
         ], 
         stateSave: false,   // Toggle for saving table options between page reloads
         stateDuration:-1,   // How long to save 
-        searchBuilder: {
-            conditions: {
-                string: {
-                    '=': null,
-                    'null':null,
-                    '!null':null,
-                    '!=':null,
-                    'starts':null,
-                    '!starts':null,
-                    'ends':null,
-                    '!ends':null,
-                    '!contains':null,
-        }}},
         columns: function() {
             var cols = [];
             var headerCells = $('#softwareTable thead th');
@@ -156,19 +138,43 @@ $(document).ready(function()
             });
             return cols;
         }(),
-        columnDefs: [
-           {
-                targets: "_all",
-                searchBuilder: {
-                    defaultCondition: 'contains'
-                },
-            },
-        ],
+        drawCallback: function (settings) {
+
+        },
         initComplete: function() {
             $('.scrollText-div').html("Hover your mouse to the edge of the table to scroll");
+            var api = this.api();
+            // Target the fixed header cells inside the dt-scroll-headInner container.
+            // These are the header cells that DataTables displays for scrolling/fixed columns.
+            $('.dt-scroll-headInner table thead tr th').each(function(i) {
+                // Get the original header text from the span with class "dt-column-title"
+                let originalText = $(this).find('.dt-column-title').text().trim();
+                
+                // Clear the header cell and add a span for the title
+                $(this).empty().append('<span style="display:block; font-weight:bold;">' + originalText + '</span>');
+                
+                // Create an input field with a placeholder and append it to the header cell
+                let $input = $('<input type="text" class="col-search" placeholder="Search ' + originalText + '" style="width: 100%;">');
+                $(this).append($input);
+
+                // Attach event listener to perform column search
+                $input.on('keyup change', function(e) {
+                    self = this;
+                    if (api.column(i).search() !== this.value) {
+                        // draw(false) prevents page changes and does faster draw
+                        api.column(i).search(this.value).draw(false).one('draw', function(){
+                            // minor timeout to ensure DOM updates
+                            setTimeout(function(){
+                                self.focus();
+                            },0)
+                        })
+                    }
+                });
+                
+            });
+
             $('#softwareTable').show();
-            var table = this.api();
-            table.columns.adjust().draw()
+            api.columns.adjust().draw()
         },
     });
 
@@ -197,6 +203,7 @@ $(document).ready(function()
                 $(this).removeClass('show');
             }
         });
+        history.pushState(null, '', '/');
     });
 
 /*/////////////////////

@@ -56,60 +56,24 @@ table.dataTable td {
     display: none;
 } 
 
-/* Changes the color of the table column headers to match ACCESS Header */
+/* Changes the color of the table column headers*/
 .dataTable thead th {
     background-color: var(--primary-color) !important;  /* Dark background color */
     color: white;               /* White text color */
     font-weight: bold;            /* Bold text */
     padding: 10px;                /* Padding for better readability */
 }
-/* Changes the color of the active table tab to match ACCESS branding */
+/* Changes the color of the active table tab*/
 .nav-link.active{
     background: color-mix(in srgb, var(--primary-color) 85%, white) !important;
 }
-/* Changes the color of selected items in the table to match ACCESS branding */
+/* Changes the color of selected items in the table*/
 table.dataTable tbody tr.selected>* {
     box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--primary-color) 85%, white) !important;
 }
 /* Changes the color of selected links to be higher visibility */
 table.dataTable>tbody>tr.selected a {
     color: #adfbff;
-}
-
-/* ### SEARCHBUILDER ### */
-/* ##################### */
-div.dtsb-searchBuilder div.dtsb-titleRow div.dtsb-title {
-    font-weight: bold;
-    font-size: 1.07em;
-}
-div.dtsb-searchBuilder button.dtsb-button {
-    background-color: var(--primary-color) !important;
-    border: 3px var(--secondary-color) outset !important;
-    border-radius: 5px;
-    font-size: 1.07em;
-    color: white;
-}
-div.dtsb-searchBuilder button.dtsb-button:hover,
-div.dtsb-searchBuilder div.dtsb-group div.dtsb-logicContainer button.dtsb-logic:hover,
-div.dtsb-searchBuilder div.dtsb-group div.dtsb-logicContainer button.dtsb-clearGroup:hover {
-    background-color: color-mix(in srgb, var(--primary-color) 85%, white) !important;
-}
-div.dtsb-searchBuilder div.dtsb-group div.dtsb-logicContainer{
-    background-color: white;
-    border:0;
-}
-div.dtsb-searchBuilder div.dtsb-group div.dtsb-logicContainer button.dtsb-logic,
-div.dtsb-searchBuilder div.dtsb-group div.dtsb-logicContainer button.dtsb-clearGroup {
-    background-color: var(--primary-color) !important;
-    border: 2px var(--secondary-color) outset !important;
-    border-radius: 5px;
-    color: white;
-}
-div.dtsb-searchBuilder div.dtsb-group div.dtsb-criteria select.dtsb-dropDown {
-    background-color: var(--primary-color) !important;
-    border: 2px var(--secondary-color) solid !important;
-    border-radius: 5px;
-    color: white;
 }
 
 /* Entries Dropdown Box */
@@ -192,143 +156,6 @@ div.dt-container .dt-search label{
     font-weight: bold;
 }
 
-/* ### SEARCHPANES ### */
-div.dtsp-panesContainer div.dtsp-title {
-    font-weight: bold;
-    font-size: 1.07em;
-} 
-/* Move panes closer to Visbility Buttons*/
-div.dtsp-panesContainer div.dtsp-searchPanes div.dtsp-searchPane {
-    margin-top: 5px !important;
-}
-/* SearchPanes Visbility Buttons */
-.dtsp-collapseAll,
-.dtsp-showAll,
-.dtsp-clearAll{
-    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
-    background-color: var(--primary-color) !important;
-    color: white;
-    font-size:1.07em;
-    border: 3px var(--secondary-color) outset !important;
-    border-radius: 4px;
-    padding-top: 5px !important;
-    padding-bottom: 5px !important;
-    padding-left: 18px !important;
-    padding-right: 17px !important;
-    margin: 2px;
-}
-div.dtsp-panesContainer button.dtsp-collapseAll.dtsp-disabledButton,
-div.dtsp-panesContainer button.dtsp-showAll.dtsp-disabledButton,
-div.dtsp-panesContainer button.dtsp-clearAll.dtsp-disabledButton{
-    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.651) 100%);
-    background-color: var(--primary-color) !important;
-    border: 3px var(--secondary-color) inset !important;
-    color: rgba(255, 255, 255, 0.5);
-}
-.dtsp-collapseAll:hover,
-.dtsp-showAll:hover,
-.dtsp-clearAll:hover{
-    background-color: var(--secondary-color) !important;
-    border-radius: 4px !important;
-}
-
-div.dtsp-topRow{
-    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
-    background-color: var(--primary-color) !important;
-    border: 3px var(--secondary-color) outset !important;
-    border-radius: 3px !important;
-
-}
-div.dtsp-searchPane div.dtsp-topRow div.dtsp-searchCont input.dtsp-search {
-    color:white !important;
-    border: 2px var(--secondary-color) inset !important;
-}
-div.dtsp-searchPane div.dtsp-topRow div.dtsp-searchCont input.dtsp-search:focus,
-div.dtsp-searchPane div.dtsp-topRow div.dtsp-searchCont input.dtsp-search:hover {
-    background-color: white;
-    color:black !important;
-}
-div.dtsp-topRow div.dtsp-subRow1 button.dtsp-searchIcon span {
-    -webkit-filter: invert(100%); /* Safari/Chrome */
-    filter: invert(100%);
-    background-size:16px;
-}
-div.dtsp-topRow div.dtsp-subRow1 button.dtsp-searchIcon:hover span,
-div.dtsp-topRow div.dtsp-subRow1 button.dtsp-searchIcon:hover {
-    background-color: transparent;
-}
-div.dtsp-topRow button.dtsp-nameButton span{
-    background-size:29px;
-}
-div.dtsp-topRow button.dtsp-countButton span {
-    background-size:26px; 
-}
-
-div.dtsp-topRow button.dtsp-countButton:focus span,
-div.dtsp-topRow button.dtsp-nameButton:focus span {
-    -webkit-filter: invert(100%); /* Safari/Chrome */
-    filter: invert(100%);
-}
-div.dtsp-topRow div.dtsp-subRow1 button.dtsp-searchIcon {
-    margin-top:3px;
-}
-div.dtsp-topRow div.dtsp-subRow2 {
-    color:white !important;
-    border: 3px var(--secondary-color) solid !important;
-    border-radius: 5px !important;
-}
-
-button.dtsp-paneButton.dtsp-collapseButton,
-button.dtsp-paneButton.clearButton {
-    border: 3px var(--secondary-color) outset !important;
-    color:white;
-    font-size:1.5em;
-}
-button.dtsp-paneButton.clearButton:hover,
-div.dtsp-topRow button.dtsp-countButton:hover,
-div.dtsp-topRow button.dtsp-nameButton:hover,
-button.dtsp-paneButton.dtsp-collapseButton:hover {
-    background-color: var(--secondary-color) !important;
-    border-radius: 4px !important;
-}
-
-div.dtsp-topRow button.dtsp-collapseButton span.dtsp-caret {
-    top: 7px;
-}
-
-button.dtsp-paneButton.clearButton.dtsp-disabledButton {
-    border: 3px var(--secondary-color) inset !important;
-}
-button.dtsp-paneButton.clearButton.dtsp-disabledButton:hover {
-    background-color: transparent !important;
-}
-
-div.dtsp-searchPane button.dtsp-paneButton {
-    margin:0;
-    opacity:1;
-}
-
-
-button.dtsp-paneButton.dtsp-nameButton,
-button.dtsp-paneButton.dtsp-countButton,
-button.dtsp-paneButton.dtsp-collapseButton {
-    background-color: var(--primary-color) !important;
-    color:white !important;
-    border: 3px var(--secondary-color) outset !important;
-    border-radius: 5px !important;
-    margin:0;
-    padding:0;
-
-}
-
-
-
-/* Remove Shadow from searchPanes */
-.noShadow .dt-scroll::before, 
-.noShadow .dt-scroll::after {
-    display:none;
-}
-
 
 /* Report/Feedback Buttons*/ 
 #reportIssueBtn.btn.btn-outline-danger,
@@ -355,7 +182,6 @@ button.dtsp-paneButton.dtsp-collapseButton {
     display: none;
 }
 
-
 .example-use-btn{
     background-color: var(--secondary-color);
     color:white
@@ -363,4 +189,10 @@ button.dtsp-paneButton.dtsp-collapseButton {
 .example-use-btn:hover{
     background-color: color-mix(in srgb, var(--secondary-color), white 30%);
     color:white
+}
+
+.col-search{
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-color: white;
 }

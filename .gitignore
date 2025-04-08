@@ -3,7 +3,6 @@
 env/
 __pycache__/
 sds_db.db
-venv/
 formInfo.log
 .DS_Store
 queryInfo.log
@@ -21,5 +20,5 @@ config.yaml
 spider_data
 data/
 logs/*
-*.swp
 software.csv
+sqlite_db.db

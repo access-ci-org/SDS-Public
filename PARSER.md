@@ -156,7 +156,7 @@ The `name_pattern` will group items separated by a slash. The parser uses the fi
 > cleaned version: [`1.10.7/hcgc7fk`, `1.10.7/5soub24`]  
 
 `custom_name_version_parser` allows the user to define a custom python function for parsing the name and version.  
-To implement this you will have to edit the `parse_spider.py` file found in `app/logic/`. Define the function in the file.  
+To implement this you will have to edit the `parse_spider.py` file found in `parsers/lmod/`. Define the function in the file.  
 Inside the same file in the `parse_spider_output` function, you will see this comment:  
 `# lmod_parsing["custom_name_version_parser"] = <your custom function>`  
 Uncomment that line and add your function name in place of `<your custom function>`.

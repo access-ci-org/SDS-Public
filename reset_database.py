@@ -207,15 +207,15 @@ def setup_argparse() -> argparse.Namespace:
         "-c_d",
         "--container_dir",
         help="Location of directory with container definitions or csv files. \
-                        All csv files must have a software_name and (container_file or definition_file) columns. Here is the complete list of supported \
-                        columns: software_name, software_versions, container_name, definition_file, container_file, container_description, \
-                        notes. If no container_name is provided then the definition_file name will be used as container name",
+                        All csv files must have a container_file or definition_file columns. Here is the complete list of supported \
+                        columns: software_name, software_versions, container_name, definition_file, container_file, notes. If no container_name \
+                        is provided then the definition_file name will be used as container name",
     )
     parser.add_argument(
         "-csv_f",
         "--csv_file",
         help="Location of csv file with pre-parsed data. The first row must have column names \
-                        and the following columns are necessary but only the software column needs any data: software, resource, software_description, software_versions.",
+        and the following columns are necessary but only the software column needs any data: software, resource, software_description, software_versions.",
     )
 
     args = parser.parse_args()

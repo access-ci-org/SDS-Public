@@ -43,15 +43,15 @@ except Exception as e:
 
 # api config
 API_KEY = api_conf.get("api_key")
-USE_API = api_conf.get("use_api", False)
-USE_CURATED_INFO = api_conf.get("use_curated_info", False)
-USE_AI_INFO = api_conf.get("use_ai_info", False)
+USE_API = api_conf.get("use_api") or False
+USE_CURATED_INFO = api_conf.get("use_curated_info") or False
+USE_AI_INFO = api_conf.get("use_ai_info") or False
 
 # styles config
-PRIMARY_COLOR = styles_conf.get("primary_color", "#1b365d")
-SECONDARY_COLOR = styles_conf.get("secondary_color", "#324a6d")
-SITE_TITLE = styles_conf.get("site_title", "SDS")
-LOGO = styles_conf.get("logo", "")
+PRIMARY_COLOR = styles_conf.get("primary_color") or "#1b365d"
+SECONDARY_COLOR = styles_conf.get("secondary_color") or  "#324a6d"
+SITE_TITLE = styles_conf.get("site_title") or "SDS"
+LOGO = styles_conf.get("logo") or  "./logo.svg"
 
 # default config
 DEFAULT_PASS = Users.hash_password(gneneral_conf.get("password"))
