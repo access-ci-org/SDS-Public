@@ -6,7 +6,7 @@ from flask_login import LoginManager
 import yaml
 from peewee import DoesNotExist
 from app.models.users import Users
-from app.logic.table import TableInfo, initialize_table_info
+from app.logic.table import initialize_table_info
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
@@ -14,7 +14,7 @@ app.secret_key = secrets.token_hex()
 # Login manager setup
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "auth.login"
 
 
 @login_manager.user_loader
@@ -53,9 +53,10 @@ SECONDARY_COLOR = styles_conf.get("secondary_color") or  "#324a6d"
 SITE_TITLE = styles_conf.get("site_title") or "SDS"
 LOGO = styles_conf.get("logo") or  "./logo.svg"
 
-# default config
-DEFAULT_PASS = Users.hash_password(gneneral_conf.get("password"))
+# general config
 DEFAULT_USER = gneneral_conf.get("user_name")
+DEFAULT_PASS = Users.hash_password(gneneral_conf.get("password"))
+SHARE_SOFTWARE = gneneral_conf.get("share_software") or "False"
 
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     print("Not using API information")
@@ -94,6 +95,7 @@ app.config.update(
     LOGO=LOGO,
     DEFAULT_PASS=DEFAULT_PASS,
     DEFAULT_USER=DEFAULT_USER,
+    SHARE_SOFTWARE=SHARE_SOFTWARE,
 )
 
 

@@ -1,5 +1,6 @@
 from flask import render_template, request, jsonify, current_app
-from flask_login import login_required
+from flask_login import login_required, current_user
+from app.models.users import Users
 from app.logic.table import initialize_table_info
 from . import settings_bp
 
@@ -16,6 +17,7 @@ def settings():
         use_api=current_app.config["USE_API"],
         api_curated_columns=current_app.config["API_CURATED_COLUMNS"],
         api_ai_columns=current_app.config["API_AI_COLUMNS"],
+        share_software=current_user.shareSoftware,
     )
 
 
@@ -33,7 +35,12 @@ def update_col_visibility(column_name):
                 drop_columns.append(column)
             current_app.config["DROP_COLUMNS"] = drop_columns
             return jsonify({"success": "Column updated successfully"})
+        elif column_name == "shareSoftware":
+            current_user.shareSoftware = current_user.toggle_software_share()
+            return jsonify({"success": "Share preference udpated successfully"})
+
         return jsonify({"error": "Invalid column name"}), 400
+
 
     return jsonify({"error": "Missing column name"}), 400
 

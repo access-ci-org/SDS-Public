@@ -1,11 +1,7 @@
 /* DataTable Container*/
 .container {
-    display: flex;  
+    display: flex;
     justify-content: flex-end;
-}
-
-body{
-    font-size:.9em;
 }
 
 /* table.dataTable>tbody>tr>th{
@@ -13,12 +9,22 @@ body{
     /* text-align: center;
     vertical-align: middle;
 } */
+
+table.dataTable {
+    margin: 0px
+}
+
 table.dataTable th,
 table.dataTable td {
     padding: 5px 5px;
     text-align: center;
     vertical-align: middle;
 }
+
+.table-container {
+    width: min-content
+}
+
 .dt-scroll {
     position: relative;
 }
@@ -54,7 +60,7 @@ table.dataTable td {
   /* Class to hide the left shadow */
 .no-left-shadow::before {
     display: none;
-} 
+}
 
 /* Changes the color of the table column headers*/
 .dataTable thead th {
@@ -96,7 +102,7 @@ div.dt-buttons
 /* Changes the 'Column Visibility' Container */
 div.dt-button-collection.two-column{
     background-color: var(--primary-color) !important;  /* Dark background color */
-    color: white;   
+    color: white;
     width: 525px;
     border: 3px var(--secondary-color) solid;
     padding-right: 3px;
@@ -144,7 +150,7 @@ button.dt-button.buttons-columnVisibility.dt-button-active {
 
 /* Mouse Scroll Disclaimer */
 .scrollText-div{
-    flex: 1; 
+    flex: 1;
     display: flex;
     justify-content: right;
     align-items: right;
@@ -157,7 +163,7 @@ div.dt-container .dt-search label{
 }
 
 
-/* Report/Feedback Buttons*/ 
+/* Report/Feedback Buttons*/
 #reportIssueBtn.btn.btn-outline-danger,
 #provideFeedbackBtn.btn.btn-outline-danger{
     background: rgb(150, 0, 0);

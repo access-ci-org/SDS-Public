@@ -1,22 +1,74 @@
+.settings-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 15px;
+}
+
+.settings-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary-color);
+  border-color: #dee2e6 #dee2e6 #fff;
+  font-weight: 500;
+}
+
+.nav-tabs .nav-link:not(.active) {
+  color: var(--secondary-color);
+}
+
 .draggable-row {
-    cursor: move;
+  cursor: move;
+  transition: all 0.2s ease;
+}
+
+.draggable-row:hover {
+  background-color: rgba(var(--bs-primary-rgb), 0.05) !important;
 }
 
 .dragging {
-    opacity: 0.5;
+  opacity: 0.5;
 }
 
 .insertion-point {
-    height: 0;
-    margin: 0;
-    border: none;
-    transition: all 0.2s;
+  height: 0;
+  margin: 0;
+  border: none;
+  transition: all 0.2s;
 }
 
 .insertion-point.active {
-    height: 20px;
-    margin: 10px 0;
-    background: rgba(13, 110, 253, 0.1);
-    border: 2px dashed #0d6efd;
-    border-radius: 4px;
+  height: 20px;
+  margin: 10px 0;
+  background: rgba(var(--bs-primary-rgb), 0.1);
+  border: 2px dashed var(--primary-color);
+  border-radius: 4px;
+}
+
+.form-switch .form-check-input:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.drag-handle {
+  color: var(--secondary-color);
+  margin-right: 10px;
+}
+
+.save-section {
+  display: flex;
+  justify-content: flex-end;
+  padding: 20px 0;
 }

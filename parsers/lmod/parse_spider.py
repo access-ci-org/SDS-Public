@@ -3,7 +3,30 @@ import re
 from typing import Optional
 import yaml
 import magic
+from pprint import pp
 from app.cli_loading import custom_halo
+
+def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]):
+    """
+    Define your custom parsing function here.
+    Change the values of name and versions as necessary
+
+    Args:
+        name (str): software name identified by the parser
+        version (list): list of versions identified by the parser
+        software_info (dict): list of dictionaries containg 'name', 'versions', and 'discription'
+            of all software in current file
+
+    Return:
+        name (str): software name identifed by custom parser
+        version (list): list of versions identified by the custom parser
+        software_info (dict): list of dictionaries containg 'name', 'versions', and 'discription'
+            of all software in current file (optionally modifed by the custom parser)
+    """
+    # pp(name)
+    # pp(versions)
+    # pp(software_info)
+    return name, versions, software_info
 
 def is_text_file(file_path: Path) -> bool:
     """
@@ -202,7 +225,7 @@ def parse_spider_output(spider_output_dir: Path) -> dict[str, list[dict[str, any
             key: value for key, value in lmod_parsing.items() if value is not None
         }
 
-    # lmod_parsing["custom_name_version_parser"] = <your custom function>
+    lmod_parsing["custom_name_version_parser"] = custom_lmod_parser
 
     for dir_path in spider_output_dir.iterdir():
         if not dir_path.is_dir():

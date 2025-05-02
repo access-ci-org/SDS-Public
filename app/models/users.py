@@ -9,6 +9,8 @@ class Users(BaseModel, UserMixin):
     username = CharField(unique=True)
     password = CharField()
     is_admin = BooleanField(default=False)
+    email = CharField(unique=True,default='')
+    shareSoftware = BooleanField(default=False)
 
     @property
     def is_active(self):
@@ -23,3 +25,8 @@ class Users(BaseModel, UserMixin):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+    def toggle_software_share(self):
+        self.shareSoftware = not self.shareSoftware
+        self.save()
+        return self.shareSoftware

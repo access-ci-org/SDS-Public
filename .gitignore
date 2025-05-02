@@ -22,3 +22,5 @@ data/
 logs/*
 software.csv
 sqlite_db.db
+app/models/api_response.json
+example_uses/

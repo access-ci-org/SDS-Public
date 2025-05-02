@@ -7,7 +7,8 @@ $(".form-check-input").change(function(){
         url:"/update_col_visibility/"+column,
         type: 'POST',
         success: function(response){
-            showAlert('Column successfully updated', 'success');
+            console.log(response)
+            showAlert(response.success, 'success');
         },
         error: function(xhr, status, error){
             console.error("Error updating column")

@@ -95,24 +95,37 @@ def process_csv_data(csv_path: Path, blacklist: set[str]) -> None:
 
 
 @custom_halo(text="Fetching remote software data")
-def get_remote_data(api_key: str) -> dict[str, any]:
+def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[str, any]]:
     logger.info(f"Retreving api data")
+
+    BATCH_SIZE = 75
+    all_data = []
     try:
-        request = requests.get(
-            f"http://128.163.202.84:8080/api=API_0/{api_key}/software=*", timeout=2000
-        )
-        data = request.json()
+        # request software data in batches
+        for i in range(0, len(software), BATCH_SIZE):
+            batch = software[i:min(i+BATCH_SIZE, len(software))]
+            software_param = "+".join(batch)
+            url = f"http://128.163.202.84:8080/API_0.1/{api_key}/software={software_param},share={share}"
+            request = requests.get(url, timeout=20)
+            if request.status_code == 200:
+                batch_data = request.json()
+                all_data.extend(batch_data)
+                logger.info(f"Successfully retrieved batch {i//BATCH_SIZE + 1}")
+            elif request.status_code == 401:
+                raise DataProcessingError(f"Unable to fetch data from API: {request.json()}")
+
         logger.info(
-            f"Successfully retrievied data from api call. Lenght of data is {len(data)}"
+            f"Successfully retrievied data from api call. Length of data is {len(all_data)}"
         )
-        if len(data):
+        if all_data:
             with open("app/models/api_response.json", "w+") as ar:
-                ar.write(str(data))
+                json.dump(all_data, ar, indent=4)
             logger.info(f"Successfully updated local copy of api data")
-        return data
-    except ConnectionError as ce:
+
+        return all_data
+    except (requests.ConnectionError, requests.ConnectTimeout) as ex:
         logger.warning(
-            f"Unable to retrieve data from api call: {ce}. Using cached data."
+            f"Unable to retrieve data from api call: {ex}. Using cached data."
         )
 
         with open("app/models/api_response.json", "r") as ar:
@@ -171,15 +184,15 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
             # logger.info(f"Updating AI info for software: {s.software_name}")
             ai_software_info = {
                 "software_id": s.id,
-                "ai_description": remote_s_info["ai_description"],
-                "ai_software_type": remote_s_info["ai_software_type"],
-                "ai_software_class": remote_s_info["ai_software_class"],
-                "ai_research_field": remote_s_info["ai_research_field"],
-                "ai_research_area": remote_s_info["ai_research_area"],
-                "ai_research_discipline": remote_s_info["ai_research_discipline"],
-                "ai_core_features": remote_s_info["ai_core_features"],
-                "ai_general_tags": remote_s_info["ai_general_tags"],
-                "ai_example_use": remote_s_info["ai_example_use"],
+                "ai_description": remote_s_info["ai_description"] or "",
+                "ai_software_type": remote_s_info["ai_software_type"] or "",
+                "ai_software_class": remote_s_info["ai_software_class"] or "",
+                "ai_research_field": remote_s_info["ai_research_field"] or "",
+                "ai_research_area": remote_s_info["ai_research_area"] or "",
+                "ai_research_discipline": remote_s_info["ai_research_discipline"] or "",
+                "ai_core_features": remote_s_info["ai_core_features"] or "",
+                "ai_general_tags": remote_s_info["ai_general_tags"] or "",
+                "ai_example_use": remote_s_info["ai_example_use"] or "",
             }
             with db.atomic() as transaction:
                 try:
@@ -275,9 +288,13 @@ def main() -> None:
         if app.config["USE_API"]:
             api_key = app.config["API_KEY"]
             if api_key:
+                with db.atomic():
+                    all_software = Software.select()
+                software = [software.software_name for software in all_software]
                 logger.info("Starting API data update")
-                remote_data = get_remote_data(api_key)
-                update_db_from_remote(remote_data)
+                remote_data = get_remote_data(api_key, software, app.config["SHARE_SOFTWARE"])
+                if remote_data:
+                    update_db_from_remote(remote_data)
             else:
                 logger.warning(
                     "SDS API key not found in environment variables. Skipping API data update."

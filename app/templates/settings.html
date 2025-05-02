@@ -19,44 +19,99 @@
 {% endblock %}
 
 {% block app_content %}
-<div class="alert alert-info mb-4 text-center">
-    <i class="bi bi-info-circle"></i>
-    Click and drag columns to rearrange them. The first column cannot be reordered.
-</div>
-<div id="draggable-container">
-    {% for column in table_info.column_order %}
-    <div class="row draggable-row mx-0 p-2 mb-2 border rounded bg-white" draggable="true">
-        <div class="col">
-            <b>Column:</b>
-            <span class="column-name">{{table_info.column_names[column]}}</span>
+<div class="settings-container">
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-tab-pane" type="button" role="tab" aria-controls="user-tab-pane" aria-selected="false">
+          User Settings
+        </button>
+      </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="columns-tab" data-bs-toggle="tab" data-bs-target="#columns-tab-pane" type="button" role="tab" aria-controls="columns-tab-pane" aria-selected="true">
+        Column Management
+      </button>
+    </li>
+  </ul>
+  <!-- Tab content -->
+  <div class="tab-content" id="settingsTabContent">
+    <!-- Software Settings Tab -->
+    <div class="tab-pane show active" id="user-tab-pane" role="tabpanel" aria-labelledby="user-tab" tabindex="0">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Software Options</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                  <label class="form-label mb-0">Share software names with SDS developers</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="shareSoftware" {{'checked' if share_software}}>
+                  </div>
+                </div>
+                <div class="font-monospace p-2 bg-light rounded">
+                  <span class="text-muted">
+                    This inforamtion will be used to identify software for which we need to collect curated data. It may also be used to help other institutions identify what software is available at your institution.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col">
-            <div class="input-group">
+      </div>
+
+    <!-- Column Management Tab -->
+    <div class="tab-pane" id="columns-tab-pane" role="tabpanel" aria-labelledby="columns-tab" tabindex="0">
+      <div class="alert alert-info mb-4">
+        <i class="bi bi-info-circle me-2"></i>
+        Click and drag columns to rearrange them. The first column cannot be reordered.
+      </div>
+      <div class="card shadow-sm mb-4">
+        <div class="card-body" id="draggable-container">
+          {% for column in table_info.column_order %}
+          <div class="row draggable-row mx-0 p-3 mb-2 border rounded bg-white" draggable="true">
+            <div class="col-md-4 d-flex align-items-center">
+              <div class="drag-handle">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+                <i class="bi bi-grip-vertical"></i>
+              </div>
+              <b>Column:</b>
+              <span class="column-name ms-2">{{ table_info.column_names[column] }}</span>
+            </div>
+            <div class="col-md-5">
+              <div class="input-group">
                 <span class="input-group-text">Rename:</span>
                 <input type="text" class="form-control column-input"
-                        placeholder="{{table_info.column_names[column]}}"
-                        data-original-key="{{column}}"
-                        data-original-name="{{table_info.column_names[column]}}">
+                  placeholder="{{ table_info.column_names[column] }}"
+                  data-original-key="{{ column }}"
+                  data-original-name="{{ table_info.column_names[column] }}">
+              </div>
             </div>
-        </div>
-        <div class="col d-flex align-items-center justify-content-end">
-            <div class="form-check form-switch">
+            <div class="col-md-3 d-flex align-items-center justify-content-end">
+              <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox"
-                    value="" id="{{column}}"
-                    {{'checked' if (column in table_info.column_order and table_info.column_names[column] not in drop_columns)}}
-                    {% if use_api %}
-                    {{'disabled' if column in api_curated_columns and (not use_curated_info)}}
-                    {{'disabled' if (not use_ai_info) and column in api_ai_columns}}
-                    {% elif column in api_curated_columns or column in api_ai_columns%}
+                  value="" id="{{ column }}"
+                  {{ 'checked' if (column in table_info.column_order and table_info.column_names[column] not in drop_columns) }}
+                  {% if use_api %}
+                    {{ 'disabled' if column in api_curated_columns and (not use_curated_info) }}
+                    {{ 'disabled' if (not use_ai_info) and column in api_ai_columns }}
+                  {% elif column in api_curated_columns or column in api_ai_columns %}
                     disabled
-                    {% endif %}
+                  {% endif %}
                 >
-                <label class="form-check-label" for="{{column}}">
-                    Show
+                <label class="form-check-label ms-2" for="{{ column }}">
+                  Show
                 </label>
+              </div>
             </div>
+          </div>
+          {% endfor %}
         </div>
+      </div>
     </div>
-    {% endfor %}
+  </div>
 </div>
 {% endblock %}

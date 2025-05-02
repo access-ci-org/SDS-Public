@@ -145,10 +145,19 @@ def extract_packages_strings(content, file_type="auto"):
 
     return package_strings
 
+def extract_SDS_software(content):
+
+    section_pattern = r'##\s+SDS\s+Software\s+(.*?)(?=##|\Z)'
+    match = re.search(section_pattern, content, re.DOTALL)
+    if match:
+        # split the section by new lines and remove the leading '#'
+        data = [string[1:].strip() for string in match.group(1).split("\n") if string]
+        return data
+    return []
 
 def get_parsed_data(package_string, data) -> Dict[str, str]:
 
-    sv_pattern = r"([a-zA-Z0-9._-]+)(?:[-=]|==)v?(\d+(?:\.\d+)*(?:[-_.][a-zA-Z0-9]+)*)"
+    sv_pattern = r"([a-zA-Z0-9._-]+)(?:[-=]|==|/)v?(\d+(?:\.\d+)*(?:[-_.][a-zA-Z0-9]+)*)"
     software_versions = re.match(sv_pattern, package_string)
     if software_versions:
         s = software_versions.group(1)
@@ -172,7 +181,7 @@ def parse_container_def(file_path: Path) -> List[Dict[str, Any]]:
 
     package_strings = extract_packages_strings(content)
     help_message = extract_help_message(content)
-
+    package_strings.extend(extract_SDS_software(content))
     parsed_data = []
     for package_string in package_strings:
         data = {

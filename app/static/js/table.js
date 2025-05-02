@@ -81,9 +81,9 @@ $(document).ready(function()
                 popoverTitle: 'Show/Hide Columns',
             },
                 'colvisRestore',
-        ], 
+        ],
         stateSave: false,   // Toggle for saving table options between page reloads
-        stateDuration:-1,   // How long to save 
+        stateDuration:-1,   // How long to save
         columns: function() {
             var cols = [];
             var headerCells = $('#softwareTable thead th');
@@ -118,7 +118,7 @@ $(document).ready(function()
                         }
                         return data;
                     };
-                } else if (['software_description', 'software_documentation', 
+                } else if (['software_description', 'software_documentation',
                          'software_web_page', 'software_use_link'].includes(internalKey)) {
                     column.render = function(data, type, row) {
                         if (type === 'display' && data) {
@@ -149,10 +149,10 @@ $(document).ready(function()
             $('.dt-scroll-headInner table thead tr th').each(function(i) {
                 // Get the original header text from the span with class "dt-column-title"
                 let originalText = $(this).find('.dt-column-title').text().trim();
-                
+
                 // Clear the header cell and add a span for the title
                 $(this).empty().append('<span style="display:block; font-weight:bold;">' + originalText + '</span>');
-                
+
                 // Create an input field with a placeholder and append it to the header cell
                 let $input = $('<input type="text" class="col-search" placeholder="Search ' + originalText + '" style="width: 100%;">');
                 $(this).append($input);
@@ -170,7 +170,7 @@ $(document).ready(function()
                         })
                     }
                 });
-                
+
             });
 
             $('#softwareTable').show();
@@ -187,7 +187,7 @@ $(document).ready(function()
         {
             e.stopPropagation();
         }
-    }); 
+    });
 
 /*///////////////////////////////////////////////////////////////
     Return softwareDetails modal to default state when closed //
@@ -197,7 +197,7 @@ $(document).ready(function()
             // Reopen all closed drawers except for Example Use
             if ($(this).attr('id') !== 'modalExampleUse' && !$(this).hasClass('show')) {
                 $(this).addClass('show');
-            } 
+            }
             // Reclose Example Use
             else if ($(this).attr('id') == 'modalExampleUse' && $(this).hasClass('show')) {
                 $(this).removeClass('show');
@@ -216,44 +216,44 @@ $(document).ready(function()
     var scrollDirection;
 
     // Event listener for mouse movement in the scroll body.
-    $scrollBody.mousemove(function(e) 
+    $scrollBody.mousemove(function(e)
     {
         var $this = $(this);
         var offset = $this.offset();
         var scrollWidth = $this[0].scrollWidth;
         var outerWidth = $this.outerWidth();
         var x = e.pageX - offset.left;
-  
+
         // Right edge of the table.
-        if (scrollWidth > outerWidth && x > outerWidth - scrollSensitivity) 
+        if (scrollWidth > outerWidth && x > outerWidth - scrollSensitivity)
         {
             startScrolling(1); // Scroll right
         }
         // Left edge of the table.
-        else if (x < scrollSensitivity) 
+        else if (x < scrollSensitivity)
         {
             startScrolling(-1); // Scroll left
-        } 
-        else 
+        }
+        else
         {
             stopScrolling();
         }
     });
-  
+
     $scrollBody.mouseleave(stopScrolling);
 
     checkScrollEdges();
     $scrollBody.on('scroll',checkScrollEdges);
 
     // Scrolling Behaviors
-    function startScrolling(direction) 
+    function startScrolling(direction)
     {
-        if (scrollInterval) 
+        if (scrollInterval)
         {
             clearInterval(scrollInterval);
         }
         scrollDirection = direction;
-        scrollInterval = setInterval(function() 
+        scrollInterval = setInterval(function()
         {
         var currentScroll = $scrollBody.scrollLeft();
         $scrollBody.scrollLeft(currentScroll + scrollSpeed * scrollDirection);
@@ -284,11 +284,11 @@ $(document).ready(function()
         }
     }
 
-    function stopScrolling() 
+    function stopScrolling()
     {
         clearInterval(scrollInterval);
     }
- 
+
 /*//////////////////////////////////////////////
     Disable Searching Through Hidden Columns //
 */////////////////////////////////////////////
@@ -313,7 +313,7 @@ $(document).ready(function()
 
 /*///////////////////////////////////////////////////
     Event Listener for Column Visibility Changes  //
-*////////////////////////////////////////////////// 
+*//////////////////////////////////////////////////
     staticTable.on('column-visibility.dt', function(e, settings, column, state) {
         staticTable.draw();
     });
@@ -349,7 +349,7 @@ $(document).ready(function()
 /*//////////////////////////////
     Clickable Links In Table //
 */////////////////////////////
-export function makeLinkClickable(data) 
+export function makeLinkClickable(data)
 {
     var urlRegex = /(https?:\/\/[^\s]+)/g;
     if (data !== undefined){
