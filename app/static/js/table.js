@@ -162,7 +162,7 @@ $(document).ready(function()
                     self = this;
                     if (api.column(i).search() !== this.value) {
                         // draw(false) prevents page changes and does faster draw
-                        api.column(i).search(this.value).draw(false).one('draw', function(){
+                        api.column(i).search(this.value).draw().one('draw', function(){
                             // minor timeout to ensure DOM updates
                             setTimeout(function(){
                                 self.focus();

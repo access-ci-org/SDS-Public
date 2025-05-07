@@ -113,6 +113,25 @@ parsing:
     spider_description_separator: '----'
 ```
 
+If you are using `spac` to create modules, you should use the following config:
+```
+parsing:
+  lmod_spider:
+    version_cleaner: '/|-(?=\d)'
+    name_pattern: '(.*?)-(\d.*?)'
+    spider_description_separator: '----'
+```
+It will parse like so:
+```
+  cairo-1.16.0-gcc-9.3.0-fmtofpt: cairo-1.16.0-gcc-9.3.0-fmtofpt
+software: cairo version: 1.16.0-gcc-9.3.0-fmtofpt
+
+  cmake: cmake/3.19.4
+software: cmke, version: 3.19.4
+```
+
+\
+\
 The rest of the section will go into a little more detail about each field and how the default selection affects the fields
 
 `section_separator`, `name_version_pattern`, and `name_pattern` create groups of strings that match the given patterns.
@@ -150,55 +169,53 @@ Using the above example module spider output, here is what the sections would lo
 
 The `name_version_pattern` will do something similar, but in its case it captures everything to the left of the `:` as one group and to the right as another group.
 > **Note**: Example Sections
-> name_version: `autotools: autotools/1.2`
-> Sections: `autotools`, ` autotools/1.2`
-> name_version: `ant/1.10.7: ant/1.10.7/hcgc7fk, ant/1.10.7/5soub24`
-> Sections: `ant/1.10.7`, ` ant/1.10.7/hcgc7fk, ant/1.10.7/5soub24`
-> name_version: `dir/r: dir/r/3.5.2`
+> name_version: `autotools: autotools/1.2`\
+> Sections: `autotools`, ` autotools/1.2`\
+> name_version: `ant/1.10.7: ant/1.10.7/hcgc7fk, ant/1.10.7/5soub24`\
+> Sections: `ant/1.10.7`, ` ant/1.10.7/hcgc7fk, ant/1.10.7/5soub24`\
+> name_version: `dir/r: dir/r/3.5.2`\
 > Sections: `dir/r`, ` dir/r/3.5.2`
 
 The `name_pattern` will group items separated by a slash. The parser uses the first group as the software name.
-> **NOTE**: Example Sections
-> name: `autotools`
-> parsed_name: `autotools`
-> name: `ant/1.10.7`
-> parsed_name: `ant`
-> name: `dir/r`
+> **NOTE**: Example Sections\
+> name: `autotools`\
+> parsed_name: `autotools`\
+> name: `ant/1.10.7`\
+> parsed_name: `ant`\
+> name: `dir/r`\
 > parsed_name: `dir`
 
 `Version_separator` tells the parser what separates each version (almost always a comma)
-> **NOTE**: Example Sparation
-> version: ` autotools/1.2`
-> separated version: [`autotools/1.2`]
-> version: ` ant/1.10.7/hcgc7fk, ant/1.10.7/5soub24`
-> separated version: [`ant/1.10.7/hcgc7fk`, `ant/1.10.7/5soub24`]
-> version: ` dir/r/3.5.2`
+> **NOTE**: Example Sparation\
+> version: ` autotools/1.2`\
+> separated version: [`autotools/1.2`]\
+> version: ` ant/1.10.7/hcgc7fk, ant/1.10.7/5soub24`\
+> separated version: [`ant/1.10.7/hcgc7fk`, `ant/1.10.7/5soub24`]\
+> version: ` dir/r/3.5.2`\
 > separated version: [`dir/r/3.5.2`]
 
 `Version_cleaner` tells the parser to split each separated version based on some character. It only splits on the first matched character and the rest is treated as the version
-> **NOTE**: Example Clean
-> version: [`autotools/1.2`]
-> cleaned version: [`1.2`]
-> version: [`ant/1.10.7/hcgc7fk`, `ant/1.10.7/5soub24`]
+> **NOTE**: Example Clean\
+> version: [`autotools/1.2`]\
+> cleaned version: [`1.2`]\
+> version: [`ant/1.10.7/hcgc7fk`, `ant/1.10.7/5soub24`]\
 > cleaned version: [`1.10.7/hcgc7fk`, `1.10.7/5soub24`]
 
 `custom_name_version_parser` allows the user to define a custom python function for parsing the name and version.
 To implement this you will have to edit the `parse_spider.py` file found in `parsers/lmod/`. Define the function in the file.
-Inside the same file in the `parse_spider_output` function, you will see this comment:
-`# lmod_parsing["custom_name_version_parser"] = <your custom function>`
-Uncomment that line and add your function name in place of `<your custom function>`.
 
 # Parsing `container definitions`
 
 The container parser will attempt to automatically get all the software installed from the definition file.
 Sometimes the parse can miss some software. If you want to make sure a particular software/version is captured,
-add the follow section to the bottom of your definition file:
+add the follow section to the **bottom** of your definition file:
 ```
 ## SDS Software
 #	software1/version
 #	software2
 ```
-Note the leading `## SDS Software` which lets the parsers know to specifically look for data there.
+
+Note the leading `## SDS Software` which lets the parsers know to specifically look for data there. The content to the left of the  `/` will be treated as the software name; the content to the right, the version.\
 You can add as many software below it as you want, just make sure that there is one leading comment character
 such as `#`.
 
@@ -206,5 +223,37 @@ Currently, the container parser will ignore all url links. This is by design as 
 
 The parser will automatically obtain everything in the help (`%help`) section of the definition file.
 This data is then added to the "Notes" section of each container entry.
+
+Here are some example definition file:\
+```
+BootStrap: docker
+From: nvidia/cuda:8.0-devel-ubuntu16.04
+
+%post
+    apt-get -y update
+    apt-get -y install git vim wget sudo
+    git clone https://github.com/torch/distro.git /torch --recursive
+    cd /torch;
+    sed 's/sudo/ /g' install-deps > install-deps_no_sudo
+    bash install-deps_no_sudo;
+    ./install.sh
+    /torch/install/bin/luarocks install torch
+    /torch/install/bin/luarocks install nn
+    /torch/install/bin/luarocks install image
+    /torch/install/bin/luarocks install lua-cjson
+    /torch/install/bin/luarocks install https://raw.githubusercontent.com/qassemoquab/stnbhwd/master/stnbhwd-scm-1.rockspec
+    /torch/install/bin/luarocks install https://raw.githubusercontent.com/jcjohnson/torch-rnn/master/torch-rnn-scm-1.rockspec
+    /torch/install/bin/luarocks install cutorch
+    /torch/install/bin/luarocks install cunn
+    git clone https://github.com/jcjohnson/densecap.git /densecap
+
+
+## SDS Software
+#	torch
+#   densecap/latest
+```
+Since the `densecap` software is installed using a url, it would normally not be captured by the parser,
+but with the `## SDS Software` comment, it will find the two software `torch` and `densecap`. `torch` will
+not have a version but `densecap` will have the version `latest`.
 
 Further customization for the definitaion file parser may be added in the future.

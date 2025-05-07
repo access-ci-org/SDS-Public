@@ -68,7 +68,7 @@ def get_software_info(
     name_pattern: str = r"([^/]+)(?=/.*)",
     version_separator: str = r"[,]",
     version_cleaner: str = r"/",
-    version_cleaner_max_split: int = 1,
+    version_cleaner_max_split: str = "1",
     spider_description_separator: str = "----",
     custom_name_version_parser: Optional[callable] = None,
 ) -> list[dict[str, any]]:
@@ -148,7 +148,7 @@ def get_software_info(
                     )
 
                 versions = [
-                    re.split(version_cleaner, v.strip(), version_cleaner_max_split)[-1]
+                    re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]
                     for v in re.split(version_separator, versions)
                 ]
                 # Join the remaining lines as the description
