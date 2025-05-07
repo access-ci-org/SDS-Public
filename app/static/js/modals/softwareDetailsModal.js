@@ -1,5 +1,4 @@
-import { makeLinkClickable } from "../table.js";
-import { COLUMN_MAP } from "../table.js";
+import {makeLinkClickable } from "../table.js";
 
 /*////////////////////////////////////////////////////////////////
     Function for URL identification for quick access to modals //
@@ -11,11 +10,14 @@ export function getURLParameter(name) {
 /*///////////////////////////////////////////////
     Event Listener for Software Details Modal //
 *//////////////////////////////////////////////
+
 export function showModalForSoftware(softwareName, staticTable) {
     // Find the row that matches the software name
     staticTable.rows().every(function() {
         var row = this.data();
-        if (row[0] === softwareName) { // Assuming the software name is in the first column
+        // console.log(row)
+        if (row['software_name'] === softwareName) { // Assuming the software name is in the first column
+
             // Trigger the modal logic
             var encodedSoftwareName = encodeURIComponent(softwareName);
             $.ajax({
@@ -23,35 +25,41 @@ export function showModalForSoftware(softwareName, staticTable) {
                 type: "GET",
                 success: function(response) {
                     var useHtml = response.use;
-                    $("#modalExampleTitle").text('Example Use for ' + softwareName);
                     $('#modalExampleUse').html(useHtml);
-
-                    // Populate the softwareDetails modal
-                    $('#softwareDetails-modal-title').html("Software Details: " + row[0]);
-                    $('#softwareDetailsName').text(row[COLUMN_MAP['Software']]);
-                    $('#softwareDetailsRPs').text(row[COLUMN_MAP["RPName"]]);
-                    $('#softwareDetailsType').html(row[COLUMN_MAP["SoftwareType"]]);
-                    $('#softwareDetailsClass').html(row[COLUMN_MAP["SoftwareClass"]]);
-                    $('#softwareDetailsField').html(row[COLUMN_MAP["ResearchField"]]);
-                    $('#softwareDetailsArea').html(row[COLUMN_MAP["ResearchArea"]]);
-                    $('#softwareDetailsDiscipline').html(row[COLUMN_MAP["ResearchDiscipline"]]);
-                    $('#softwareDetailsDescription').html(makeLinkClickable(row[COLUMN_MAP["SoftwareDescription"]]));
-                    $('#softwareDetailsWebpage').html(makeLinkClickable(row[COLUMN_MAP["SoftwaresWebPage"]]));
-                    $('#softwareDetailsDocumentation').html(makeLinkClickable(row[COLUMN_MAP["SoftwareDocumentation"]]));
-                    $('#softwareDetailsExamples').html(makeLinkClickable(row[COLUMN_MAP["ExampleSoftwareUse"]]));
-                    $('#softwareDetailsRPDocs').html(makeLinkClickable(row[COLUMN_MAP["RPSoftwareDocumentation"]]));
-                    $('#softwareDetailsVersions').html(row[COLUMN_MAP["VersionInfo"]]);
-                    $('#softwareDetailsCoreFeat').html(row[COLUMN_MAP["CoreFeatures"]]);
-                    $('#softwareDetailsTags').text(row[COLUMN_MAP["GeneralTags"]]);
-                    $('#softwareDetailsAIDesc').text(row[COLUMN_MAP["AIDescription"]]);
-
-                    // Show modal
-                    $('#softwareDetails-modal').modal('show');
                 },
                 error: function(xhr, status, error) {
                     console.error("Error fetching example use: ", error);
                 }
             });
+
+            // Populate the softwareDetails modal
+            $('#softwareDetails-modal-title').html("Software Details: " + row['software_name']);
+            $('#softwareDetailsName').text(row['software_name']);
+            $('#softwareDetailsRPs').html(row['rp_name']);
+            $('#softwareGroupIDs').html(row['rp_group_id']);
+            $('#softwareDetailsDescription').html(makeLinkClickable(row['software_description']));
+            $('#softwareDetailsVersions').html(row['software_version']);
+            $('#softwareDetailsDocumentation').html(makeLinkClickable(row['software_documentation']));
+            $('#softwareDetailsExamples').html(makeLinkClickable(row['software_use_link']));
+            $('#softwareDetailsWebpage').html(makeLinkClickable(row["software_web_page"]));
+            $('#softwareDetailsType').html(row['ai_software_type']);
+            $('#softwareDetailsClass').html(row['ai_software_class']);
+            $('#softwareDetailsField').html(row['ai_research_field']);
+            $('#softwareDetailsArea').html(row['ai_research_area']);
+            $('#softwareDetailsDiscipline').html(row['ai_research_discipline']);
+            $('#softwareDetailsCoreFeat').html(row['ai_core_features']);
+            $('#softwareDetailsTags').text(row['ai_general_tags']);
+            $('#softwareDetailsAIDesc').text(row['ai_description']);
+
+            // Get the modal element
+            const modalElement = document.getElementById('softwareDetails-modal');
+            // if there's an existing instance of the modal
+            let modal = bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+                // Only create new instance if one doesn't exist
+                modal = new bootstrap.Modal(modalElement);
+            }
+            modal.show();
         }
     });
 }

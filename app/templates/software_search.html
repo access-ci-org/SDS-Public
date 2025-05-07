@@ -8,12 +8,14 @@
     <!-- Report Instructions Alert Messagebox -->    
     <script type="module" src="{{url_for('static', filename='js/alerts.js')}}"></script>
     <!--  -->
-    <script type="module" src="{{url_for('static', filename='js/navbarFooter.js')}}"></script>
-    <!--  -->
     <script type="module" src="{{url_for('static', filename='js/modals/softwareDetailsModal.js')}}"></script>
     <!--  -->
     <script type="module" src="{{url_for('static', filename='js/modals/exampleUseModal.js')}}"></script>
-    
+{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    <link rel="stylesheet" type="text/css" href="../static/css/softwareTable.css">
 {% endblock %}
 
 {%block page_title %}
@@ -25,16 +27,12 @@
 {% endblock %}
 
 {% block app_content %}
-
-<br/>
-
 <script>
-// set columnMap var so JS files can use it
-    var columnMap = '{{ column_map|tojson }}'
+    // set columnMap, use_ai_info, and use_api  vars so JS files can use it
+    const col_names = '{{ column_names|tojson }}'
 </script>
-
 <div class="table-responsive table-container">
-    <div class="table-responsive" id="softwareTableDiv" style="width: 85vw;">
+    <div class="table-responsive" id="softwareTableDiv" style="max-width: 85vw;">
         {{table|safe}}
     </div>
 </div>
