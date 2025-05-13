@@ -26,7 +26,7 @@ jobs:
         # exclude the .github directory because it would overwrite this github action as well
         # Remove the stand-alone-private directory just in case it tries to push that directory as well
         run: |
-          rclone sync ../stand-alone-private/ . --exclude='.git/**' --exclude='.github/**' --exclude='README.md' --exclude='app/data/**' --exclude='.gitattributes' --exclude='TODOS.md'
+          rclone sync ../stand-alone-private/ . --exclude='.git/**' --exclude='.github/**' --exclude='app/data/**' --exclude='.gitattributes' --exclude='TODOS.md'
           rm -r ../stand-alone-private
 
       - name: Commit and push changes
