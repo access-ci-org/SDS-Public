@@ -1,6 +1,9 @@
 # Table of Contents
 - [Parsing `module spider`](#parsing-module-spider)
+  - [Spack specific parsing](#spack-specific-parsing)
+  - [Detailed explanation of regex](#detailed-explanation-of-regex)
 - [Parsing `container definitions`](#parsing-container-definitions)
+  - [Only parse SDS comment block](#Only-parse-SDS-comment-block)
 
 # Parsing `module spider`
 
@@ -113,7 +116,8 @@ parsing:
     spider_description_separator: '----'
 ```
 
-If you are using `spac` to create modules, you should use the following config:
+### Spack specific parsing
+If you are using `spack` to create modules, you should use the following config:
 ```
 parsing:
   lmod_spider:
@@ -129,9 +133,9 @@ software: cairo version: 1.16.0-gcc-9.3.0-fmtofpt
   cmake: cmake/3.19.4
 software: cmke, version: 3.19.4
 ```
+Note that the regex above parses both normal lmod and spack moduel names
 
-\
-\
+### Detailed explanation of regex
 The rest of the section will go into a little more detail about each field and how the default selection affects the fields
 
 `section_separator`, `name_version_pattern`, and `name_pattern` create groups of strings that match the given patterns.
@@ -215,18 +219,18 @@ add the follow section to the **bottom** of your definition file:
 #	software2
 ```
 
-You can also specify the container file and definition (docker) file locations like so:
+You can also specify the container file and definition (docker) file locations as well as commands to run particular software like so:
 ```
 ## SDS Software
 # container_file: /path/file.sinf
 # def_file: /path/dir/dockerfile
 #	software1/version
-#	software2
+#	software2: command for sofwtare 2
 ```
 
 Note the leading `## SDS Software` which lets the parsers know to specifically look for data there.\
 For the container and definition (docker) file paths, they must have `# container_file` or `#def_file` followed by a colon `:` followed by the file path.\
-For the software, the content to the left of the  `/` will be treated as the software name; the content to the right, the version.
+For the software, the content to the left of the  `/` will be treated as the software name; the content to the right, the version. Similar to container and def_file, the colon `:` is used to identify the command for a prticular software. Content to the left of the colon is used to identify the software and version and content to the right is used to identify the software.
 
 You can add as many software below it as you want, just make sure that there is one leading comment character such as `#`.\
 
@@ -236,7 +240,7 @@ Currently, the container parser will ignore all url links. This is by design as 
 The parser will automatically obtain everything in the help (`%help`) section of the definition file.
 This data is then added to the "Notes" section of each container entry.
 
-Here are some example definition file:\
+Here are some example definition file:
 ```
 BootStrap: docker
 From: nvidia/cuda:8.0-devel-ubuntu16.04
@@ -270,7 +274,7 @@ Since the `densecap` software is installed using a url, it would normally not be
 but with the `## SDS Software` comment, it will find the two software `torch` and `densecap`. `torch` will
 not have a version but `densecap` will have the version `latest`.
 
-
+### Only parse SDS comment block
 You can tell the parser to only parse the "SDS software" comment block rather than parsing the entire definition/docker file. Add the following to your `config.yaml` file:
 ```
 parsing:

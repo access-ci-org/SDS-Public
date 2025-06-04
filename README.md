@@ -100,12 +100,12 @@ The SDS tool requires the names of the software available on each system. You ca
  (only the software column needs any data): software, resource, software_description, software_versions.
   - `resource` in this case refers to a specific cluster
   - Here is an example of a CSV file:
-  ```
+```
 software,software_description,software_versions,resource
 ACTC,ACTC converts independent triangles into triangle strips or fans.,1.1,cluster1
 ACTC,ACTC converts independent triangles into triangle strips or fans., 1.3,cluster1
 ANTLR,,"2.7.7-Java-11,2.6",cluster2
-  ```
+```
 A `software.csv`file with just the columns is already provided.
 
 ### Raw Output
@@ -138,11 +138,11 @@ should be the name of a resource to which the files belong. `resource` refers to
      or provide extra information for specific containers (such as `notes` on how to run them)
   - You can also provide only the `.csv` file, `.def` files or both. Information will only be added to and not overwritten.
   - Here is an example `.csv` file or a container:
-  ```
+```
   software_name,software_versions,container_name,definition_file,container_file,container_description,notes,command
   adapterremoval,2.3.2,,/share/singularity/adapterremoval.def,/share/singularity/adapterremoval.sinf,singularity run --app adapterremoval232 /share/singularity/share/singularity/afterqc.sinf AdapterRemoval
   afterqc,0.9.7,,/share/singularity/afterqc,/share/singularity/afterqc.sinf,singularity run --app afterqc097 /share/singularity/share/singularity/afterqc.sinf python /usr/local/Miniconda3/envs/afterqc-0.9.7/bin/after.py -1 R1.fq.gz
-  ```
+```
 
 Here is an example of a proper directory structure for the data:
 ```
