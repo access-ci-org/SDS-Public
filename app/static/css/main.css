@@ -1,17 +1,156 @@
-body{
-  font-size: medium;
-  font-family: Archivo, sans-serif;
+
+@import"https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css";
+@import"https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,70,400;0,100,400;0,100,600;0,100,800;1,100,400&#038;display=swap";
+
+/*  Base colors and styles */
+:root {
+  /* Primary ACCESS colors */
+
+  /* Convert to HSL for easier calculations */
+  --primary-h: 194;
+  --primary-s: 62%;
+  --primary-l: 27%;
+
+  /* Derived colors using HSL calculations */
+  /* --primary-color-1: var(--primary-base); */
+  --primary-color-2: color-mix(in hsl, var(--primary-color-1) 90%, black 10%);
+  --primary-color-3: color-mix(in hsl, var(--primary-color-1) 60%, cyan 40%);
+  --primary-color-4: color-mix(in hsl, var(--primary-color-1) 10%, white 90%);
+
+
+  --secondary-color-2: color-mix(in hsl, var(--secondary-color-1) 30%, white 70%);
+  --secondary-color-3: color-mix(in hsl, var(--secondary-color-1) 60%, gray 40%);
+  --secondary-color-4: color-mix(in hsl, var(--secondary-color-1) 80%, black 20%);
+  /* Accents Colors */
+  /* --primary-accent-color: #ffc42d;
+  --highlight-color: #fce5ab;
+  --secondary-accent-color: #f07537; */
+
+  --padding: 30px;
+  --offset: 0px;
+  --outline: white;
+
 }
 
-.tag {
-    display: inline-block;
-    margin: 2px;
+body {
+  font-family: Archivo,sans-serif;
+  font-size: 18px;
+  line-height: 30px;
+  color: #232323;
+}
+
+/* Screen size specific styles */
+@media (min-width: 600px) {
+  :host,
+  :root {
+    --padding: calc((100% - var(--width)) / 2);
+    --offset: 7px;
+    --width: 540px
   }
-
-.hovered {
-  border: 2px solid red;
+}
+@media (min-width: 768px) {
+  :host,
+  :root {
+    --width: 712px
+  }
+}
+@media (min-width: 900px) {
+  :host,
+  :root {
+    --width: 840px
+  }
+}
+@media (min-width: 1024px) {
+  :host,
+  :root {
+    --width: 940px
+  }
+}
+@media (min-width: 1280px) {
+  :host,
+  :root {
+    --padding: 10px;
+    --offset: 0px;
+    --width: 1180px
+  }
 }
 
-#softwareTable {
-  display: none;  /* Table is initially hidden to save load times*/
+.container {
+  margin: 0 auto;
+  padding: 0 var(--padding);
+  max-width: calc(var(--width) + (2 * var(--padding)));
+}
+
+h1 {
+  font-size: 40px;
+  font-stretch: 70%;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 26px;
+  color: var(--primary-color-1);
+}
+.intro {
+  color:var(--primary-color-1);
+  font-size: 24px;
+  line-height: 36px;
+}
+
+p {
+  /* font-size: 30px; */
+  margin-bottom: 10px;
+}
+
+hr {
+    color: var(--secondary-color-1);
+    opacity: 1;
+}
+
+input {
+  font-size: 16px;
+}
+
+.primary-button {
+  background-color: var(--secondary-color-1);
+  border-color: var(--secondary-color-1);
+  border-style: solid;
+  font-size: 14px;
+  font-weight: bold;
+  border-width: 2px;
+  color: #f2f2f2;
+
+  /* min-width: 144px;
+  padding-top: 16px;
+  padding-bottom: 16px; */
+
+
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  padding-right: 2rem;
+  padding-left: 2rem;
+}
+
+.primary-button:hover {
+  background-color: #f2f2f2;
+  border: #232323;
+  border-style: solid;
+  border-width: 2px;
+  cursor: pointer;
+  color: #232323;
+}
+
+/* Additional styling to bootstrap classes */
+
+.tooltip .tooltip-inner {
+  text-align: left;
+}
+
+.collapsing {
+  transition: none;
 }

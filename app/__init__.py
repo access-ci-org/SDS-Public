@@ -57,6 +57,7 @@ LOGO = styles_conf.get("logo") or  "./logo.svg"
 DEFAULT_USER = gneneral_conf.get("user_name")
 DEFAULT_PASS = Users.hash_password(gneneral_conf.get("password"))
 SHARE_SOFTWARE = gneneral_conf.get("share_software") or "False"
+SHOW_CONTAINER_PAGE = gneneral_conf.get("show_container_page", "True")
 
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     print("Not using API information")
@@ -96,6 +97,7 @@ app.config.update(
     DEFAULT_PASS=DEFAULT_PASS,
     DEFAULT_USER=DEFAULT_USER,
     SHARE_SOFTWARE=SHARE_SOFTWARE,
+    SHOW_CONTAINER_PAGE=SHOW_CONTAINER_PAGE
 )
 
 
@@ -107,6 +109,7 @@ def inject_global_vars():
         "secondary_color": app.config["SECONDARY_COLOR"],
         "site_title": app.config["SITE_TITLE"],
         "logo": app.config["LOGO"],
+        "show_container_page": app.config["SHOW_CONTAINER_PAGE"]
     }
 
 

@@ -1,93 +1,59 @@
-.softwareDetailsModal .modal-dialog{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    max-width:70%;
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
 }
 
-.softwareDetailsModal .modal-content{
-    display:flex;
-    flex-direction: column;
-    width: auto;
-    border:black 4px solid;
-}
-.softwareDetailsModal .modal-header{
-    background: var(--secondary-color) !important;
-    border: 3px var(--secondary-color) solid;
-    border-radius: 5px;
-}
-.softwareDetailsModal .modal-body{
-    padding: 0;
-    background-color: color-mix(in srgb, var(--secondary-color) 50%, black);
-    font-size:1em;
-    border: 1px color-mix(in srgb, var(--primary-color) 100%, black) solid;
+.section-text {
+    font-size: 16px;
+    /* font-weight: 600; */
 }
 
-/* Custom class to format collapsable columns*/
-#softwareDetailsBody .borderColumn{
-    background: var(--secondary-color) !important;
-    background-color:var(--secondary-color) !important;
-    color:white;
-    border: 3px color-mix(in srgb, var(--primary-color) 90%, black) solid;
-    border-radius: 6px;
-    font-size:1.03em;
-    padding-top:15px;
-    padding-bottom:15px;
-    text-align: center;
-    justify-content: center;
-    cursor:pointer;
-}
-/* Custom class for 'Example Use' */
-#softwareDetailsBody .borderExample{
-    background:var(--secondary-color)!important;
-    background-color:var(--secondary-color) !important;
-    color:white;
-    /* border: 3px color-mix(in srgb, var(--primary-color) 90%, black) solid; */
-    border-radius: 6px;
-    font-size:1.04em;
-    padding-top:15px;
-    padding-bottom:5px;
-    text-align: center;
-    justify-content: center;
-    cursor:pointer;
-}
-/* Custom class for collapsable row headers */
-#softwareDetailsBody .borderCell{
-    background-color:var(--secondary-color);
-    cursor:pointer;
-    color:white;
-    border-radius: 6px;
-}
-#softwareDetailsBody .row{
-    border: 3px color-mix(in srgb, var(--secondary-color) 50%, black) solid;
+[id$="-software"] {
+    font-size: 20px !important;
 }
 
-/* Custom class for collapsable row data */
-#softwareDetailsBody .borderValue{
-    background-color:color-mix(in srgb, var(--secondary-color) 70%, white);
-    /* margin-top: 0.25rem; */
-    /* margin-bottom: 0.25rem; */
-    color:white;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
+.more-info-item > .section-text {
+    font-size: 16px;
+    font-weight: 600;
+}
 
+.more-info {
+    background-color: var(--primary-color-4);
+    padding: 15px;
 }
-/* Increase contrast of links inside softwareDetails modal */
-#softwareDetailsBody a {
-     color: white;
+
+.tag, .software-type, .research-discipline {
+  font-size: 1em;
+  text-decoration: underline;
+  color: var(--secondary-color-1);
+  margin-right: 15px;
 }
-/* Adjust apdding for text elements */
-#softwareDetailsBody p {
-    margin-top: 0.3rem;
-    margin-bottom: 0.3rem;
+
+.tag:hover, .software-type:hover, .research-discipline:hover {
+  color: var(--primary-color-1);
+  cursor: pointer;
 }
-/* Line Spacer inside Modal */
-#softwareDetailsBody hr{
-    border:0;
-    height:1px;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    /* background-color:#0c5a66d5; */
+
+.more-info {
+    margin-bottom: 25px;
+}
+
+.more-info > .intro {
+    font-size: 1em;
+}
+
+.more-info-item {
+    padding: 10px;
+}
+
+.more-info-item > *{
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.installed-on {
+    margin-top: 10px;
+    margin-bottom: 10px;
+
 }

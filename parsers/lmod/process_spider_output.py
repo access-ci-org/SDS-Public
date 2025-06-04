@@ -23,8 +23,16 @@ def process_spider_data(spider_path: Path, blacklist: set[str]) -> None:
                         s_id = process_software(
                             s_info["name"], blacklist, s_info.get("description")
                         )
+                        # convert raw software name to lmod command
+                        for version, command in s_info["versions"].items():
+                            if version == "...":
+                                # for software that have truncated version output, set command to be 'moduel spider software_name"
+                                s_info["versions"][version] = f"module spider {s_info["name"]}"
+                                continue
+                            s_info["versions"][version] = f"module load {command}"
+
                         update_software_resource(
-                            s_id, r_id, ", ".join(s_info["versions"])
+                            s_id, r_id, s_info["versions"]
                         )
                     except DataProcessingError as e:
                         logger.warning(f"Skipping entry: {str(e)}")

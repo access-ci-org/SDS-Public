@@ -31,6 +31,8 @@ class TableInfo:
             "software_documentation",
             "software_use_link",
             "ai_example_use",
+            "more_info",
+            "command"
         ]
     )
     column_names: Dict[str, str] = field(
@@ -50,8 +52,10 @@ class TableInfo:
             "ai_research_area": "AI Research Area",
             "ai_research_discipline": "AI Research Discipline",
             "ai_core_features": "AI Core Features",
-            "ai_general_tags": "AI General Tags",
+            "ai_general_tags": "AI Tags",
             "ai_example_use": "AI Example Use",
+            "more_info": "Documentation, Uses, and more",
+            "command": "Command"
         }
     )
     column_order: List[str] = field(init=False)
@@ -146,7 +150,19 @@ def organize_table(
     def combine_resources_versions(group):
         resources = group["resource_name"].tolist()
         versions = group["software_version"].tolist()
-        combined = [f"{r}: {v}" for r, v in zip(resources, versions)]
+
+        # Check if command column exists in the data
+        has_commands = "command" in group.columns
+        commands = group["command"].tolist() if has_commands else [""] * len(versions)
+
+        # Create combined strings with optional command information
+        combined = []
+        for r, v, c in zip(resources, versions, commands):
+            if has_commands and c and str(c).strip():  # If command exists and is not empty
+                combined.append(f"{r}: {v} ({c})")
+            else:
+                combined.append(f"{r}: {v}")
+
         return pd.Series(
             {
                 "resource_name": ", ".join(set(resources)),
@@ -184,3 +200,57 @@ def organize_table(
     if container_column_name in df.columns:
         df[container_column_name] = df[container_column_name].fillna("N/A")
     return df
+
+def combine_columns(df: pd.DataFrame, columns: list[tuple[str, str]], combine_data: bool = False, separator: str = ", "):
+    """
+    Merges two columns.
+
+    Args:
+        df: Input DataFrame
+        columns: List of tuples containing (primary_column, secondary_column) names
+        combine_data: If False, just fills missing values. If True, combines both columns and removes duplicates.
+        separator: String to use when combining values (default: ", ")
+
+    Returns:
+        pd.DataFrame: Modified DataFrame
+    """
+    df_result = df.copy()
+
+    for col1, col2 in columns:
+        if col1 not in df_result.columns or col2 not in df_result.columns:
+            continue
+        # Convert NaN/None to empty strings for string operations
+        df_result[col1] = df_result[col1].fillna("").astype(str)
+        df_result[col2] = df_result[col2].fillna("").astype(str)
+
+        if combine_data:
+            # Combine both columns and remove duplicates
+            def merge_row(row):
+                val1, val2 = row[col1].strip(), row[col2].strip()
+
+                # If both are empty, return empty string
+                if not val1 and not val2:
+                    return ""
+                elif not val1:
+                    return val2
+                elif not val2:
+                    return val1
+
+                # Both exist - combine and deduplicate
+                items1 = [item.strip() for item in val1.split(separator) if item.strip()]
+                items2 = [item.strip() for item in val2.split(separator) if item.strip()]
+
+                # Remove duplicates while preserving order
+                combined = []
+                for item in items1 + items2:
+                    if item and item not in combined:
+                        combined.append(item)
+
+                return separator.join(combined)
+
+            df_result[col1] = df_result.apply(merge_row, axis=1)
+        else:
+            # Simple fillna approach - fill empty strings in col1 with values from col2
+            df_result[col1] = df_result[col1].replace("", pd.NA).fillna(df_result[col2]).fillna("")
+
+    return df_result

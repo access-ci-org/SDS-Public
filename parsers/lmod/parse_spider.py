@@ -10,6 +10,7 @@ def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]
     """
     Define your custom parsing function here.
     Change the values of name and versions as necessary
+    Must return all three items
 
     Args:
         name (str): software name identified by the parser
@@ -95,12 +96,12 @@ def get_software_info(
             Defaults to '----'.
         custom_name_version_parser (Optional[Callable], optional): Custom function to parse
             name and version. If provided, it should accept and return (name, versions, software_info).
-            Defaults to None.
+            Defaults to custom_lmod_parser.
 
     Returns:
         List[Dict[str, Any]]: A list of dictionaries, each containing:
             - 'name' (str): The name of the software.
-            - 'versions' (List[str]): A list of versions for the software.
+            - 'versions' (Dict:[str:str]): A dict for the software where the key is inte cleaned version name and the value is the unclead version name.
             - 'description' (str): A description of the software.
 
     Notes:
@@ -147,10 +148,17 @@ def get_software_info(
                         group for group in name_match.groups() if group is not None
                     )
 
-                versions = [
-                    re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]
+                # versions = [
+                #     re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]
+                #     for v in re.split(version_separator, versions)
+                # ]
+
+                versions = {
+                    re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]: v.strip()
                     for v in re.split(version_separator, versions)
-                ]
+                }
+                pp(versions)
+
                 # Join the remaining lines as the description
                 description = " ".join(line.strip() for line in lines[1:])
 
@@ -161,18 +169,18 @@ def get_software_info(
                     )[0].strip()
 
                 # Check if software already exists in software_info
-                existing_software = next(
-                    (item for item in software_info if item["name"] == name), None
-                )
+                # existing_software = next(
+                #     (item for item in software_info if item["name"] == name), None
+                # )
 
-                if existing_software:
-                    existing_software["versions"] = list(
-                        set(existing_software["versions"] + versions)
-                    )
-                else:
-                    software_info.append(
-                        {"name": name, "versions": versions, "description": description}
-                    )
+                # if existing_software:
+                #     existing_software["versions"] = list(
+                #         set(existing_software["versions"] + versions)
+                #     )
+                # else:
+                software_info.append(
+                    {"name": name, "versions": versions, "description": description}
+                )
     return software_info
 
 

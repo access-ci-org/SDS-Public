@@ -9,13 +9,14 @@
        </button>
        <div class="collapse navbar-collapse" id="navbarNav">
            <ul class="navbar-nav ms-auto">
-                {% if 'container' in request.path %}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('software.software_search') }}">Software</a></li>
-                {% else %}
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('container.search_container') }}">Containers</a></li>
-               {% endif %}
+                {% if show_container_page %}
+                    {% if 'container' in request.path %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('software.software_search') }}">Software</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('container.search_container') }}">Containers</a></li>
+                    {% endif %}
+                {% endif %}
                 {% if current_user.is_authenticated %}
-                   <li class="nav-item"><a class="nav-link" href="{{ url_for('reports.view_user_reports') }}">User Reports</a></li>
                    <li class="nav-item"><a class="nav-link" href="{{ url_for('settings.settings') }}">Settings</a></li>
                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a></li>
                {% else %}

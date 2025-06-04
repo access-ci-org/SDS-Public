@@ -20,27 +20,14 @@ def settings():
         share_software=current_user.shareSoftware,
     )
 
-
 @settings_bp.route("/update_col_visibility/<path:column_name>", methods=["POST"])
 @login_required
 def update_col_visibility(column_name):
-    table_info = initialize_table_info()
     if column_name:
-        if column_name in table_info.column_names:
-            column = table_info.column_names[column_name]
-            drop_columns = current_app.config["DROP_COLUMNS"]
-            if column in drop_columns:
-                drop_columns.remove(column)
-            else:
-                drop_columns.append(column)
-            current_app.config["DROP_COLUMNS"] = drop_columns
-            return jsonify({"success": "Column updated successfully"})
-        elif column_name == "shareSoftware":
+        if column_name == "shareSoftware":
             current_user.shareSoftware = current_user.toggle_software_share()
             return jsonify({"success": "Share preference udpated successfully"})
-
         return jsonify({"error": "Invalid column name"}), 400
-
 
     return jsonify({"error": "Missing column name"}), 400
 

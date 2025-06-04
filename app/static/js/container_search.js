@@ -1,3 +1,4 @@
+import { createContainerDetailsTemplate } from "./modals/containerModal.js"
 const containers = JSON.parse(container_data);
 
 function createContainerCard(container) {
@@ -5,18 +6,17 @@ function createContainerCard(container) {
         <div class="col-12">
             <div class="card container-card h-100">
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h5 class="card-title text-break">${container.container_name}</h5>
-                            <div class="text-muted small mb-2">
-                                <i class="fa-solid fa-server"></i>
-                                ${container.resource}
-                            </div>
-                        </div>
+                    <div class="d-inline-flex justify-content-between align-items-start">
+                            <i class="bi bi-boxes me-2"></i>
+                            <h5 class="card-title text-break" style="line-height:30px;">${container.container_name}</h5>
+                    </div>
+                    <div class="text-muted small mb-2">
+                        <i class="bi bi-hdd-stack-fill"></i>
+                        ${container.resource}
                     </div>
                     <div class="mt-3">
                         <div class="text-muted small mb-2">
-                            <i class="fa-solid fa-cube"></i>
+                            <i class="bi bi-grid-fill"></i>
                             Installed Software
                         </div>
                         <div class="d-flex flex-wrap gap-2">
@@ -76,7 +76,7 @@ function renderTags() {
 }
 
 function filterContainers() {
-    const searchTerms = activeSearchTerms.size > 0 
+    const searchTerms = activeSearchTerms.size > 0
         ? Array.from(activeSearchTerms)
         : searchInput.value.toLowerCase().split(' ').filter(term => term);
 
@@ -122,11 +122,12 @@ document.addEventListener('DOMContentLoaded', function() {
     containerDetailsModal = new bootstrap.Modal(modalElement);
 });
 
-// Setup event listner for view details button
-document.addEventListener('click', async(e) => {
-    if (e.target.matches('.view-details')){
+// Updated single container modal handler
+document.addEventListener('click', async (e) => {
+    if (e.target.matches('.view-details')) {
         const containerName = e.target.dataset.containerName;
         const resourceName = e.target.dataset.resourceName;
+
         $.ajax({
             url: "/container_details",
             type: "POST",
@@ -135,49 +136,22 @@ document.addEventListener('click', async(e) => {
                 containerName: containerName,
                 resourceName: resourceName
             }),
-            success: function(response){
-                // Update modal content
+            success: function(response) {
+                // Update modal title
                 document.getElementById('modalContainerName').textContent = response.container_name;
-                document.getElementById('modalResource').textContent = response.resource;
-                document.getElementById('modalDefinitionFile').textContent = response.definition_file;
 
-                // Update software list - reusing the same badge style from container cards
-                const softwareList = document.getElementById('modalSoftwareList');
-                softwareList.innerHTML = response.software
-                    .map(sw => `<span class="badge software-badge rounded-pill">${sw}</span>`)
-                    .join('');
+                // Use the reusable template for the modal body content
+                const modalBody = document.querySelector('#containerDetailsModal .modal-body');
+                modalBody.innerHTML = createContainerDetailsTemplate(response);
 
-                // Optional fields - Definition File
-                const defFileElement = document.getElementById('modalDefinitionFile');
-                if (response.definition_file) {
-                    defFileElement.textContent = response.definition_file;
-                    defFileElement.classList.remove('text-muted');
-                } else {
-                    defFileElement.innerHTML = '<span class="text-muted">Unknown definition file location</span>';
-                }
-
-                // Optional fields - Container File
-                const containerFileElement = document.getElementById('modalContainerFile');
-                if (response.container_file) {
-                    containerFileElement.textContent = response.container_file;
-                    containerFileElement.classList.remove('text-muted');
-                } else {
-                    containerFileElement.innerHTML = '<span class="text-muted">Unknown container file location</span>';
-                }
-
-                // Update notes
-                const notesElement = document.getElementById('modalContainerNotes');
-                notesElement.textContent = response.container_notes || 'No notes available';
-
-                // Show the modal
-                containerDetailsModal.show()
+                containerDetailsModal.show();
             },
-            error: function(xhr, status, error){
-                console.error("Error: ", error)
+            error: function(xhr, status, error) {
+                console.error("Error: ", error);
             }
-        })
+        });
     }
-})
+});
 
 // Initial render
 filterContainers();

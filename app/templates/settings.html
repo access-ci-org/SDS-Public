@@ -27,11 +27,6 @@
           User Settings
         </button>
       </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="columns-tab" data-bs-toggle="tab" data-bs-target="#columns-tab-pane" type="button" role="tab" aria-controls="columns-tab-pane" aria-selected="true">
-        Column Management
-      </button>
-    </li>
   </ul>
   <!-- Tab content -->
   <div class="tab-content" id="settingsTabContent">
@@ -60,58 +55,6 @@
           </div>
         </div>
       </div>
-
-    <!-- Column Management Tab -->
-    <div class="tab-pane" id="columns-tab-pane" role="tabpanel" aria-labelledby="columns-tab" tabindex="0">
-      <div class="alert alert-info mb-4">
-        <i class="bi bi-info-circle me-2"></i>
-        Click and drag columns to rearrange them. The first column cannot be reordered.
-      </div>
-      <div class="card shadow-sm mb-4">
-        <div class="card-body" id="draggable-container">
-          {% for column in table_info.column_order %}
-          <div class="row draggable-row mx-0 p-3 mb-2 border rounded bg-white" draggable="true">
-            <div class="col-md-4 d-flex align-items-center">
-              <div class="drag-handle">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                </svg>
-                <i class="bi bi-grip-vertical"></i>
-              </div>
-              <b>Column:</b>
-              <span class="column-name ms-2">{{ table_info.column_names[column] }}</span>
-            </div>
-            <div class="col-md-5">
-              <div class="input-group">
-                <span class="input-group-text">Rename:</span>
-                <input type="text" class="form-control column-input"
-                  placeholder="{{ table_info.column_names[column] }}"
-                  data-original-key="{{ column }}"
-                  data-original-name="{{ table_info.column_names[column] }}">
-              </div>
-            </div>
-            <div class="col-md-3 d-flex align-items-center justify-content-end">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox"
-                  value="" id="{{ column }}"
-                  {{ 'checked' if (column in table_info.column_order and table_info.column_names[column] not in drop_columns) }}
-                  {% if use_api %}
-                    {{ 'disabled' if column in api_curated_columns and (not use_curated_info) }}
-                    {{ 'disabled' if (not use_ai_info) and column in api_ai_columns }}
-                  {% elif column in api_curated_columns or column in api_ai_columns %}
-                    disabled
-                  {% endif %}
-                >
-                <label class="form-check-label ms-2" for="{{ column }}">
-                  Show
-                </label>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 {% endblock %}

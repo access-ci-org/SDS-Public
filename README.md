@@ -22,7 +22,7 @@ All they need to do is provide the names of the software and which cluster they 
   - [Parser](#parser)
 
 # Setting up the Application
-**Bash or Zsh terminals are recommended**
+**Bash or Zsh terminals are recommended**\
 **Windows machine: Install Miniconda or Anaconda manually**
 
 The SDS tool is meant to exist independent of any HPC clusters and should not be run on any critical systems.
@@ -75,6 +75,7 @@ general:
   user_name: default admin user
   password: default admin password
   share_software: False
+  show_container_page: True
 ```
 
 - Set `use_api` to `True` to connect to a remote SDS database (using the `sds_api_key`). Default: False
@@ -86,18 +87,19 @@ general:
 - Set `logo` to be the relative path to the image you want to display as your logo.
 - Set `user_name` and `password` to be the default admin user for your website
 - Set `share_software` to be `True` if you want to share the names of the software available on your resources with us. This inforamtion will be used to identify software for which we need to collect curated data. It may also be used to help other institutions identify what software is available at different institutions. Default is `False`.
+- Set `show_container_page` to be `False` if you either don't want the container page to be accessible. Default is `True`
 
 
 # Data Preparation
-The SDS tool requires the names of the software available on each system. You can provide this information in one of two ways: curated and/or raw output.
+The SDS tool requires the names of the software available on each system. You can provide this information in two different ways: curated and/or raw output.
 
 ### Curated
 - Curated data should be in the form of a CSV with the following requirements
- - If you are using docker, then the file must be named `software.csv`
- - The first line must have column names and the following columns are necessary
+  - If you are using docker, then the file must be named `software.csv`
+  - The first line must have column names and the following columns are necessary
  (only the software column needs any data): software, resource, software_description, software_versions.
- - `resource` in this case refers to a specific cluster
- - Here is an example of a CSV file:
+  - `resource` in this case refers to a specific cluster
+  - Here is an example of a CSV file:
   ```
 software,software_description,software_versions,resource
 ACTC,ACTC converts independent triangles into triangle strips or fans.,1.1,cluster1
@@ -109,8 +111,8 @@ A `software.csv`file with just the columns is already provided.
 ### Raw Output
 
 #### Collector Script:
-For obtaining the raw output, use the `collector.py` file located script located in this repo.
-The COLLECTOR.md file goes over how to use it. The `collector.py` file will create the proper directory structure for each type of data.
+For obtaining the raw output, use the `collector.py` script located in this repo.
+The `COLLECTOR.md` file goes over how to use it. The `collector.py` file will create the proper directory structure for each type of data.
 
 #### Manual
 If you would rather collect the data manually, the rest of the section will cover how format that data
@@ -130,16 +132,16 @@ should be the name of a resource to which the files belong. `resource` refers to
   - Aside from the raw `.def` file, you can also add curated information for specific containers.
  All csv files must have a software_name and (container_file or definition_file) columns.
  Here is the complete list of supported columns: `software_name, software_versions, container_name,
- definition_file, container_file, container_description, notes`.
+ definition_file, container_file, notes, command`.
     - If no container_name is provided then the definition_file name will be used as container name.
      The csv file is meant to supplement the `.def` files so that you can provide data the parser may have missed,
      or provide extra information for specific containers (such as `notes` on how to run them)
   - You can also provide only the `.csv` file, `.def` files or both. Information will only be added to and not overwritten.
   - Here is an example `.csv` file or a container:
   ```
-  software_name,software_versions,container_name,definition_file,container_file,container_description,notes
-  adapterremoval,2.3.2,,/share/singularity/adapterremoval.def,/share/singularity/adapterremoval.sinf,,singularity run --app adapterremoval232 /share/singularity/share/singularity/afterqc.sinf AdapterRemoval
-  afterqc,0.9.7,,/share/singularity/afterqc,/share/singularity/afterqc.sinf,,singularity run --app afterqc097 /share/singularity/share/singularity/afterqc.sinf python /usr/local/Miniconda3/envs/afterqc-0.9.7/bin/after.py -1 R1.fq.gz
+  software_name,software_versions,container_name,definition_file,container_file,container_description,notes,command
+  adapterremoval,2.3.2,,/share/singularity/adapterremoval.def,/share/singularity/adapterremoval.sinf,singularity run --app adapterremoval232 /share/singularity/share/singularity/afterqc.sinf AdapterRemoval
+  afterqc,0.9.7,,/share/singularity/afterqc,/share/singularity/afterqc.sinf,singularity run --app afterqc097 /share/singularity/share/singularity/afterqc.sinf python /usr/local/Miniconda3/envs/afterqc-0.9.7/bin/after.py -1 R1.fq.gz
   ```
 
 Here is an example of a proper directory structure for the data:

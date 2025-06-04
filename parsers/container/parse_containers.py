@@ -2,6 +2,7 @@ from typing import List, Dict, Any
 from pathlib import Path
 import pandas as pd
 import re
+import yaml
 
 
 def parse_csv_container(file_path: Path) -> List[Dict[str, str]]:
@@ -149,11 +150,29 @@ def extract_SDS_software(content):
 
     section_pattern = r'##\s+SDS\s+Software\s+(.*?)(?=##|\Z)'
     match = re.search(section_pattern, content, re.DOTALL)
+    container_file = ""
+    definition_file = ""
     if match:
         # split the section by new lines and remove the leading '#'
         data = [string[1:].strip() for string in match.group(1).split("\n") if string]
-        return data
-    return []
+        new_data = []
+        for item in data:
+            command = ""
+            software = item
+            if "container_file" in item:
+                container_file = item.split(":")[1].strip()
+            elif "def_file" in  item:
+                definition_file = item.split(":")[1].strip()
+            elif ":" in item:
+                software, command = item.split(":")
+                software = software.strip()
+                command = command.strip()
+                new_data.append((software, command))
+            else:
+                new_data.append((software,command))
+
+        return new_data, container_file, definition_file
+    return [], container_file, definition_file
 
 def get_parsed_data(package_string, data) -> Dict[str, str]:
 
@@ -179,23 +198,40 @@ def parse_container_def(file_path: Path) -> List[Dict[str, Any]]:
     with open(file_path, "r") as file:
         content = file.read()
 
-    package_strings = extract_packages_strings(content)
-    help_message = extract_help_message(content)
-    package_strings.extend(extract_SDS_software(content))
     parsed_data = []
-    for package_string in package_strings:
+
+    try:
+        with open("config.yaml", "r", encoding="utf-8") as c:
+            parsing = yaml.safe_load(c).get("parsing", {})
+            parsing_config = parsing["container"] if parsing and parsing.get('container') else {}
+    except FileNotFoundError:
+        parsing_config = {}
+    help_message = extract_help_message(content)
+
+    # get comment block info
+    software_command, container_file, def_file = extract_SDS_software(content)
+
+    if not parsing_config.get("comment_block_only", ""):
+        package_strings = []
+        package_strings.extend(extract_packages_strings(content))
+        s_c = [(software, '') for software in package_strings]
+        software_command.extend(s_c)
+
+    for software,command in software_command:
         data = {
             "container_name": file_path.stem,
-            "definition_file": f"{file_path.stem}{file_path.suffix}",
-            "container_file": "",
+            "definition_file": f"{def_file or (file_path.stem + file_path.suffix)}",
+            "container_file": container_file,
             "container_description": "",
             "notes": help_message,
+            "command": command,
         }
-        if package_string.startswith(("http://", "https://")):
-            data["software_name"] = package_string
+        if software.startswith(("http://", "https://")):
+            data["software_name"] = software
             data["software_versions"] = ""
         else:
-            data = get_parsed_data(package_string, data)
+            data = get_parsed_data(software, data)
+
         parsed_data.append(data)
     return parsed_data
 
@@ -226,10 +262,10 @@ def parse_container_files(container_data: Path) -> Dict[str, Any]:
                                 resource_dir = container_data / resource_name
                                 rel_path = item_path.relative_to(resource_dir)
 
-                                item["definition_file"] = '/' + str(rel_path)
+                                item["definition_file"] = item["definition_file"] or '/' + str(rel_path)
                             except ValueError:
                                 # If relative_to fails, use the absolute path
-                                item["definition_file"] = str(item_path)
+                                item["definition_file"] = item["definition_file"] or str(item_path)
                 else:
                     print(f"Unknown file type: {item_path.suffix}. Skipping")
                     continue

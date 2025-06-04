@@ -3,14 +3,11 @@
     {{super()}}
     <!-- DataTable Behaviors -->
     <script type="module" src="{{url_for('static', filename='js/table.js')}}"></script>
-    <!-- Report/Feedback Buttons --> 
-    <script type="module" src="{{url_for('static', filename='js/issueReporting.js')}}"></script>
-    <!-- Report Instructions Alert Messagebox -->    
+    <!-- Report Instructions Alert Messagebox -->
     <script type="module" src="{{url_for('static', filename='js/alerts.js')}}"></script>
     <!--  -->
     <script type="module" src="{{url_for('static', filename='js/modals/softwareDetailsModal.js')}}"></script>
     <!--  -->
-    <script type="module" src="{{url_for('static', filename='js/modals/exampleUseModal.js')}}"></script>
 {% endblock %}
 
 {% block styles %}
@@ -21,7 +18,7 @@
 {%block page_title %}
 <div style="text-align: center;">
     <br>
-    <h2 id="page_title">Software Documentation Service</h2>
+    <h3 id="page_title" class="intro">Software Documentation Service</h3>
     <br>
 </div>
 {% endblock %}
@@ -43,8 +40,7 @@
 <div>
     <strong>Last Updated: <span id="lastUpdated"> {{last_updated}}</span></strong>
 </div>
-    
-{% include '/modals/exampleUseModal.html' %}
+
 {% include '/modals/feedbackModal.html' %}
 {% include '/modals/reportModal.html' %}
 {% include '/modals/softwareDetailsModal.html' %}

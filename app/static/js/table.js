@@ -1,67 +1,140 @@
 import { showModalForSoftware, getURLParameter } from "./modals/softwareDetailsModal.js";
-import { onExampleUseClick } from "./modals/exampleUseModal.js";
 import { onViewContainerClick } from "./modals/containerModal.js";
 
 export var staticTable
 export var column_names = JSON.parse(col_names) // defined in software_search.html
 
+function buildColumns() {
+    var cols = [];
+    var headerCells = $('#softwareTable thead th');
+
+    // Create a reverse mapping from display names to internal keys
+    const reverseColumnMap = {};
+    Object.entries(column_names).forEach(([key, value]) => {
+        reverseColumnMap[value] = key;
+    });
+
+    headerCells.each(function(index) {
+        const displayName = $(this).text().trim();
+        const internalKey = reverseColumnMap[displayName];
+        var column = {
+            data: internalKey,
+        };
+
+        // Special handling for column 3 (index 3) with comma-separated values
+        if (internalKey === 'ai_general_tags') {
+            column.render = {
+                _: function(data, type, row){
+                    return data || '';
+                },
+                sp: function(data, type, row) {
+                    return data ? data.split(', ') : [];
+                }
+            };
+            column.searchPanes = {
+                orthogonal: 'sp'
+            };
+        } else if (internalKey === 'ai_research_discipline') {
+            column.render = {
+                _: function(data, type, row){
+                    return data || '';
+                },
+                sp: function(data, type, row) {
+                    return data ? data.split(', ') : [];
+                }
+            };
+            column.searchPanes = {
+                orthogonal: 'sp'
+            };
+            column.visible = false;
+        } else if (internalKey === 'ai_software_type') {
+            column.visible = false;
+            column.searchPanes = {
+                orthogonal: 'sp'
+            };
+        }
+
+        if (internalKey === 'resource_name') {
+            column.render = {
+                _: function(data, type, row){
+                    return data || '';
+                },
+                sp: function(data, type, row) {
+                    return data ? data.split(", ") : [];
+                }
+            };
+            column.searchPanes = {
+                orthogonal: 'sp'
+            };
+            column.width = "10%" // sets max width to 10% of table
+        }
+
+        if (internalKey === "software_name") {
+            column.render = function(data, type, row) {
+                if (type === 'display') {
+                    return `<span class="table-software">` + (data || '') + '</span>';
+                }
+                return data || '';
+            };
+        } else if (internalKey === 'more_info') {
+            column.render = function(data, type, row) {
+                if (type === 'display') {
+                    return '<button class="primary-button" type="button">DETAILS</button>';
+                }
+                return data || '';
+            };
+            column.width = "15%" // sets max width to 15% of table
+
+        } else if (internalKey === 'container'){
+            column.render = function(data, type, row){
+                if (type === 'display' && data && data !== 'N/A') {
+                    return "<a class='viewContainer' href='#' onClick='return false;'> view containers</a>";
+                }
+                return data || '';
+            };
+        }
+        cols.push(column);
+    });
+    return cols;
+}
+
+// Get the columns array
+var columns = buildColumns();
+
+// Find which column indices have searchPanes enabled
+var searchPaneColumns = [];
+columns.forEach(function(col, index) {
+    if (col.searchPanes && col.data) {
+        searchPaneColumns.push(index);
+    }
+});
+
 $(document).ready(function()
 {
-    const columnWidths = {
-        'software_name': '120px',
-        'resource_name': '125px',
-        'container': '90px',
-        'software_description': '550px',
-        'ai_description': '400px',
-        'ai_software_type': '110px',
-        'ai_software_class': '115px',
-        'ai_research_field': '110px',
-        'ai_research_area': '100px',
-        'ai_research_discipline': '110px',
-        'ai_core_features': '400px',
-        'ai_general_tags': '180px',
-        'software_version': '160px',
-        'software_web_page': '300px',
-        'software_documentation': '300px',
-        'software_use_link': '300px',
-        'ai_example_use': '150px'
-    };
-
     /*/////////////////////////////////////////////////////////////////////////////////////////////////////////
         STATIC TABLE                                                                                        //
-        Enabled: Buttons (Column Visibility), FixedColumn, FixedHeader, SearchBuilder, SearchPanes, Select //
+        Enabled: FixedHeader, SearchPanes //
     *///////////////////////////////////////////////////////////////////////////////////////////////////////
     var staticTable = $('#softwareTable').DataTable({
-        select: {           // Allows for selecting rows in tables/searchPanes
-            enabled: true,
-            style: 'multi', // Select multiple rows, deselect by clicking again
-        },
-        ordering: false,
-        fixedColumns: true, // Makes first column 'fixed' to the left side of the table when scrolling
+        ordering: false,    // Disables sorting
+        // fixedColumns: true, // Makes first column 'fixed' to the left side of the table when scrolling
         fixedHeader: true,  // Makes column headers 'fixed' to the top of the table when scrolling
+        scrollX:true,
         // autowidth: false,
         // scrollCollapse: true,
-        "sScrollX": "100%", // Enables horizontal scrolling
         pageLength: 25,     // Rows displayed per page
         pagingType: 'full_numbers',     // 'First', 'Previous', 'Next', 'Last', with page numbers
         lengthMenu: [                   // User-selectable menu for pageLength
             [10, 25, 50, 250, 500, -1],
             [10, 25, 50, 250, 500, 'All']
         ],
-        // DOM: Various layout and formatting options.
+        // DOM: various layout and formatting options.
         // For example: 'p' affects the paging style at the bottom of the table.
-        dom: '<"d-flex flex-column flex-md-row justify-content-between"\
-                    <"d-flex flex-column flex-md-row"\
-                        <"d-flex mb-3 mb-md-0"l>\
-                        <"d-flex px-3"B>\
-                    >\
-                    <"d-flex justify-content-between align-items-center flex-grow-1"\
-                        <"d-flex justify-content-start">\
-                        <"d-flex scrollText-div">\
-                    f>\
+        dom: 'P<"#table-filters.d-flex flex-column flex-md-row justify-content-between"\
+                    f\
                 >\
                 rt\
-                <"d-flex justify-content-between"ip>',
+                <"#table_footer_menu.d-flex justify-content-between "lip>',
         language: {
             paginate: { // Change Arrows (< and >) into Word Equivalents
                 previous: "Prev",
@@ -69,225 +142,98 @@ $(document).ready(function()
                 first: "First",
                 last: "Last"
             },
-            buttons:{   // Rename Column Visibility Buttons
-                colvis: 'Show/Hide Columns',
-                colvisRestore: 'Restore All'
-            },
         },
-        buttons: [
-            {   // Edit Column Visibility Buttons
-                extend: 'colvis',
-                collectionLayout: 'two-column',
-                popoverTitle: 'Show/Hide Columns',
-            },
-                'colvisRestore',
-        ],
         stateSave: false,   // Toggle for saving table options between page reloads
         stateDuration:-1,   // How long to save
-        columns: function() {
-            var cols = [];
-            var headerCells = $('#softwareTable thead th');
-
-            // Create a reverse mapping from display names to internal keys
-            const reverseColumnMap = {};
-            Object.entries(column_names).forEach(([key, value]) => {
-                reverseColumnMap[value] = key;
-            });
-
-            headerCells.each(function(index) {
-                const displayName = $(this).text().trim();
-                const internalKey = reverseColumnMap[displayName];
-                var column = {
-                    data: internalKey,
-                    width: internalKey ? columnWidths[internalKey] : null
-                };
-
-                // const displayName = $(this).text().trim();
-                // const internalKey = reverseColumnMap[displayName];
-                if (internalKey === "software_name") {
-                    column.render = function(data, type, row) {
-                        if (type === 'display') {
-                            return `<a data-bs-toggle="modal" data-bs-target="#softwareDetails-modal" href="#">` + data + '</a>';
-                        }
-                        return data;
-                    };
-                } else if (internalKey === 'ai_example_use') {
-                    column.render = function(data, type, row) {
-                        if (type === 'display') {
-                            return '<button class="btn example-use-btn" type="button">Use Example</button>';
-                        }
-                        return data;
-                    };
-                } else if (['software_description', 'software_documentation',
-                         'software_web_page', 'software_use_link'].includes(internalKey)) {
-                    column.render = function(data, type, row) {
-                        if (type === 'display' && data) {
-                            return makeLinkClickable(data);
-                        }
-                        return data;
-                    };
-                } else if (internalKey === 'container'){
-                    column.render = function(data, type, row){
-                        if (type== 'display' && data !== 'N/A') {
-                            return "<a class='viewContainer' href='#' onClick='return false;'> view containers</a>";
-                        }
-                        return data;
-                    }
-                }
-                cols.push(column);
-            });
-            return cols;
-        }(),
-        drawCallback: function (settings) {
-
+        searchPanes:{
+            columns:searchPaneColumns,
+            layout: 'columns-2',
+            threshold: 1.0,
+            dtOpts: {
+                select: { style: 'multi'},
+                order: [[ 1, "desc" ]]
+            }
         },
+        columns:columns,
         initComplete: function() {
-            $('.scrollText-div').html("Hover your mouse to the edge of the table to scroll");
-            var api = this.api();
+            const api = this.api();
             // Target the fixed header cells inside the dt-scroll-headInner container.
             // These are the header cells that DataTables displays for scrolling/fixed columns.
-            $('.dt-scroll-headInner table thead tr th').each(function(i) {
+            $('#softwareTableDiv table thead tr th').each(function(i) {
                 // Get the original header text from the span with class "dt-column-title"
                 let originalText = $(this).find('.dt-column-title').text().trim();
+                if (!(originalText === 'Documentation, Uses, and more')) {
+                    // Clear the header cell and add a span for the title
+                    $(this).empty().append(`
+                        <span style="display:block; font-weight:bold;">
+                            ${originalText}
+                            ${(use_ai_info === "True" && originalText.includes("AI")) ? " &#10024": ''}
+                        </span>
+                    `);
 
-                // Clear the header cell and add a span for the title
-                $(this).empty().append('<span style="display:block; font-weight:bold;">' + originalText + '</span>');
-
-                // Create an input field with a placeholder and append it to the header cell
-                let $input = $('<input type="text" class="col-search" placeholder="Search ' + originalText + '" style="width: 100%;">');
-                $(this).append($input);
-
-                // Attach event listener to perform column search
-                $input.on('keyup change', function(e) {
-                    self = this;
-                    if (api.column(i).search() !== this.value) {
-                        // draw(false) prevents page changes and does faster draw
-                        api.column(i).search(this.value).draw().one('draw', function(){
-                            // minor timeout to ensure DOM updates
-                            setTimeout(function(){
-                                self.focus();
-                            },0)
-                        })
-                    }
-                });
-
+                    // Create an input field with a placeholder and append it to the header cell
+                    let $input = $('<input type="text" class="col-search" style="width: 100%;" placeholder="Search ">');
+                    $(this).append($input);
+                    // Attach event listener to perform column search
+                    $input.on('keyup change', function(e) {
+                        self = this;
+                        // draw(false) prevents page changes and doesfaster draw
+                        const columnIndex = api.column(this.closest('th')).index();
+                        if (api.column(columnIndex).search() !== this.value) {
+                            api.column(columnIndex).search(this.value).draw(false).one('draw', function(){
+                                // minor timeout to ensure DOM updates
+                                setTimeout(function(){
+                                    self.focus();
+                                },0)
+                            })
+                        }
+                    });
+                }
             });
 
             $('#softwareTable').show();
-            api.columns.adjust().draw()
-        },
-    });
-
-/*////////////////////////////////////////////////////////////////
-    Prevent clicking links in the table from Selecting the row //
-*///////////////////////////////////////////////////////////////
-    $('#softwareTable').on('click', 'a', function(e) {
-        // Ensures this event listener doesn't trample 'Report Issue' event
-        if ($("#reportIssueText").text() != 'Cancel')
-        {
-            e.stopPropagation();
+            api.columns.adjust(); // adjust columns if needed
         }
     });
+
+
+    // Hide SearchPanes (filters) by default
+    $(".dtsp-panesContainer").hide();
+    // Add filter button to the table
+    $("#table-filters").append(`
+        <div id="toggle-filters" class="filter-button">
+            <span id="filter-text">Show Filters</span>
+            <i class="bi bi-filter"></i>
+        </div>
+    `);
+    $("#toggle-filters").click(() => {
+        $(".dtsp-panesContainer").toggle("fast", function() {
+            const isVisible = $(".dtsp-panesContainer").is(":visible");
+            const buttonText = isVisible ? "Hide Filters" : "Show Filters";
+            if (!(isVisible)){
+                const table = $("#softwareTable").DataTable();
+                table.searchPanes.clearSelections();
+            }
+            $("#filter-text").html(buttonText);
+        });
+    })
+
+    staticTable.on('click','.viewContainer', function(e){
+        onViewContainerClick(e, staticTable);
+    });
+    // clear the 'view contianer' modal after it is hidden
+    $("#container-modal").on("hidden.bs.modal", function() {
+        $("#container-accordion").html('');
+    })
 
 /*///////////////////////////////////////////////////////////////
     Return softwareDetails modal to default state when closed //
 *//////////////////////////////////////////////////////////////
     $('#softwareDetails-modal').on('hidden.bs.modal', function() {
-        $('.collapse').each(function() {
-            // Reopen all closed drawers except for Example Use
-            if ($(this).attr('id') !== 'modalExampleUse' && !$(this).hasClass('show')) {
-                $(this).addClass('show');
-            }
-            // Reclose Example Use
-            else if ($(this).attr('id') == 'modalExampleUse' && $(this).hasClass('show')) {
-                $(this).removeClass('show');
-            }
-        });
+        $("#software-data").html('')
         history.pushState(null, '', '/');
     });
 
-/*/////////////////////
-    Mouse Scrolling //
-*////////////////////
-    var $scrollBody = $('div.dt-scroll-body:last')  // If scrolling breaks, ensure that the table is the last dt-scroll-body
-    var scrollSensitivity = 100; // Distance from edge in pixels.
-    var scrollSpeed = 7; // Speed of the scroll step in pixels.
-    var scrollInterval;
-    var scrollDirection;
-
-    // Event listener for mouse movement in the scroll body.
-    $scrollBody.mousemove(function(e)
-    {
-        var $this = $(this);
-        var offset = $this.offset();
-        var scrollWidth = $this[0].scrollWidth;
-        var outerWidth = $this.outerWidth();
-        var x = e.pageX - offset.left;
-
-        // Right edge of the table.
-        if (scrollWidth > outerWidth && x > outerWidth - scrollSensitivity)
-        {
-            startScrolling(1); // Scroll right
-        }
-        // Left edge of the table.
-        else if (x < scrollSensitivity)
-        {
-            startScrolling(-1); // Scroll left
-        }
-        else
-        {
-            stopScrolling();
-        }
-    });
-
-    $scrollBody.mouseleave(stopScrolling);
-
-    checkScrollEdges();
-    $scrollBody.on('scroll',checkScrollEdges);
-
-    // Scrolling Behaviors
-    function startScrolling(direction)
-    {
-        if (scrollInterval)
-        {
-            clearInterval(scrollInterval);
-        }
-        scrollDirection = direction;
-        scrollInterval = setInterval(function()
-        {
-        var currentScroll = $scrollBody.scrollLeft();
-        $scrollBody.scrollLeft(currentScroll + scrollSpeed * scrollDirection);
-        }, 10); // Interval in milliseconds
-    }
-
-    function checkScrollEdges()
-    {
-        let scrollLeft = $scrollBody.scrollLeft();
-        var scrollWidth = $scrollBody[0].scrollWidth;
-        var outerWidth = $scrollBody.outerWidth();
-
-        if (scrollLeft+outerWidth >= (scrollWidth - 1))
-        {
-            $scrollBody.parent().addClass('no-right-shadow');
-        }
-        else
-        {
-            $scrollBody.parent().removeClass('no-right-shadow');
-        }
-
-        if (scrollLeft == 0)
-        {
-            $scrollBody.parent().addClass('no-left-shadow');
-        }else
-        {
-            $scrollBody.parent().removeClass('no-left-shadow');
-        }
-    }
-
-    function stopScrolling()
-    {
-        clearInterval(scrollInterval);
-    }
 
 /*//////////////////////////////////////////////
     Disable Searching Through Hidden Columns //
@@ -321,43 +267,61 @@ $(document).ready(function()
     // Check initial URL for parameter
     var initialSoftwareName = getURLParameter('software');
     if (initialSoftwareName) {
-        showModalForSoftware(initialSoftwareName, staticTable);
+        showModalForSoftware(initialSoftwareName);
     }
 
-    // Modify the URL when a modal is opened
-    staticTable.on('click', 'a[data-bs-target$="#softwareDetails-modal"]', function(e) {
-        e.preventDefault();
-        var softwareName = $(this).text(); // Assuming the software name is the text of the link
-        history.pushState(null, '', '?software=' + encodeURIComponent(softwareName));
-        showModalForSoftware(softwareName, staticTable);
-    });
+    // main search table input
+    $(".dt-search input").attr('placeholder', 'Search Table')
 
-    staticTable.on('click','.example-use-btn', function(e){
-        onExampleUseClick(e, staticTable);
-    });
-
-    staticTable.on('click','.viewContainer', function(e){
-        onViewContainerClick(e, staticTable);
-    });
-
-    $("#container-modal").on("hide.bs.modal", ()=>{
-        $("#container-accordion").html("")
-    })
-
+    // datatables search panes buttons
+    $(".dtsp-titleRow button").addClass('tag')
 });
 
 /*//////////////////////////////
     Clickable Links In Table //
 */////////////////////////////
-export function makeLinkClickable(data)
-{
-    var urlRegex = /(https?:\/\/[^\s]+)/g;
-    if (data !== undefined){
-        return data.replaceAll(urlRegex, function(url)
-        {
-            // Insert zero-width space after slashes or dots, as an example
+export function makeLinkClickable(data) {
+    var urlRegex = /(https?:\/\/[^\s<>]+)/g;  // Matches URLs starting with http/https and not containing whitespace or angle brackets
+    if (data !== undefined) {
+        return data.replace(urlRegex, function(url) {
+            // Insert zero-width space after slashes or dots
             var spacedUrl = url.replace(/(\/|\.)+/g, '$&\u200B');
             return '<a href="' + url + '" target="_blank">' + spacedUrl + '</a>';
         });
     }
 }
+
+$('#softwareTable').on('click', '.primary-button', function(e) {
+    // e.preventDefault();
+    const row = $(this).closest("tr");
+    const softwareEntry = row.children()[0]
+    const softwareNameHTML = softwareEntry.children[0]
+    const softwareName = softwareNameHTML.firstChild.data
+    history.pushState(null, '', '?software=' + encodeURIComponent(softwareName));
+    showModalForSoftware(softwareName);
+})
+
+// Handels click on the "similar software" section on the software details modal
+function handleSimilarSoftwareSelection(selector, tableId, needsDecoding = false) {
+    $("#softwareDetails-modal").on('click', selector, function(e) {
+        const text = this.innerText.trim();
+        const currentSelections = $('div.dtsp-searchPane table').DataTable().rows({selected: true}).data().toArray();
+        const newSelections = [...currentSelections, text];
+        const searchPaneTable = $(`.dtsp-searchPanes table#${tableId}`).DataTable();
+
+        searchPaneTable.rows(function(idx, data, node) {
+            const displayValue = needsDecoding ? $('<div>').html(data.display).text() : data.display;
+            return newSelections.includes(displayValue);
+        }).select();
+
+        // show the search panes and change text to hide
+        $(".dtsp-panesContainer").show();
+        $("#filter-text").html("Hide Filter");
+        $("#softwareDetails-modal").modal('hide');
+    });
+}
+
+// Set up all three handlers
+handleSimilarSoftwareSelection('.tag', 'DataTables_Table_1');
+handleSimilarSoftwareSelection('.research-discipline', 'DataTables_Table_2', true); // needs decoding
+handleSimilarSoftwareSelection('.software-type', 'DataTables_Table_3');

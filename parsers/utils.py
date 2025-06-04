@@ -56,12 +56,35 @@ def process_software(
         ) from e
 
 def update_software_resource(
-    software_id: Model, resource_id: Model, versions: str
+    software_id: Model, resource_id: Model, versions: dict
 ) -> Model:
     logger.debug(
         f"Updating software resource. Software ID: {software_id}, Resource ID: {resource_id}"
     )
     try:
+        if type(versions) == dict:
+            sr_ids = []
+            for version, command in versions.items():
+                sr_id, created = SoftwareResource.get_or_create(
+                    software_id=software_id, resource_id=resource_id,
+                    software_version=version
+                )
+                old_commands = sr_id.command.split(",")
+                old_commands = [command.strip() for command in old_commands if command]
+                old_commands.append(command)
+                new_command = ", ".join(old_commands)
+                SoftwareResource.update({
+                    SoftwareResource.command: new_command
+                }).where(SoftwareResource.id == sr_id).execute()
+                if sr_id:
+                    sr_ids.append(sr_id)
+
+            logger.info(
+                f"Creating/Updating software resource with version and command: {version}"
+            )
+
+            return sr_ids
+
         sr_id, created = SoftwareResource.get_or_create(
             software_id=software_id, resource_id=resource_id
         )
@@ -79,7 +102,7 @@ def update_software_resource(
             ).where(SoftwareResource.id == sr_id)
         ).execute()
 
-        return sr_id
+        return [sr_id]
     except Exception as e:
         logger.error(f"Error updating software resource: {e}", exc_info=True)
         raise e

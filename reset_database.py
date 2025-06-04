@@ -100,12 +100,12 @@ def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[
 
     BATCH_SIZE = 75
     all_data = []
-    try:
         # request software data in batches
-        for i in range(0, len(software), BATCH_SIZE):
-            batch = software[i:min(i+BATCH_SIZE, len(software))]
-            software_param = "+".join(batch)
-            url = f"http://128.163.202.84:8080/API_0.1/{api_key}/software={software_param},share={share}"
+    for i in range(0, len(software), BATCH_SIZE):
+        batch = software[i:min(i+BATCH_SIZE, len(software))]
+        software_param = "+".join(batch)
+        url = f"http://128.163.202.84:8080/API_0.1/{api_key}/software={software_param},share={share}"
+        try:
             request = requests.get(url, timeout=20)
             if request.status_code == 200:
                 batch_data = request.json()
@@ -113,26 +113,30 @@ def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[
                 logger.info(f"Successfully retrieved batch {i//BATCH_SIZE + 1}")
             elif request.status_code == 401:
                 raise DataProcessingError(f"Unable to fetch data from API: {request.json()}")
-
-        logger.info(
-            f"Successfully retrievied data from api call. Length of data is {len(all_data)}"
-        )
-        if all_data:
-            with open("app/models/api_response.json", "w+") as ar:
-                json.dump(all_data, ar, indent=4)
-            logger.info(f"Successfully updated local copy of api data")
-
-        return all_data
-    except (requests.ConnectionError, requests.ConnectTimeout) as ex:
-        logger.warning(
-            f"Unable to retrieve data from api call: {ex}. Using cached data."
-        )
-
-        with open("app/models/api_response.json", "r") as ar:
-            api_response = json.load(ar)
-        return api_response
-    except Exception as e:
-        raise DataProcessingError(f"Failed to retreive data from api: {str(e)}") from e
+        except (requests.ConnectionError, requests.ConnectTimeout) as ex:
+            logger.warning(
+                f"Unable to retrieve data from api call for batch {i//BATCH_SIZE + 1}: {ex}. Using cached data."
+            )
+            continue
+        except Exception as e:
+            raise DataProcessingError(f"Failed to retreive data from api: {str(e)}") from e
+    logger.info(
+        f"Successfully retrievied data from api call. Length of data is {len(all_data)}"
+    )
+    if all_data:
+        with open("app/models/api_response.json", "w+") as ar:
+            json.dump(all_data, ar, indent=4)
+        logger.info(f"Successfully updated local copy of api data")
+    else:
+        try:
+            with open("app/models/api_response.json", "r") as ar:
+                api_response = json.load(ar)
+            return api_response
+        except FileNotFoundError as FNE:
+            logger.warning(
+                f"Unable to find cached data"
+            )
+    return all_data
 
 
 @custom_halo(text="Updating database from remote data")

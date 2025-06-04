@@ -16,11 +16,11 @@
 .settings-title {
   font-size: 24px;
   font-weight: 600;
-  color: var(--primary-color);
+  color: var(--primary-color-1);
 }
 
 .nav-tabs .nav-link.active {
-  color: var(--primary-color);
+  color: var(--primary-color-1);
   border-color: #dee2e6 #dee2e6 #fff;
   font-weight: 500;
 }
@@ -29,42 +29,9 @@
   color: var(--secondary-color);
 }
 
-.draggable-row {
-  cursor: move;
-  transition: all 0.2s ease;
-}
-
-.draggable-row:hover {
-  background-color: rgba(var(--bs-primary-rgb), 0.05) !important;
-}
-
-.dragging {
-  opacity: 0.5;
-}
-
-.insertion-point {
-  height: 0;
-  margin: 0;
-  border: none;
-  transition: all 0.2s;
-}
-
-.insertion-point.active {
-  height: 20px;
-  margin: 10px 0;
-  background: rgba(var(--bs-primary-rgb), 0.1);
-  border: 2px dashed var(--primary-color);
-  border-radius: 4px;
-}
-
 .form-switch .form-check-input:checked {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.drag-handle {
-  color: var(--secondary-color);
-  margin-right: 10px;
+  background-color: var(--primary-color-1);
+  border-color: var(--primary-color-1);
 }
 
 .save-section {

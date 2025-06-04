@@ -5,7 +5,7 @@
 # Parsing `module spider`
 
 This application parses the output of the `module spider` command. The `module spider` command is from the [lmod package](https://lmod.readthedocs.io/en/latest/index.html). The parser expects a text file.
-So, technically, any text file with the same format will work be parsed.
+So, technically, any text file with the same format will work.
 
 The existing parsing script is for data in the following format: `  software: software/version` or `  software-name: software-name/version` or `  software_name: software_name/version` (note the leading two spaces).
 
@@ -90,7 +90,7 @@ def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]
 
 ```
 
-If you want to define custom reges for the prebuilt parser, you can do so in the config.yaml file.
+If you want to define custom regex for the prebuilt parser, you can do so in the config.yaml file.
 
 Here is what an example `config.yaml` file might look like:
 ```
@@ -202,12 +202,12 @@ The `name_pattern` will group items separated by a slash. The parser uses the fi
 > cleaned version: [`1.10.7/hcgc7fk`, `1.10.7/5soub24`]
 
 `custom_name_version_parser` allows the user to define a custom python function for parsing the name and version.
-To implement this you will have to edit the `parse_spider.py` file found in `parsers/lmod/`. Define the function in the file.
+To implement this you will have to edit the `custom_name_version_parser` function found in `parsers/lmod/parse_spider.py`.
 
 # Parsing `container definitions`
 
 The container parser will attempt to automatically get all the software installed from the definition file.
-Sometimes the parse can miss some software. If you want to make sure a particular software/version is captured,
+Sometimes the parser can miss some software. If you want to make sure a particular software/version is captured,
 add the follow section to the **bottom** of your definition file:
 ```
 ## SDS Software
@@ -215,9 +215,21 @@ add the follow section to the **bottom** of your definition file:
 #	software2
 ```
 
-Note the leading `## SDS Software` which lets the parsers know to specifically look for data there. The content to the left of the  `/` will be treated as the software name; the content to the right, the version.\
-You can add as many software below it as you want, just make sure that there is one leading comment character
-such as `#`.
+You can also specify the container file and definition (docker) file locations like so:
+```
+## SDS Software
+# container_file: /path/file.sinf
+# def_file: /path/dir/dockerfile
+#	software1/version
+#	software2
+```
+
+Note the leading `## SDS Software` which lets the parsers know to specifically look for data there.\
+For the container and definition (docker) file paths, they must have `# container_file` or `#def_file` followed by a colon `:` followed by the file path.\
+For the software, the content to the left of the  `/` will be treated as the software name; the content to the right, the version.
+
+You can add as many software below it as you want, just make sure that there is one leading comment character such as `#`.\
+
 
 Currently, the container parser will ignore all url links. This is by design as there is no set standard for how urls are named, and so it is difficult to get relevant data from them.
 
@@ -249,11 +261,44 @@ From: nvidia/cuda:8.0-devel-ubuntu16.04
 
 
 ## SDS Software
+# container_file: /path/file.sinf
+# def_file: /path/dir/dockerfile
 #	torch
 #   densecap/latest
 ```
 Since the `densecap` software is installed using a url, it would normally not be captured by the parser,
 but with the `## SDS Software` comment, it will find the two software `torch` and `densecap`. `torch` will
 not have a version but `densecap` will have the version `latest`.
+
+
+You can tell the parser to only parse the "SDS software" comment block rather than parsing the entire definition/docker file. Add the following to your `config.yaml` file:
+```
+parsing:
+  container:
+    comment_block_only: True
+```
+
+Here is what an example config file might look like:
+```
+api:
+  api_key: abcd
+  use_api: True
+  use_curated_info: true
+  use_ai_info: False
+styles:
+  primary_color: "#1B365D"
+  secondary_color: "#1B365D"
+  site_title: "A reallly long title like so long that it breaks everything yup its a long title"
+  logo: "hi.png"
+parsing:
+  lmod_spider:
+    section_separator: '\n(?=\s{2}[/\w.+-]+(?:/[\w+\-])*:)'
+    name_version_pattern: '([/\w.+-]+(?:-[/\w+\-]+)?): (.+)'
+    version_separator: '[,]'
+    name_pattern: '(.+)' # this basically disables the name_pattern match
+    spider_description_separator: '----'
+  container:
+    comment_block_only: True
+```
 
 Further customization for the definitaion file parser may be added in the future.

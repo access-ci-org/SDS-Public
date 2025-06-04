@@ -21,7 +21,7 @@
 {% set remove_cols = ['id', 'resolved']%}
 
 <table id="report-table" class="table table-hover table-bordered">
-    <thead style="background: var(--primary-color); color:white">
+    <thead>
         <th>Resolved</th>
         {% for header in table_headers %}
             {%if not header in remove_cols%}

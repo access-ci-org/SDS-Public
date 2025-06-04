@@ -64,14 +64,14 @@ def process_container(container_info: dict[str, any], container_name: str) -> Mo
 
 
 def update_software_container(
-    software_id: Model, container_id: Model, resource_id: Model, versions: str
+    software_id: Model, container_id: Model, versions: str, command: str
 ) -> None:
     logger.debug(
         f"Updating software container. Software ID: {software_id}, Container ID: {container_id}"
     )
     try:
         sc_id, created = SoftwareContainer.get_or_create(
-            software_id=software_id, container_id=container_id
+            software_id=software_id, container_id=container_id, software_versions=versions
         )
         final_versions = (
             versions
@@ -83,8 +83,10 @@ def update_software_container(
             f"{'Creating' if created else 'Updating'} software container with versions: {final_versions}"
         )
         (
-            SoftwareContainer.update(
-                {SoftwareContainer.software_versions: final_versions}
+            SoftwareContainer.update({
+                SoftwareContainer.software_versions: final_versions,
+                SoftwareContainer.command: command,
+                }
             )
             .where(SoftwareContainer.id == sc_id)
             .execute()
@@ -113,11 +115,11 @@ def process_container_data(container_dir_path: Path, blacklist: set[str]) -> Non
                         if c_info["software_name"]:
                             s_id = process_software(c_info["software_name"], blacklist)
                             update_software_resource(
-                                s_id, r_id, c_info["software_versions"]
+                                s_id, r_id, {c_info["software_versions"]: c_info.get("command", "")}
                             )
 
                             update_software_container(
-                                s_id, c_id, r_id, c_info["software_versions"]
+                                s_id, c_id, c_info["software_versions"], c_info["command"]
                             )
                     except DataProcessingError as e:
                         logger.warning(
