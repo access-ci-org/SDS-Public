@@ -378,6 +378,7 @@ function populateSimilarSoftware(similarSoftware){
 }
 
 function populateExampleUse(softwareName) {
+    if (use_ai_info === "False") return;
     getSoftwareExampleUse(softwareName).then((softwareExampleUse) => {
         $('#example-use').append(`
             <p class="section-title">EXAMPLE USE &#10024</p>
