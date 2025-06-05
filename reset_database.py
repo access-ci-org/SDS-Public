@@ -1,5 +1,7 @@
 import argparse, json, sys
 from pathlib import Path
+import pytz
+from datetime import datetime
 
 import requests
 import pandas as pd
@@ -21,6 +23,7 @@ from parsers.utils import process_software, update_software_resource
 from parsers.lmod.process_spider_output import process_spider_data
 from parsers.container.process_container_file import process_container_data
 
+LAST_UPDATED_PATH = 'app/static/last_updated.txt'
 
 @custom_halo(text="Recreating database tables")
 def recreate_table() -> None:
@@ -309,6 +312,11 @@ def main() -> None:
         username = app.config["DEFAULT_USER"]
         Users.create(username=username, password=hashed_password, is_admin=True)
         logger.info("Database processing completed successfully")
+
+        # Save last updated time to file
+        EST = pytz.timezone('US/Eastern')
+        with open(LAST_UPDATED_PATH, 'w') as f:
+            f.write(str(datetime.now(EST).strftime("%Y-%m-%d %H:%M:%S")))
 
     except Exception as e:
         logger.error(f"Fatal error occurred: {str(e)}", exc_info=True)

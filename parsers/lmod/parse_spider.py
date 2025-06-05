@@ -157,7 +157,6 @@ def get_software_info(
                     re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]: v.strip()
                     for v in re.split(version_separator, versions)
                 }
-                pp(versions)
 
                 # Join the remaining lines as the description
                 description = " ".join(line.strip() for line in lines[1:])
