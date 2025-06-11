@@ -82,10 +82,17 @@ def update_software_container(
         logger.info(
             f"{'Creating' if created else 'Updating'} software container with versions: {final_versions}"
         )
+        new_command = command
+        if sc_id.command and command:
+            old_commands = sc_id.command.split(",")
+            old_commands = [command.strip() for command in old_commands if command]
+            old_commands.append(command)
+            new_command = ", ".join(old_commands)
+
         (
             SoftwareContainer.update({
                 SoftwareContainer.software_versions: final_versions,
-                SoftwareContainer.command: command,
+                SoftwareContainer.command: new_command,
                 }
             )
             .where(SoftwareContainer.id == sc_id)
@@ -98,7 +105,6 @@ def update_software_container(
 @custom_halo(text="Processing container data")
 def process_container_data(container_dir_path: Path, blacklist: set[str]) -> None:
     logger.info(f"Processing container data from: {container_dir_path}")
-    # container_data = parse_container_files(container_dir_path)
     try:
         container_data = parse_container_files(container_dir_path)
         with db.atomic():

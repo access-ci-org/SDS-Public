@@ -71,7 +71,7 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                     Command
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
-                    ${commandDisplay || '<span class="text-muted">No container file available</span>'}
+                    ${commandDisplay.replace(",","<br>") || '<span class="text-muted">No container file available</span>'}
                 </div>
             </div>
         `: ''}

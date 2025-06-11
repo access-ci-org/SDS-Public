@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 from pathlib import Path
+from app.app_logging import logger
 import pandas as pd
 import re
 import yaml
@@ -160,11 +161,11 @@ def extract_SDS_software(content):
             command = ""
             software = item
             if "container_file" in item:
-                container_file = item.split(":")[1].strip()
+                container_file = item.split(":",1)[1].strip()
             elif "def_file" in  item:
-                definition_file = item.split(":")[1].strip()
+                definition_file = item.split(":",1)[1].strip()
             elif ":" in item:
-                software, command = item.split(":")
+                software, command = item.split(":",1)
                 software = software.strip()
                 command = command.strip()
                 new_data.append((software, command))
@@ -248,30 +249,35 @@ def parse_container_files(container_data: Path) -> Dict[str, Any]:
                 nested_results = process_directory(item_path, resource_name)
                 results.extend(nested_results)
             else:
-                # Process file
-                if item_path.suffix == ".csv":
-                    parsed_data = parse_csv_container(item_path)
-                elif item_path.suffix == ".def":
-                    parsed_data = parse_container_def(item_path)
+                try:
+                    # Process file
+                    if item_path.suffix == ".csv":
+                        parsed_data = parse_csv_container(item_path)
+                    elif item_path.suffix == ".def":
+                        parsed_data = parse_container_def(item_path)
 
-                    # Add the full path to the container_file field
+                        # Add the full path to the container_file field
+                        if parsed_data:
+                            for item in parsed_data:
+                                # Use relative path from the container_dir for consistency
+                                try:
+                                    resource_dir = container_data / resource_name
+                                    rel_path = item_path.relative_to(resource_dir)
+
+                                    item["definition_file"] = item["definition_file"] or '/' + str(rel_path)
+                                except ValueError:
+                                    # If relative_to fails, use the absolute path
+                                    item["definition_file"] = item["definition_file"] or str(item_path)
+                    else:
+                        print(f"Unknown file type: {item_path.suffix}. Skipping")
+                        continue
+
                     if parsed_data:
-                        for item in parsed_data:
-                            # Use relative path from the container_dir for consistency
-                            try:
-                                resource_dir = container_data / resource_name
-                                rel_path = item_path.relative_to(resource_dir)
-
-                                item["definition_file"] = item["definition_file"] or '/' + str(rel_path)
-                            except ValueError:
-                                # If relative_to fails, use the absolute path
-                                item["definition_file"] = item["definition_file"] or str(item_path)
-                else:
-                    print(f"Unknown file type: {item_path.suffix}. Skipping")
-                    continue
-
-                if parsed_data:
-                    results.extend(parsed_data)
+                        results.extend(parsed_data)
+                except Exception as e:
+                    print(f"Skipping file due to error: {item_path}")
+                    print(e)
+                    logger.error(f"Unable to parse file: {item_path}. error: {e}")
 
         return results
 
