@@ -49,7 +49,7 @@ That should be all the necessary setup
       - This expects the ssl certificates to be in the project directory. If your ssl certificates are somehwere else,
         change the `./ssl` portion to be the path to the directory where the certificates are stored.
 
-### Running on Locally
+### Running Locally
 1. Run `source setup.sh` to setup your environment
 2. Run `python reset_database.py` to create and load your database
  - You can pass in three different arguments to `reset_database.py`. Type `python reset_database.py -h` for more info. Read the entire help message before continuing.
