@@ -28,7 +28,7 @@ All they need to do is provide the names of the software and which cluster they 
 The SDS tool is meant to exist independent of any HPC clusters and should not be run on any critical systems.
 The recommended method is to run the application inside of a VM and copy/add any important information to it.
 
-1. Clone the repo into your local machine: `git clone -b stand-alone --single-branch <URL>.git`
+1. Clone the repo into your local machine: `git clone -b stand-alone --single-branch https://github.com/access-ci-org/SDS-Public/tree/stand-alone.git`
 2. Follow instructions to set [Config Variables](#config-variables)
 3. Follow instructions in [Data Preparation](#data-preparation) to properly provide data for SDS
 
@@ -58,7 +58,7 @@ That should be all the necessary setup
 
 # Config Variables
 - Create a `config.yaml` file in the project folder.
-- If you would like to use the SDS api to obtain and display more information about your software then request and api key from Sandesh.
+- If you would like to use the SDS api to obtain and display more information about your software then request and api key from Sandesh (sla302@uky.edu).
 - Inside the `config.yaml` file, add the following:
 ```
 api:
