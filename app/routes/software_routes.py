@@ -1,8 +1,5 @@
 import json
-import requests
 from flask import current_app
-import re
-from bs4 import BeautifulSoup
 from flask import render_template, jsonify, flash, redirect, url_for, request
 from peewee import DoesNotExist
 from app.models.aiSoftwareInfo import AISoftwareInfo
@@ -37,7 +34,6 @@ def software_search():
                     ])
     df['Documentation, Uses, and more'] = 'Documentation, Uses, and more'
 
-    print("Going to front", df.columns)
     table = df.to_html(
         classes='table table-striped" id = "softwareTable',
         index=False,
@@ -109,42 +105,27 @@ def software_info(software_name):
         # raise e
         return jsonify({}), 204
 
+
+WEBSITE_TITLES = 'app/data/website_titles.json'
 @software_bp.route("/get-external-site-title", methods=['POST'])
 def get_external_site_title():
     try:
         data = request.get_json()
-        url = data.get('url')
-        if not url:
-            return jsonify({'error': 'URL is required'}), 400
-
-        # Set headers to mimic a real browser
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        title = None
-
-        # get titles
-        if not title:
-            title_tag = soup.find('title')
-            if title_tag:
-                title = title_tag.get_text()
-
-        # clean up title
-        if title:
-            title = re.sub(r'\s+', ' ', title.strip())
-        else:
-            title = ''
-
+        url = data.get('url').strip()
+        webiste_titles = {}
+        with open(WEBSITE_TITLES, 'r') as wt:
+            webiste_titles = json.load(wt)
+        title = webiste_titles.get(url, "")
         return jsonify({
             'title': title,
             'url': url
         })
-
-    except requests.exceptions.RequestException as e:
-        return jsonify({'error': f'Failed ot fetch URL: {str(e)}'}), 400
+    except FileNotFoundError as fe:
+        # if file doesn't yet exist then just return the url for now
+        print(fe)
+        return jsonify({
+            'title': url,
+            'url' : url
+        })
     except Exception as e:
         return jsonify({'error': f'An error occured: {str(e)}'}), 500

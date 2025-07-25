@@ -34,6 +34,7 @@ function buildColumns() {
             column.searchPanes = {
                 orthogonal: 'sp'
             };
+            column.width = "15%" // sets max width to 10% of table
         } else if (internalKey === 'ai_research_discipline') {
             column.render = {
                 _: function(data, type, row){
@@ -93,6 +94,7 @@ function buildColumns() {
                 return data || '';
             };
         }
+        $(this).text(displayName.replace("AI", ""))
         cols.push(column);
     });
     return cols;
@@ -163,13 +165,19 @@ $(document).ready(function()
                 // Get the original header text from the span with class "dt-column-title"
                 let originalText = $(this).find('.dt-column-title').text().trim();
                 if (!(originalText === 'Documentation, Uses, and more')) {
-                    // Clear the header cell and add a span for the title
-                    $(this).empty().append(`
-                        <span style="display:block; font-weight:bold;">
-                            ${originalText}
-                            ${(use_ai_info === "True" && originalText.includes("AI")) ? " &#10024": ''}
-                        </span>
-                    `);
+                    let new_header;
+                    if (originalText.includes("Tags") || originalText.includes("Description")) {
+                        originalText = originalText.replace("AI ", "")
+                        new_header = `
+                            <span style="display:block; font-weight:bold;">${originalText} &#10024</span>
+                        `
+                    } else {
+                        new_header = `
+                            <span style="display:block; font-weight:bold;">${originalText}</span>
+                        `
+                    }
+                    // Clear the header cell and add new header for the title
+                    $(this).empty().append(new_header);
 
                     // Create an input field with a placeholder and append it to the header cell
                     let $input = $('<input type="text" class="col-search" style="width: 100%;" placeholder="Search ">');

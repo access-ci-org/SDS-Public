@@ -195,14 +195,19 @@ function createLinkElements(links) {
             try {
                 // if title is just url, try to get real title
                 let siteTitle = await getSiteTitle(link);
+                console.log(getSiteTitle)
                 // truncate long title names
                 if (siteTitle && siteTitle.length > 30) {
                     siteTitle = siteTitle.slice(0, 30) + "...";
                 }
                 const displayTitle = siteTitle || link;
 
-                return `<a target="_blank" href="${link}">${displayTitle}</a>`;
+                if (siteTitle) {
+                    return `<a target="_blank" href="${link}">${displayTitle}</a>`;
+                }
+                return "";
             } catch (error) {
+                console.error(error)
                 return `<a target="_blank" href="${link}">${link}</a>`;
             }
         })
@@ -336,16 +341,18 @@ async function populateRelatedLinks(relatedLinks){
     for (const [linkType, config] of Object.entries(LINK_CONFIGS)){
         if (!isEmpty(relatedLinks[linkType])){
             const linkElements = await createLinkElements(relatedLinks[linkType]);
-
-            $(`#${config.containerId}`).html(`
-                <div id="${config.containerId}-title">
-                    <i class="bi bi-${config.icon}"></i>
-                    <span class="section-title">${config.title}</span>
-                </div>
-                <div id="${config.containerId}-link" class="section-text">
-                    ${linkElements}
-                </div>
-            `)
+            if (!(linkElements === "")) {
+                $("#related-links").show();
+                $(`#${config.containerId}`).html(`
+                    <div id="${config.containerId}-title">
+                        <i class="bi bi-${config.icon}"></i>
+                        <span class="section-title">${config.title}</span>
+                    </div>
+                    <div id="${config.containerId}-link" class="section-text">
+                        ${linkElements}
+                    </div>
+                `)
+            }
         }
     }
 }
