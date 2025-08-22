@@ -1,3 +1,4 @@
+import multiprocessing
 from flask import Flask
 import yaml
 
@@ -53,3 +54,9 @@ app.config.update(
 )
 
 from app import routes
+
+from pull_api import main
+# get api and url titles, this happens in the backgroudn while the flask app is running
+process = multiprocessing.Process(target=main)
+process.daemon = True # This ensures subprocess will die when parent dies
+process.start()

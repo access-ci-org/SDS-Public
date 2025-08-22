@@ -4,16 +4,15 @@ from flask import (
     jsonify,
     request
 )
-
-from peewee import DoesNotExist
-from app.logic.reports import sanitize_and_process_reports, save_user_report
-from app.logic.table import TableInfo, add_line_breaks_at_commas
+import json
+from app.logic.table import TableInfo,get_display_table, add_char_at_commas
 from app.logic.lastUpdated import get_last_updated
 from app.logic.convertMarkdown import convert_markdown_to_html
-import pandas as pd
 
 table_info = TableInfo()
 
+software_csv = "app/data/final.csv"
+WEBSITE_TITLES = 'app/data/website_titles.json'
 
 @app.context_processor
 def inject_global_vars():
@@ -26,20 +25,26 @@ def inject_global_vars():
 # Main Route
 @app.route("/")
 def software_search():
-    df = pd.read_csv("app/data/final.csv", keep_default_na=False)
-    df.rename(columns=table_info.column_names, inplace=True)
+    df =  get_display_table()
+    df['Versions'] = df['Versions'].apply(add_char_at_commas)
 
-    df['Versions'] = df['Versions'].apply(add_line_breaks_at_commas)
-
+    df = df.filter(['Software',
+                    'Installed on',
+                    'AI Description',
+                    'AI Tags',
+                    'AI Research Discipline',
+                    'AI Software Type',
+                    ])
+    df = df.rename(columns={"AI General Tags": "AI Tags"})
+    df['Documentation, Uses, and more'] = 'Documentation, Uses, and more'
     table = df.to_html(
-            classes='table table-striped table-bordered" id = "softwareTable',
+            classes='" id = "softwareTable',
             index=False,
             border=1,
             escape=False
         ).replace("\\n", "<br>")
 
     last_updated = get_last_updated()
-
     return render_template(
         "software_search.html",
         table=table,
@@ -64,41 +69,44 @@ def get_example_use(software_name):
         return jsonify({"use": example_use_html})
 
     error_text = "**Unable to find use case record**"
-    return jsonify({"use": convert_markdown_to_html(error_text)})
+    return jsonify({"use": convert_markdown_to_html(error_text)}), 204
 
+@app.route("/software_info/<path:software_name>")
+def software_info(software_name):
 
-# 'Report Issue' Button Route
-@app.route("/report-issue", methods=["POST"])
-def report_issue():
-    user_report = request.get_json()
-    if "elementText" in user_report:
-        issue_report = sanitize_and_process_reports(user_report, report_type="report")
-        report_saved = save_user_report(issue_report)
+    try:
+        df = get_display_table()
+        # df['Versions'] = df['Versions'].apply(add_char_at_commas)
+        table = df.loc[df["Software"] == software_name]
+        table = table.to_json(
+                index=False,
+                orient='records'
+                )
+        return table
+    except Exception as e:
+        print(e)
+        # raise e
+        return jsonify({}), 204
 
-        if report_saved:
-            return jsonify({"success": "Issue reported successfully"})
-
-        return ({"error": "Unable to save issue report"}), 500
-
-    return jsonify({"error": "Missing key elementText"}), 400
-
-
-## Flask Route Definition for User Feedback Button
-## process_feedback() is called anytime a POST is sent to /user-feedback
-@app.route("/user-feedback", methods=["POST"])
-def process_feedback():
-    # Grab Ajax Request
-    user_feedback = request.get_json()
-
-    if "userMessage" in user_feedback:
-        feedback_report = sanitize_and_process_reports(
-            user_feedback, report_type="feedback"
-        )
-        feedback_saved = save_user_report(feedback_report)
-
-        if feedback_saved:
-            return jsonify({"success": "Feedback processed successfully"})
-
-        return ({"error": "Unable to save user feedback"}), 500
-
-    return jsonify({"error": "Missing key userMessage."}), 400
+@app.route("/get-external-site-title", methods=['POST'])
+def get_external_site_title():
+    try:
+        data = request.get_json()
+        url = data.get('url').strip()
+        webiste_titles = {}
+        with open(WEBSITE_TITLES, 'r') as wt:
+            webiste_titles = json.load(wt)
+        title = webiste_titles.get(url, "")
+        return jsonify({
+            'title': title,
+            'url': url
+        })
+    except FileNotFoundError as fe:
+        # if file doesn't yet exist then just return the url for now
+        print(fe)
+        return jsonify({
+            'title': url,
+            'url' : url
+        })
+    except Exception as e:
+        return jsonify({'error': f'An error occured: {str(e)}'}), 500

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 42 56">
+  <!-- Generator: Adobe Illustrator 29.5.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 141)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+      }
+
+      .st1 {
+        fill: #ffc42d;
+      }
+
+      .st2 {
+        clip-path: url(#clippath-1);
+      }
+
+      .st3 {
+        clip-path: url(#clippath-2);
+      }
+
+      .st4 {
+        fill: #48c0b9;
+      }
+
+      .st5 {
+        clip-path: url(#clippath);
+      }
+
+      .st6 {
+        fill: #f07537;
+      }
+    </style>
+    <clipPath id="clippath">
+      <rect class="st0" x="7.7" y="21.7" width="34.3" height="34.3"/>
+    </clipPath>
+    <clipPath id="clippath-1">
+      <rect class="st0" y="3.8" width="22" height="22"/>
+    </clipPath>
+    <clipPath id="clippath-2">
+      <rect class="st0" x="27.2" width="14.8" height="14.8"/>
+    </clipPath>
+  </defs>
+  <g id="Group_1757">
+    <g class="st5">
+      <g id="Group_1756">
+        <path id="Path_4293" class="st4" d="M23.7,22.5c.2-.6.9-1,1.6-.8.4.1.7.4.8.8l2.2,6.6c1,3,3.3,5.3,6.3,6.3l6.6,2.2c.6.2,1,.9.8,1.6-.1.4-.4.7-.8.8l-6.6,2.2c-3,1-5.3,3.3-6.3,6.3l-2.2,6.6c-.2.6-.9,1-1.6.8-.4-.1-.7-.4-.8-.8l-2.2-6.6c-1-3-3.3-5.3-6.3-6.3l-6.6-2.2c-.6-.2-1-.9-.8-1.6.1-.4.4-.7.8-.8l6.6-2.2c3-1,5.3-3.3,6.3-6.3l2.2-6.6Z"/>
+      </g>
+    </g>
+  </g>
+  <g id="Group_1758">
+    <g class="st2">
+      <g id="Group_1756-2">
+        <path id="Path_4293-2" class="st6" d="M10.2,4.3c.1-.4.6-.6,1-.5.2,0,.4.3.5.5l1.4,4.3c.6,1.9,2.1,3.4,4,4l4.3,1.4c.4.1.6.6.5,1,0,.2-.3.4-.5.5l-4.3,1.4c-1.9.6-3.4,2.1-4,4l-1.4,4.3c-.1.4-.6.6-1,.5-.2,0-.4-.3-.5-.5l-1.4-4.3c-.6-1.9-2.1-3.4-4-4l-4.3-1.4c-.4-.1-.6-.6-.5-1,0-.2.3-.4.5-.5l4.3-1.4c1.9-.6,3.4-2.1,4-4l1.4-4.3Z"/>
+      </g>
+    </g>
+  </g>
+  <g id="Group_1759">
+    <g class="st3">
+      <g id="Group_1756-3">
+        <path id="Path_4293-3" class="st1" d="M34.1.3c0-.3.4-.4.7-.3.2,0,.3.2.3.3l1,2.9c.4,1.3,1.4,2.3,2.7,2.7l2.9,1c.3,0,.4.4.3.7,0,.2-.2.3-.3.3l-2.9,1c-1.3.4-2.3,1.4-2.7,2.7l-1,2.9c0,.3-.4.4-.7.3-.2,0-.3-.2-.3-.3l-1-2.9c-.4-1.3-1.4-2.3-2.7-2.7l-2.9-1c-.3,0-.4-.4-.3-.7,0-.2.2-.3.3-.3l2.9-1c1.3-.4,2.3-1.4,2.7-2.7l1-2.9Z"/>
+      </g>
+    </g>
+  </g>
+</svg>

@@ -1,4 +1,4 @@
-import {header, siteMenus, footer, footerMenus, universalMenus} from "https://esm.sh/@access-ci/ui@0.3.1"
+import {header, siteMenus, footer, footerMenus, universalMenus} from "https://esm.sh/@access-ci/ui@0.8.0"
 
 export const siteItems = [{
     name: "ACCESS Resource Advisor",
@@ -30,6 +30,7 @@ export const setupFunctions = {
     }),
     footerMenus: (target) => footerMenus({
         items: siteItems,
+        siteName: "Support",
         target: target
     }),
     footer: (target => footer({ target: target}))

@@ -1,15 +1,19 @@
-import time
-import requests
+import time, requests, datetime, os, yaml, re, json, threading
 import pandas as pd
-import datetime
 import pytz # Timezone
-import os
-from app.logic.table import TableInfo
-import yaml
+from halo import Halo
+from colorama import init, Fore, Style # print colored message to console
+from app.logic.table import TableInfo, get_display_table
+from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 
 # Assign relative paths
 FINAL_TABLE = 'app/data/final.csv'
 LAST_UPDATED_PATH = 'app/static/last_updated.txt'
+WEBSITE_TITLES = 'app/data/website_titles.json'
 
 # Load API key and version from config file
 try:
@@ -205,17 +209,111 @@ def fix_rp_names(df: pd.DataFrame):
 
     return df
 
+def find_site_titles():
+    print("Getting link titles...")
+    link_columns = [
+        "Software Documentation",
+        "Software's Web Page",
+        "Example Software Use"
+    ]
+
+    df = get_display_table()
+
+    # Collect and deduplicate URLs
+    all_urls = set()
+    for col in link_columns:
+        for value in df[col].dropna():
+            if isinstance(value, str) and "\n" in value:
+                # Split on newlines and add each link
+                links = [link.strip() for link in value.split("\n") if link.strip()]
+                all_urls.update(links)
+            else:
+                # Single URL
+                all_urls.add(value)
+
+    all_urls = [url for url in all_urls if url and str(url).strip()]
+    total_urls = len(all_urls)
+
+    # Print special colored messages
+    print(f"{Fore.CYAN}{Style.BRIGHT}📢 INFO:{Style.RESET_ALL} {Fore.YELLOW}Fetching URL site titles, this will take a few minutes{Style.RESET_ALL}")
+    print(f"{Fore.BLUE}🔗 Processing {total_urls} unique URLs...{Style.RESET_ALL}")
+    print(f"{Fore.GREEN}✅ You can continue using the application while this runs in the background{Style.RESET_ALL}")
+    print()  # Add blank line before spinner
+    # Progress tracking
+    completed = 0
+    completed_lock = threading.Lock()  # Thread synchronization
+    spinner  = Halo(text=f"Processing URLs: 0/{total_urls}", spinner="dots")
+    spinner.start()
+
+    def get_title_with_progress(url):
+        nonlocal completed
+        result = get_external_site_title(url)
+        with completed_lock: # to avoid race conditions when incrementing
+            completed += 1
+            spinner.text = (f"Processing URLs: {completed}/{total_urls}")
+        return result
+
+    try:
+        # Process with threading
+        with ThreadPoolExecutor(max_workers=30) as executor:
+            results = list(executor.map(get_title_with_progress, all_urls))
+
+        spinner.succeed(f"Completed processing {total_urls} URLs")
+
+    except Exception as e:
+        spinner.fail(f"Failed to process URLs: {str(e)}")
+        raise
+
+    # Map results back to URLs
+    site_titles = {}
+    for url, title in zip(all_urls, results):
+        site_titles[url] = title
+
+    with open(WEBSITE_TITLES, 'w', encoding="utf-8") as wt:
+        json.dump(site_titles, wt, indent=4)
+
+    return site_titles
+
+def get_external_site_title(url):
+    try:
+        # Session with connection pooling
+        session = requests.Session()
+        retry_strategy = Retry(total=2, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+        adapter = HTTPAdapter(max_retries=retry_strategy, pool_connections=20, pool_maxsize=20)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+
+        response = session.get(url, headers=headers, timeout=5)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+        title_tag = soup.find('title')
+
+        if title_tag:
+            title = re.sub(r'\s+', ' ', title_tag.get_text().strip())
+            return title if title else ''
+        return ''
+
+    except Exception:
+        return ""
+
+
 def main():
     while True:
         fetch_data() # Grab data from ARA_SDS API and save to final.csv
         fetch_example_use() # Grab example uses from ARA_SDS API and save to example_uses/*.txt
+
+        init() # initialize colorama
 
         # Save last updated time to file
         EST = pytz.timezone('US/Eastern')
         with open(LAST_UPDATED_PATH, 'w') as f:
             f.write(str(datetime.datetime.now(EST).strftime("%Y-%d-%m %H:%M:%S")))
 
+        find_site_titles()
         time.sleep(24*60*60)  # Sleep for 24 hours
         print("Thread resumed")
-
-main()
