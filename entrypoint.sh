@@ -1,9 +1,9 @@
 #!/bin/bash --login
-cd sds 
+cd sds
 conda activate SDS_ENV
 
 # Initialize the command with the base script
-command="python reset_database.py"
+command="python run.py"
 
 # Check if container_data directory exists
 if [ -d "container_data/" ]; then
@@ -26,11 +26,9 @@ else
     echo "Warning: spider_data/ directory not found, skipping -s_d argument"
 fi
 
+which python
+which flask
 
 # Execute the command
 echo "Running: $command"
 eval $command
-
-which python
-which flask
-flask run

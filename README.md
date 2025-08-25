@@ -55,6 +55,7 @@ That should be all the necessary setup
  - You can pass in three different arguments to `reset_database.py`. Type `python reset_database.py -h` for more info. Read the entire help message before continuing.
 3. To exclude some softwares from being displayed on the website, add them to the `software_blacklist.txt` file in the project directory. A basic list of blacklisted names is already provided
 4. Run the application with `flask run`
+ - If you want to run the application with a watcher (which will automatically update the db and app when the data is updated). Run `python run.py` see `python run.py --help` for more information
 
 # Config Variables
 - Create a `config.yaml` file in the project folder.

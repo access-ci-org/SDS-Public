@@ -44,7 +44,7 @@ class TableInfo:
             "software_version": "Versions",
             "software_web_page": "Software's Web Page",
             "software_documentation": "Software Documentation",
-            "software_use_link": "Example Software Use",
+            "software_use_link": "Tutorials and Usage",
             "ai_description": "AI Description",
             "ai_software_type": "AI Software Type",
             "ai_software_class": "AI Software Class",
@@ -159,7 +159,8 @@ def organize_table(
         combined = []
         for r, v, c in zip(resources, versions, commands):
             if has_commands and c and str(c).strip():  # If command exists and is not empty
-                combined.append(f"{r}: {v} c:{c}")
+                # note the separation must be ' c: ' for commands. that is what frontend looks for
+                combined.append(f"{r}: {v} c: {c}")
             else:
                 combined.append(f"{r}: {v}")
 
@@ -193,9 +194,9 @@ def organize_table(
         if column != container_column_name:
             df[column] = df[column].fillna("")
 
-    if current_app.config["DROP_COLUMNS"]:
+    if current_app.config["HIDE_DATA"]:
         df = df.drop(
-            columns=current_app.config["DROP_COLUMNS"], axis=1, errors="ignore"
+            columns=current_app.config["HIDE_DATA"], axis=1, errors="ignore"
         )
     if container_column_name in df.columns:
         df[container_column_name] = df[container_column_name].fillna("N/A")

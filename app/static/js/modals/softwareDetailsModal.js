@@ -93,7 +93,7 @@ function formatSoftwareInfo(softwareInfo) {
     const versions = (softwareInfo["Versions"] || "").split(", ").filter(x => x.trim())
     const resourceLink = ""
     // const resourceDocumentation = softwareInfo["RP Software Documentation" || ""].split("\n").filter(x => x.trim())
-    const tutorialLinks = (softwareInfo["Example Software Use"]|| "").split("\n").filter(x => x.trim())
+    const tutorialLinks = (softwareInfo["Tutorials and Usage"]|| "").split("\n").filter(x => x.trim())
     const researchDiscipline = [... new Set(
             (softwareInfo["AI Research Field"]||"").split(",")
             .concat((softwareInfo["AI Research Discipline"]||"").split(","))
@@ -288,7 +288,7 @@ function populateInstalledOn(installedOn){
                    v:
             `)
             resource_info.resourceVersion.forEach(version_command => {
-                const split_vc = version_command.split("c:")
+                const split_vc = version_command.split(" c: ")
                 const version = split_vc[0]
                 let command = ""
                 if (split_vc.length > 1) {

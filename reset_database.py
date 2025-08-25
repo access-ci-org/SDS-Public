@@ -233,13 +233,7 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
 WEBSITE_TITLES = 'app/data/website_titles.json'
 def find_site_titles():
     print("Getting link titles...")
-    link_columns = [
-        "Software Documentation",
-        "Software's Web Page",
-        "Example Software Use"
-    ]
 
-    # df = get_display_table()
     all_urls = set()
     links = []
     links.extend([soft.software_web_page for soft in Software.select().where(Software.software_web_page != '')])
@@ -256,9 +250,22 @@ def find_site_titles():
             all_urls.add(link)
 
     all_urls = [url for url in all_urls if url and str(url).strip()]
+
+    site_titles = {}
+    if Path(WEBSITE_TITLES).exists():
+        try:
+            with open(WEBSITE_TITLES, 'r', encoding='utf-8') as wt:
+                site_titles = json.load(wt)
+        except Exception as e:
+            logger.error(f'Error reading data from {WEBSITE_TITLES}. \n error: {e}')
+
+        if site_titles: # if site titles is not empty
+            # remove urls for which data already exists
+            all_urls = [url for url in all_urls if url not in site_titles]
+
     total_urls = len(all_urls)
     print(f"{Fore.CYAN}{Style.BRIGHT}📢 INFO:{Style.RESET_ALL} {Fore.YELLOW}Fetching URL site titles, this will take a few minutes{Style.RESET_ALL}")
-    print(f"{Fore.BLUE}🔗 Processing {total_urls} unique URLs...{Style.RESET_ALL}")
+    print(f"{Fore.BLUE}🔗 Processing {total_urls} new unique URLs...{Style.RESET_ALL}")
     print()  # Add blank line before spinner
     # Progress tracking
     completed = 0
@@ -286,7 +293,6 @@ def find_site_titles():
         raise
 
     # Map results back to URLs
-    site_titles = {}
     for url, title in zip(all_urls, results):
         site_titles[url] = title
 
@@ -357,7 +363,7 @@ def main() -> None:
     args = setup_argparse()
 
     if not any([args.spider_dir, args.container_dir, args.csv_file]):
-        logger.error("No input data location provided")
+        logger.error("No input data location provided.")
         print(
             "Must include at least one argument with data location. Pass in --help for more info."
         )

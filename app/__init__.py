@@ -58,7 +58,7 @@ DEFAULT_USER = general_conf.get("user_name")
 DEFAULT_PASS = Users.hash_password(general_conf.get("password"))
 SHARE_SOFTWARE = general_conf.get("share_software") or "False"
 SHOW_CONTAINER_PAGE = general_conf.get("show_container_page", "True")
-DROP_COLUMNS = general_conf.get('drop_columns',[])
+HIDE_DATA = general_conf.get('hide_data',[])
 IFRAME = general_conf.get("iframe",False)
 
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
@@ -88,7 +88,7 @@ app.config.update(
     USE_API=USE_API,
     USE_CURATED_INFO=USE_CURATED_INFO,
     USE_AI_INFO=USE_AI_INFO,
-    DROP_COLUMNS=DROP_COLUMNS,
+    HIDE_DATA=HIDE_DATA,
     API_AI_COLUMNS=API_AI_COLUMNS,
     API_CURATED_COLUMNS=API_CURATED_COLUMNS,
     PRIMARY_COLOR=PRIMARY_COLOR,

@@ -7,6 +7,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
+      - ./config.yaml:/sds/config.yaml
       - ./container_data:/sds/container_data
       - ./software.csv:/sds/software.csv
       - ./spider_data:/sds/spider_data

@@ -48,7 +48,7 @@ general:
   password: default admin password
   share_software: False
   show_container_page: True
-  drop_columns: []
+  hide_data: []
   ifram: False
 ```
 - `username`: Set `user_name` to be the default admin user for your website
@@ -59,13 +59,13 @@ general:
 
 - `show_container_page`: Set `show_container_page` to be `False` if you don't want the container page to be accessible. Default is `True`
 
-- `drop_columns`: Set `drop_columns` to be a list of columns (or displayed data in the 'Details' modal) i.e. `['column_name1', 'column_name2']` if you don't want certain columns (or data) to be visible. Column names that have a ✨ should have 'AI' in front of the column name (e.g: to disable the 'Tags ✨' column, use 'AI Tags'). Default is `[]`
+- `hide_data`: Set `hide_data` to be a list of data/fields/columns e.g. `['Description', 'Containers', 'Tutorials and Usage']` if you don't want certain columns (or data) to be visible. Fields that have a ✨ should have 'AI' in front of the name (e.g: to disable the 'Tags ✨' column, use 'AI Tags'). Default is `[]`
 
     - Here is the full list of available columns: `['Software', 'Resource', 'Containers',
         'Description' 'AI Description', 'Versions', 'AI Software Type', 'AI Software Class',
        'AI Research Field', 'AI Research Area', 'AI Research Discipline',
        'AI Core Features', 'AI Tags', 'Software's Web Page',
-       'Software Documentation', 'Example Software Use', 'AI Example Use',
+       'Software Documentation', 'Tutorials And Usage', 'AI Example Use',
        'Command']`
     - Note that some columns have been combined on the website for display, you may have to remove
         multiple of similar columns to get the intended effect
@@ -88,4 +88,4 @@ parsing:
     comment_block_only: True
 ```
 
-See the *`PARSER.md`* file for details about the what the configs do.
+See the *`PARSER.md`* file for details about what the configs do and how to modify them.

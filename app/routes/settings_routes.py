@@ -11,7 +11,7 @@ def settings():
     return render_template(
         "settings.html",
         table_info=initialize_table_info(),
-        drop_columns=current_app.config["DROP_COLUMNS"],
+        hide_data=current_app.config["HIDE_DATA"],
         use_curated_info=current_app.config["USE_CURATED_INFO"],
         use_ai_info=current_app.config["USE_AI_INFO"],
         use_api=current_app.config["USE_API"],

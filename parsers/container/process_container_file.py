@@ -62,42 +62,37 @@ def process_container(container_info: dict[str, any], container_name: str) -> Mo
         logger.error(f"Error processing container {container_name}: {e}", exc_info=True)
         raise
 
-
 def update_software_container(
-    software_id: Model, container_id: Model, versions: str, command: str
+    software_id: Model, container_id: Model, version: str, command: str
 ) -> None:
     logger.debug(
         f"Updating software container. Software ID: {software_id}, Container ID: {container_id}"
     )
     try:
+        cleaned_version = clean_versions(version)
         sc_id, created = SoftwareContainer.get_or_create(
-            software_id=software_id, container_id=container_id, software_versions=versions
-        )
-        final_versions = (
-            versions
-            if created
-            else clean_versions(f"{sc_id.software_versions}, {versions}")
+            software_id=software_id, container_id=container_id, software_versions=cleaned_version
         )
 
         logger.info(
-            f"{'Creating' if created else 'Updating'} software container with versions: {final_versions}"
+            f"{'Creating' if created else 'Updating'} software container with versions: {cleaned_version}"
         )
-        new_command = command
+
+        # Handle command logic
         if sc_id.command and command:
             old_commands = sc_id.command.split(",")
-            old_commands = [command.strip() for command in old_commands if command]
+            old_commands = [cmd.strip() for cmd in old_commands if cmd]
             old_commands.append(command)
             new_command = ", ".join(old_commands)
+        elif command:
+            new_command = command
+        else:
+            new_command = sc_id.command or ""
 
-        (
-            SoftwareContainer.update({
-                SoftwareContainer.software_versions: final_versions,
-                SoftwareContainer.command: new_command,
-                }
-            )
-            .where(SoftwareContainer.id == sc_id)
-            .execute()
-        )
+        # Update the model instance directly and save
+        sc_id.command = new_command
+        sc_id.save()
+
     except Exception as e:
         logger.error(f"Error updating software container: {e}", exc_info=True)
         raise e
@@ -123,9 +118,10 @@ def process_container_data(container_dir_path: Path, blacklist: set[str]) -> Non
                             update_software_resource(
                                 s_id, r_id, {c_info["software_versions"]: c_info.get("command", "")}
                             )
-
+                            if c_info["software_name"] == 'abricate':
+                                print(c_info)
                             update_software_container(
-                                s_id, c_id, c_info["software_versions"], c_info["command"]
+                                s_id, c_id, c_info["software_versions"], c_info.get("command", "")
                             )
                     except DataProcessingError as e:
                         logger.warning(

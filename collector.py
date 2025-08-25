@@ -138,8 +138,8 @@ def collect_module_spider_data(resource_name: str) -> Path:
 
         if result.returncode != 0:
             print(f"Error running module spider command: {result.stderr}")
-        # with open(spider_file, 'w') as f:
-        #     f.write(result.stdout)
+        with open(spider_file, 'w') as f:
+            f.write(result.stdout)
 
         print(f"Module spider data saved to {spider_file}")
         return dest_dir

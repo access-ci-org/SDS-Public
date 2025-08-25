@@ -54,6 +54,9 @@ def software_search():
 # 'Example Use' Modal Route
 @software_bp.route("/example_use/<path:software_name>")
 def get_example_use(software_name):
+
+    if 'AI Example Use' in current_app.config['HIDE_DATA']:
+        return jsonify({"error": "Example use is hidden by admin"}), 204
     example_use = None
     try:
         software_id = Software.get(Software.software_name == software_name)
