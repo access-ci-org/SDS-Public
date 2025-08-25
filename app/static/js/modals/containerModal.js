@@ -161,6 +161,7 @@ export function onViewContainerClick(e, table) {
             // Clear previous content
             $("#container-accordion").empty();
             $("#container-modal-title").text(softwareName);
+            console.log(response)
 
             response.forEach((containerData, index) => {
                 $("#container-accordion").append(`
@@ -169,9 +170,12 @@ export function onViewContainerClick(e, table) {
                             <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#container-${index}" aria-expanded="true"
                                 aria-controls="container-${index}">
-                                <div class="d-flex align-items-center">
-                                    <i class="bi bi-boxes me-2"></i>
+                                <i class="bi bi-boxes me-2"></i>
+                                <div class="flex-grow-1">
                                     ${containerData['container_name'] || 'Unnamed'}
+                                </div>
+                                <div class="px-5">
+                                    v: ${containerData['software_versions']}
                                 </div>
                             </button>
                         </h2>

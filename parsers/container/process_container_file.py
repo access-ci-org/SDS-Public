@@ -118,8 +118,6 @@ def process_container_data(container_dir_path: Path, blacklist: set[str]) -> Non
                             update_software_resource(
                                 s_id, r_id, {c_info["software_versions"]: c_info.get("command", "")}
                             )
-                            if c_info["software_name"] == 'abricate':
-                                print(c_info)
                             update_software_container(
                                 s_id, c_id, c_info["software_versions"], c_info.get("command", "")
                             )
