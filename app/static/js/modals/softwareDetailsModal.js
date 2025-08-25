@@ -195,7 +195,6 @@ function createLinkElements(links) {
             try {
                 // if title is just url, try to get real title
                 let siteTitle = await getSiteTitle(link);
-                console.log(getSiteTitle)
                 // truncate long title names
                 if (siteTitle && siteTitle.length > 30) {
                     siteTitle = siteTitle.slice(0, 30) + "...";
@@ -289,11 +288,11 @@ function populateInstalledOn(installedOn){
                    v:
             `)
             resource_info.resourceVersion.forEach(version_command => {
-                const split_vc = version_command.split("(")
+                const split_vc = version_command.split("c:")
                 const version = split_vc[0]
                 let command = ""
                 if (split_vc.length > 1) {
-                    command = split_vc[1].slice(0,-1)
+                    command = split_vc[1]
                 }
 
                 $(`#${resourceName}-software-version`).append(`

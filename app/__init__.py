@@ -30,7 +30,7 @@ try:
         config = yaml.safe_load(c)
     api_conf = config["api"]
     styles_conf = config.get("styles", {})
-    gneneral_conf = config.get("general", {})
+    general_conf = config.get("general", {})
 except FileNotFoundError as e:
     print(f"Unable to find config file config.yaml: {e}")
     sys.exit(1)
@@ -54,16 +54,17 @@ SITE_TITLE = styles_conf.get("site_title") or "SDS"
 LOGO = styles_conf.get("logo") or  "./logo.svg"
 
 # general config
-DEFAULT_USER = gneneral_conf.get("user_name")
-DEFAULT_PASS = Users.hash_password(gneneral_conf.get("password"))
-SHARE_SOFTWARE = gneneral_conf.get("share_software") or "False"
-SHOW_CONTAINER_PAGE = gneneral_conf.get("show_container_page", "True")
+DEFAULT_USER = general_conf.get("user_name")
+DEFAULT_PASS = Users.hash_password(general_conf.get("password"))
+SHARE_SOFTWARE = general_conf.get("share_software") or "False"
+SHOW_CONTAINER_PAGE = general_conf.get("show_container_page", "True")
+DROP_COLUMNS = general_conf.get('drop_columns',[])
+IFRAME = general_conf.get("iframe",False)
 
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     print("Not using API information")
     USE_API = False
 
-DROP_COLUMNS = []
 
 API_AI_COLUMNS = [
     "ai_description",
@@ -97,7 +98,8 @@ app.config.update(
     DEFAULT_PASS=DEFAULT_PASS,
     DEFAULT_USER=DEFAULT_USER,
     SHARE_SOFTWARE=SHARE_SOFTWARE,
-    SHOW_CONTAINER_PAGE=SHOW_CONTAINER_PAGE
+    SHOW_CONTAINER_PAGE=SHOW_CONTAINER_PAGE,
+    IFRAME=IFRAME
 )
 
 
@@ -109,7 +111,8 @@ def inject_global_vars():
         "secondary_color": app.config["SECONDARY_COLOR"],
         "site_title": app.config["SITE_TITLE"],
         "logo": app.config["LOGO"],
-        "show_container_page": app.config["SHOW_CONTAINER_PAGE"]
+        "show_container_page": app.config["SHOW_CONTAINER_PAGE"],
+        "iframe": app.config["IFRAME"]
     }
 
 

@@ -1,6 +1,7 @@
 # Table of Contents
 - [Parsing `module spider`](#parsing-module-spider)
   - [Spack specific parsing](#spack-specific-parsing)
+  - [Custom parsing function](#custom-lmod-parsing-function)
   - [Detailed explanation of regex](#detailed-explanation-of-regex)
 - [Parsing `container definitions`](#parsing-container-definitions)
   - [Only parse SDS comment block](#Only-parse-SDS-comment-block)
@@ -65,8 +66,49 @@ parsing:
         version_cleaner: '<custom version cleaner>'
         spider_description_separator: '<custom spider_description_separator>'
 ```
+
+Here is what an example `config.yaml` file might look like:
+```
+api:
+  api_key: abcd
+  use_api: True
+  use_curated_info: true
+  use_ai_info: False
+styles:
+  primary_color: "#1B365D"
+  secondary_color: "#1B365D"
+  site_title: "A reallly long title like so long that it breaks everything yup its a long title"
+  logo: "hi.png"
+parsing:
+  lmod_spider:
+    section_separator: '\n(?=\s{2}[/\w.+-]+(?:/[\w+\-])*:)'
+    name_version_pattern: '([/\w.+-]+(?:-[/\w+\-]+)?): (.+)'
+    version_separator: '[,]'
+    name_pattern: '(.+)' # this basically disables the name_pattern match
+    spider_description_separator: '----'
+```
+### Spack specific parsing
+If you are using `spack` to create modules, you should use the following config:
+```
+parsing:
+  lmod_spider:
+    version_cleaner: '/|-(?=\d)'
+    name_pattern: '(.*?)-(\d.*?)'
+    spider_description_separator: '----'
+```
+It will parse like so:
+```
+  cairo-1.16.0-gcc-9.3.0-fmtofpt: cairo-1.16.0-gcc-9.3.0-fmtofpt
+software: cairo version: 1.16.0-gcc-9.3.0-fmtofpt
+
+  cmake: cmake/3.19.4
+software: cmke, version: 3.19.4
+```
+Note that the regex above parses both normal lmod and spack moduel names
+
+### Custom Lmod Parsing Function
 Note that `custom_name_version_parser` cannot be passed in in the `config.yaml` file.
-Modify the `custom_lmod_parser` function in `parsers/lmod/parse_spider.py` with your custom logic.
+Modify the `custom_lmod_parser` function in `parsers/lmod/custom_parsers/custom_lmod_parser.py` with your custom logic.
 Here is what the predefined function looks like:
 ```
 def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]):
@@ -92,48 +134,6 @@ def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]
     return name, versions, software_info
 
 ```
-
-If you want to define custom regex for the prebuilt parser, you can do so in the config.yaml file.
-
-Here is what an example `config.yaml` file might look like:
-```
-api:
-  api_key: abcd
-  use_api: True
-  use_curated_info: true
-  use_ai_info: False
-styles:
-  primary_color: "#1B365D"
-  secondary_color: "#1B365D"
-  site_title: "A reallly long title like so long that it breaks everything yup its a long title"
-  logo: "hi.png"
-parsing:
-  lmod_spider:
-    section_separator: '\n(?=\s{2}[/\w.+-]+(?:/[\w+\-])*:)'
-    name_version_pattern: '([/\w.+-]+(?:-[/\w+\-]+)?): (.+)'
-    version_separator: '[,]'
-    name_pattern: '(.+)' # this basically disables the name_pattern match
-    spider_description_separator: '----'
-```
-
-### Spack specific parsing
-If you are using `spack` to create modules, you should use the following config:
-```
-parsing:
-  lmod_spider:
-    version_cleaner: '/|-(?=\d)'
-    name_pattern: '(.*?)-(\d.*?)'
-    spider_description_separator: '----'
-```
-It will parse like so:
-```
-  cairo-1.16.0-gcc-9.3.0-fmtofpt: cairo-1.16.0-gcc-9.3.0-fmtofpt
-software: cairo version: 1.16.0-gcc-9.3.0-fmtofpt
-
-  cmake: cmake/3.19.4
-software: cmke, version: 3.19.4
-```
-Note that the regex above parses both normal lmod and spack moduel names
 
 ### Detailed explanation of regex
 The rest of the section will go into a little more detail about each field and how the default selection affects the fields

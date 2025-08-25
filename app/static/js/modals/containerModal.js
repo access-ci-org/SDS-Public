@@ -45,7 +45,9 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                     Definition File
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
-                    ${definition_file || '<span class="text-muted">No definition file available</span>'}
+                    ${definition_file.startsWith("https://") || definition_file.startsWith('http://') ?
+                        '<a href='+definition_file+' target="_blank">'+definition_file+'</a>' : definition_file || '<span class="text-muted">No definition file available</span>'
+                    }
                 </div>
             </div>
         `: ''}
@@ -58,7 +60,10 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                     Container File
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
-                    ${container_file || '<span class="text-muted">No container file available</span>'}
+                    ${container_file.startsWith("https://") || container_file.startsWith('http://') ?
+                        '<a href='+container_file+' target="_blank">'+container_file+'</a>' :
+                        container_file || '<span class="text-muted">No definition file available</span>'
+                    }
                 </div>
             </div>
         `: ''}

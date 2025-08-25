@@ -38,7 +38,7 @@
               <div class="card-header">
                 <h5 class="mb-0">Software Options</h5>
               </div>
-              <div class="card-body">
+              <div class="card-body col">
                 <div class="mb-3 d-flex justify-content-between align-items-center">
                   <label class="form-label mb-0">Share software names with SDS developers</label>
                   <div class="form-check form-switch">
@@ -51,7 +51,19 @@
                   </span>
                 </div>
               </div>
-            </div>
+              <div class="card-body col">
+                <div class="mb-3 d-flex justify-content-between align-items-center">
+                  <label class="form-label mb-0">Share software names with other institutions</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="shareSoftwareWithOthers" {{'checked' if share_software}}>
+                  </div>
+                </div>
+                <div class="font-monospace p-2 bg-light rounded">
+                  <span class="text-muted">
+                    This inforamtion will be used to help other institutions identify what software is available at your institution.
+                  </span>
+                </div>
+              </div>
           </div>
         </div>
       </div>

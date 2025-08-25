@@ -159,7 +159,7 @@ def organize_table(
         combined = []
         for r, v, c in zip(resources, versions, commands):
             if has_commands and c and str(c).strip():  # If command exists and is not empty
-                combined.append(f"{r}: {v} ({c})")
+                combined.append(f"{r}: {v} c:{c}")
             else:
                 combined.append(f"{r}: {v}")
 

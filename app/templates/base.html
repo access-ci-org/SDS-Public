@@ -50,19 +50,23 @@
 <body id="body" style="display: flex; flex-direction: column; min-height: 100vh;">
     <div style="flex: 1;">
         {%block content%}
-            <div>
-                {%include 'navbar.html'%}
-            </div>
+            {% if not iframe %}
+                <div>
+                    {% include 'navbar.html'%}
+                </div>
+            {% endif %}
             <br>
             <div class="container justify-content-center">
                 <div style="height: auto;">
-                    <div class="row justify-content-center">
-                        <div class="col">
-                            {%block page_title %}
-                            {#page title is added here#}
-                            {% endblock%}
+                    {% if not iframe %}
+                        <div class="row justify-content-center">
+                            <div class="col">
+                                {%block page_title %}
+                                {#page title is added here#}
+                                {% endblock%}
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                     <div class="row justify-content-center">
                         <div class="col">
                             <div id="alert-div" style="text-align: center;">

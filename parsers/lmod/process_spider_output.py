@@ -8,7 +8,7 @@ from parsers.lmod.parse_spider import parse_spider_output
 from parsers.exceptions import DataProcessingError
 from parsers.utils import process_software, update_software_resource
 
-@custom_halo(text="Processing moduel spider data")
+@custom_halo(text="Processing module spider data")
 def process_spider_data(spider_path: Path, blacklist: set[str]) -> None:
     logger.info(f"Processing spider data from: {spider_path}")
     try:

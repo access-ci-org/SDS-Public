@@ -114,16 +114,27 @@ def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[
         # request software data in batches
     for i in range(0, len(software), BATCH_SIZE):
         batch = software[i:min(i+BATCH_SIZE, len(software))]
-        software_param = "+".join(batch)
-        url = f"http://128.163.202.84:8080/API_0.1/{api_key}/software={software_param},share={share}"
+        url = "http://128.163.202.84:8080/api/v1"
+        headers = {
+            "X-API-Key": api_key,
+            "Content-Type": "application/json"
+        }
+        data = {
+            "software": batch,
+            "share_with_devs": share,
+            "verified_only": False,
+        }
+
         try:
-            request = requests.get(url, timeout=20)
+            request = requests.post(url, headers=headers, json=data, timeout=20)
             if request.status_code == 200:
                 batch_data = request.json()
-                all_data.extend(batch_data)
-                logger.info(f"Successfully retrieved batch {i//BATCH_SIZE + 1}")
+                all_data.extend(batch_data['data'])
+                logger.info(f"Successfully retrieved batch {i//BATCH_SIZE + 1}. url: {url}")
             elif request.status_code == 401:
                 raise DataProcessingError(f"Unable to fetch data from API: {request.json()}")
+            else:
+                logger.warning(f"API returned status {request.status_code} for batch {i//BATCH_SIZE+1}. url: {url}, batch data: {batch}")
         except (requests.ConnectionError, requests.ConnectTimeout) as ex:
             logger.warning(
                 f"Unable to retrieve data from api call for batch {i//BATCH_SIZE + 1}: {ex}. Using cached data."
@@ -132,7 +143,7 @@ def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[
         except Exception as e:
             raise DataProcessingError(f"Failed to retreive data from api: {str(e)}") from e
     logger.info(
-        f"Successfully retrievied data from api call. Length of data is {len(all_data)}"
+        f"Successfully retrievied data from api call. Length of data is {len(all_data)}."
     )
     if all_data:
         with open("app/models/api_response.json", "w+") as ar:

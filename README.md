@@ -37,11 +37,11 @@ That should be all the necessary setup
 ## Running the Application
 ### Using Docker
 1. Make sure [docker](https://docs.docker.com/engine/install/) is installed on your machine
-2. Make sure you have the relevant data available based on [Data Preparation](#data-prepration)
-3. Run `sudo docker-compose up -d`
+2. Make sure you have the relevant data available based on [Data Preparation](#data-preparation)
+3. Run `sudo docker compose up -d`
     - The website will be available in 5 or so seconds at `localhost:8080` (and <your_ip_address>:8080)
-    - You can stop the services by running `sudo docker-compose down`
-    - To rebuild the image each time run: `sudo docker-compose up -d --build`
+    - You can stop the services by running `sudo docker compose down`
+    - To rebuild the image each time: `sudo docker compose up -d --build`
 4. If you want to enable ssl certificates for your website, make the following changes:
     - In the `nginx.conf` file, comment out the entrie first `server {` entry and uncomment the entire second `server {` entry.
     - In the `docker-compose.yml` file, comment out the ` - "808:80"` line and uncomment the ` - "443:443"`
@@ -75,19 +75,9 @@ general:
   user_name: default admin user
   password: default admin password
   share_software: False
-  show_container_page: True
 ```
 
-- Set `use_api` to `True` to connect to a remote SDS database (using the `sds_api_key`). Default: False
-- `api_key` API key to the sds website, you can obtain one here: (link to website or email of people to contact)
-- Set `use_curated_info` to `True` to display curated information (such as software descriptions, link to software webpage, etc). If no software descriptions are provided and `use_curated_info` is set to true then it will use informaton from the api call to add descriptions. Default: False
-- Set `use_ai_info` to `True` to display AI generated information (such as AI descriptions, Software example use, etc.) on your website. Default: False
-- Set `primary_color` and `secondary_color` to set the colors (in hexadecimal, e.g. #1B365D) for the website. Different shades of these two colors are used in the website. Darker, monochromatic, colors are recommended. Default Primary: #1b365d, Default Secondary: #324a6d
-- Set `site_title` to be the main title you want for your website. Default: SDS
-- Set `logo` to be the relative path to the image you want to display as your logo.
-- Set `user_name` and `password` to be the default admin user for your website
-- Set `share_software` to be `True` if you want to share the names of the software available on your resources with us. This inforamtion will be used to identify software for which we need to collect curated data. It may also be used to help other institutions identify what software is available at different institutions. Default is `False`.
-- Set `show_container_page` to be `False` if you either don't want the container page to be accessible. Default is `True`
+*View the `CONFIGS.md` file for information on what these configs do and other avaialbe configs.*
 
 
 # Data Preparation
@@ -115,7 +105,7 @@ For obtaining the raw output, use the `collector.py` script located in this repo
 The `COLLECTOR.md` file goes over how to use it. The `collector.py` file will create the proper directory structure for each type of data.
 
 #### Manual
-If you would rather collect the data manually, the rest of the section will cover how format that data
+If you would rather collect the data manually, the rest of the section will cover how to format that data.
 
 The raw output of a specific command or supported file types (SDS will parse it and extract the software info)
 All files for this section must be within subdirectories. The name of each subdirectory
@@ -123,13 +113,13 @@ should be the name of a resource to which the files belong. `resource` refers to
 - `module spider` output (lmod)
   - If you use lmod for managing packages/environments then run `module spider` on your
  system and save the output to a text file
-  - If you are using the docker, then the parent directory must be named `spider_data`
+  - If you are using docker to run the SDS, then the parent directory must be named `spider_data`
 - Container definition (`.def`) file
   - You can also provide container definition files within the proper resource directory
  and the SDS tool will attempt to parse it and extract any relevant software information.
  The name of the `.def` is treated as the container name.
-  - If you are using the version of sds docker, then the parent directory must be named `spider_data`
-  - Aside from the raw `.def` file, you can also add curated information for specific containers.
+  - If you are using the version of sds docker, then the parent directory must be named `container_data`
+  - Aside from the raw `.def` file, you can also add curated information for specific containers in a csv file or in a custom SDS comment block (see the `PARSER.md` file).
  All csv files must have a software_name and (container_file or definition_file) columns.
  Here is the complete list of supported columns: `software_name, software_versions, container_name,
  definition_file, container_file, notes, command`.
@@ -159,6 +149,7 @@ SDS
   |
   └──software.csv
 ```
+*Note for container files: If you are defining your container file/definition file location by using the  SDS comment block (see PARSER.md file), you do not need to have a preserved directory structure. So your container_data directory structure would be like this,`container_data/{resource_name}/{definition_files}`*
 
 ## Parser
 The built in parser will attempt to gather software information based on the data provided, but it may not always be successful depending on your naming scheme.
