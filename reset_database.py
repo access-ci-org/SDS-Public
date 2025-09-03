@@ -328,6 +328,35 @@ def get_external_site_title(url):
     except Exception:
         return ""
 
+@custom_halo(text="Updating example use data")
+def update_example_uses(example_use_dir: Path) -> None:
+    """
+    Updates example usage for software from user provided data
+    """
+    for file in example_use_dir.iterdir():
+        if not file.is_file():
+            print(f"Item {file} is not a file. Skipping")
+
+        try:
+            file_data = ''
+            with open(file, 'r', encoding='utf-8') as f:
+                file_data = f.read()
+
+            file_name = file.name
+            if file_name.endswith('.md'):
+                file_name = file_name[:-len('.md')]
+
+            software = Software.get_or_none(Software.software_name == file_name)
+            if software:
+                ai_software = AISoftwareInfo.get_or_none(AISoftwareInfo.software_id == software)
+                if ai_software:
+                    ai_software.ai_example_use = file_data
+                    updated = ai_software.save()
+
+        except Exception as e:
+            print(e)
+
+
 def setup_argparse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Delete and recreate the database using data provided in the input_dir directory.\
@@ -352,6 +381,11 @@ def setup_argparse() -> argparse.Namespace:
         "--csv_file",
         help="Location of csv file with pre-parsed data. The first row must have column names \
         and the following columns are necessary but only the software column needs any data: software, resource, software_description, software_versions.",
+    )
+    parser.add_argument(
+        "--software_use_dir",
+        "-s_u_d",
+        help="Directory containing a text (markdown) file with instructions on how to use a specific software. Read the data prepeartion section of the README.md file for more info. Default: ./software_uses/"
     )
 
     args = parser.parse_args()
@@ -422,6 +456,14 @@ def main() -> None:
                 logger.warning(
                     "SDS API key not found in environment variables. Skipping API data update."
                 )
+
+        default_software_use_path = Path('./software_uses')
+        if args.software_use_dir or (default_software_use_path.exists() and default_software_use_path.is_dir()):
+            # Add example use
+            example_use = args.software_use_dir or default_software_use_path
+            update_example_uses(example_use)
+            logger.info("Found software uses directory. Attempting to parse")
+            pass
 
         logger.info("Creating admin user")
         hashed_password = app.config["DEFAULT_PASS"]

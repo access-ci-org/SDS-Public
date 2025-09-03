@@ -11,6 +11,7 @@ services:
       - ./container_data:/sds/container_data
       - ./software.csv:/sds/software.csv
       - ./spider_data:/sds/spider_data
+      - ./software_uses:/sds/software_uses
       # Add any other files or directories you want to mount
       # - ./local_path:/container_path
   nginx:

@@ -115,6 +115,8 @@ should be the name of a resource to which the files belong. `resource` refers to
   - If you use lmod for managing packages/environments then run `module spider` on your
  system and save the output to a text file
   - If you are using docker to run the SDS, then the parent directory must be named `spider_data`
+
+
 - Container definition (`.def`) file
   - You can also provide container definition files within the proper resource directory
  and the SDS tool will attempt to parse it and extract any relevant software information.
@@ -135,6 +137,19 @@ should be the name of a resource to which the files belong. `resource` refers to
   afterqc,0.9.7,,/share/singularity/afterqc,/share/singularity/afterqc.sinf,singularity run --app afterqc097 /share/singularity/share/singularity/afterqc.sinf python /usr/local/Miniconda3/envs/afterqc-0.9.7/bin/after.py -1 R1.fq.gz
 ```
 
+- Custom diefined example use
+  - You can define custom exampel usage for each of your software. This is a good
+    location to add any recommend slurm scripts or other instructions on how you want users to use
+    your software.
+  - By default the SDS will look for a directory named `software_uses` in the main app directory
+    if your directory is located else where or defined separately you can pass in the appropriate path when calling `reset_database.py` or if you're using docker udpate the appropriate mount
+    in `docker-compose.yml`
+  - All files within the `software_uses` directory should be the name of a software. If a software
+    matching the provided file isn't found then the data is ignored. So if you have some exampel use
+    for the software `python` your file with that information must be named `python` or `python.md`
+  - All files are treated and formatted as Markdown files when being dispalyed on the website,
+    regardless of whether it has the `.md` suffix.
+
 Here is an example of a proper directory structure for the data:
 ```
 SDS
@@ -146,9 +161,12 @@ SDS
   |
   └──spider_data/
   |    └── {resource_name}/
-  |        └── {resource_name}_spider.txt  # Complete output from module spider
+  |        └── {resource_name}_spider  # Complete output from module spider
   |
   └──software.csv
+  |
+  └──software_uses/
+      └── {software_name}.md
 ```
 *Note for container files: If you are defining your container file/definition file location by using the  SDS comment block (see PARSER.md file), you do not need to have a preserved directory structure. So your container_data directory structure would be like this,`container_data/{resource_name}/{definition_files}`*
 
