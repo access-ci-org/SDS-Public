@@ -1,8 +1,8 @@
-import {header, siteMenus, footer, footerMenus, universalMenus} from "https://esm.sh/@access-ci/ui@0.8.0"
+import {header, siteMenus, footer, footerMenus, universalMenus, qaBot} from "https://esm.sh/@access-ci/ui@0.8.0"
 
 export const siteItems = [{
     name: "ACCESS Resource Advisor",
-    href: "https://access-ara.ccs.uky.edu:8080/"
+    href: "https://ara.access-ci.org"
 }]
 
 
@@ -33,7 +33,12 @@ export const setupFunctions = {
         siteName: "Support",
         target: target
     }),
-    footer: (target => footer({ target: target}))
+    footer: (target => footer({ target: target})),
+    qaBot: (target => qaBot({
+        target:target,
+        apiKey: "my-api-key",
+        })
+    )
 }
 
 export function updateNavAndHeader(){

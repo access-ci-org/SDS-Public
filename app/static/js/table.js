@@ -10,6 +10,7 @@ setupFunctions.header(document.getElementById("header"));
 setupFunctions.siteMenus(document.getElementById("site-menus"));
 setupFunctions.footerMenus(document.getElementById("footer-menus"));
 setupFunctions.footer(document.getElementById("footer"));
+setupFunctions.qaBot(document.getElementById("qa-bot"))
 
 // Update Navbar, Header, and Footer
 updateNavAndHeader();
