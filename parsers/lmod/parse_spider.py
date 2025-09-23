@@ -198,7 +198,7 @@ def parse_spider_output(spider_output_dir: Path) -> dict[str, list[dict[str, any
     try:
         with open("config.yaml", "r", encoding="utf-8") as c:
             parsing = yaml.safe_load(c).get("parsing", {})
-            lmod_parsing = parsing["lmod_spider"] if parsing else {}
+            lmod_parsing = parsing.get("lmod_spider", {}) if parsing else {}
 
     except FileNotFoundError:
         lmod_parsing = {}

@@ -1,8 +1,12 @@
 import { showModalForSoftware, getURLParameter } from "./modals/softwareDetailsModal.js";
 import { onViewContainerClick } from "./modals/containerModal.js";
+import { DataTablesAnalytics } from "./tableAnalytics.js";
 
 export var staticTable
 export var column_names = JSON.parse(col_names) // defined in software_search.html
+
+// table search tracking
+const tableAnalytics = new DataTablesAnalytics();
 
 function buildColumns() {
     var cols = [];
@@ -113,17 +117,16 @@ columns.forEach(function(col, index) {
 
 $(document).ready(function()
 {
-    /*/////////////////////////////////////////////////////////////////////////////////////////////////////////
-        STATIC TABLE                                                                                        //
-        Enabled: FixedHeader, SearchPanes //
-    *///////////////////////////////////////////////////////////////////////////////////////////////////////
+    var initialSoftwareName = getURLParameter('software');
+    if (initialSoftwareName) {
+        tableAnalytics.trackSoftwareView(initialSoftwareName, 'url_direct');
+        showModalForSoftware(initialSoftwareName);
+    }
+
     var staticTable = $('#softwareTable').DataTable({
         ordering: false,    // Disables sorting
-        // fixedColumns: true, // Makes first column 'fixed' to the left side of the table when scrolling
         fixedHeader: true,  // Makes column headers 'fixed' to the top of the table when scrolling
         scrollX:true,
-        // autowidth: false,
-        // scrollCollapse: true,
         pageLength: 25,     // Rows displayed per page
         pagingType: 'full_numbers',     // 'First', 'Previous', 'Next', 'Last', with page numbers
         lengthMenu: [                   // User-selectable menu for pageLength
@@ -143,7 +146,7 @@ $(document).ready(function()
                 next: "Next",
                 first: "First",
                 last: "Last"
-            },
+            }
         },
         stateSave: false,   // Toggle for saving table options between page reloads
         stateDuration:-1,   // How long to save
@@ -153,12 +156,24 @@ $(document).ready(function()
             threshold: 1.0,
             dtOpts: {
                 select: { style: 'multi'},
-                order: [[ 1, "desc" ]]
-            }
+                order: [[ 1, "desc" ]],
+            },
         },
         columns:columns,
         initComplete: function() {
             const api = this.api();
+
+            // track global search
+            $('.dt-search input').on('keyup change', function() {
+                const searchTerm = this.value;
+                if (searchTerm.length > 2 || searchTerm.length === 0) {
+                    setTimeout(() => {
+                        const resultCount = api.rows({ search: 'applied' }).count();
+                        tableAnalytics.trackSearch(searchTerm, resultCount);
+                    }, 100);
+                }
+            })
+
             // Target the fixed header cells inside the dt-scroll-headInner container.
             // These are the header cells that DataTables displays for scrolling/fixed columns.
             $('#softwareTableDiv table thead tr th').each(function(i) {
@@ -169,7 +184,9 @@ $(document).ready(function()
                     if (originalText.includes("Tags") || originalText.includes("Description")) {
                         originalText = originalText.replace("AI ", "")
                         new_header = `
-                            <span style="display:block; font-weight:bold;">${originalText} &#10024</span>
+                            <span style="display:block; font-weight:bold;">${originalText}
+                                <i class="bi bi-stars"></i>
+                            </span>
                         `
                     } else {
                         new_header = `
@@ -182,13 +199,19 @@ $(document).ready(function()
                     // Create an input field with a placeholder and append it to the header cell
                     let $input = $('<input type="text" class="col-search" style="width: 100%;" placeholder="Search ">');
                     $(this).append($input);
-                    // Attach event listener to perform column search
+                    // Attach event listener to perform column search and search tracking
                     $input.on('keyup change', function(e) {
+                        const columName = originalText;
+                        const searchTerm = this.value;
                         self = this;
-                        // draw(false) prevents page changes and doesfaster draw
+
                         const columnIndex = api.column(this.closest('th')).index();
                         if (api.column(columnIndex).search() !== this.value) {
+                            // draw(false) prevents page changes and doesfaster draw
                             api.column(columnIndex).search(this.value).draw(false).one('draw', function(){
+                                // Track column search
+                                const resultCount = api.rows({search: 'applied'}). count();
+                                tableAnalytics.trackColumnSearch(columName, searchTerm, resultCount);
                                 // minor timeout to ensure DOM updates
                                 setTimeout(function(){
                                     self.focus();
@@ -204,6 +227,34 @@ $(document).ready(function()
         }
     });
 
+    // Track SearchPanes filter changes
+    staticTable.on('search.dt', function() {
+        // Get all selected searchpane values
+        const searchPaneTables = $('.dtsp-searchPane table').DataTable();
+        let allSelections = [];
+        let filterTypes = [];
+
+        $('.dtsp-searchPane table').each(function(index) {
+            const table = $(this).DataTable();
+            const selected = table.rows({ selected: true }).data().toArray();
+
+            if (selected.length > 0) {
+                const tableId = this.id;
+                const filterType = getFilterTypeFromTableId(tableId);
+                const values = selected.map(row => row.display);
+
+                filterTypes.push(filterType);
+                allSelections = allSelections.concat(values);
+            }
+        });
+
+        // Only track if filters are actually applied
+        if (allSelections.length > 0) {
+            const resultCount = staticTable.rows({ search: 'applied' }).count();
+            tableAnalytics.trackFilter(filterTypes.join(','), allSelections, resultCount);
+        }
+    });
+
 
     // Hide SearchPanes (filters) by default
     $(".dtsp-panesContainer").hide();
@@ -214,8 +265,9 @@ $(document).ready(function()
             <i class="bi bi-filter"></i>
         </div>
     `);
+
     $("#toggle-filters").click(() => {
-        $(".dtsp-panesContainer").toggle("fast", function() {
+         $(".dtsp-panesContainer").toggle("fast", function() {
             const isVisible = $(".dtsp-panesContainer").is(":visible");
             const buttonText = isVisible ? "Hide Filters" : "Show Filters";
             if (!(isVisible)){
@@ -241,7 +293,6 @@ $(document).ready(function()
         $("#software-data").html('')
         history.pushState(null, '', '/');
     });
-
 
 /*//////////////////////////////////////////////
     Disable Searching Through Hidden Columns //
@@ -279,7 +330,7 @@ $(document).ready(function()
     }
 
     // main search table input
-    $(".dt-search input").attr('placeholder', 'Search Table')
+    $(".dt-search input").attr('placeholder', 'Search All')
 
     // datatables search panes buttons
     $(".dtsp-titleRow button").addClass('tag')
@@ -299,12 +350,25 @@ export function makeLinkClickable(data) {
     }
 }
 
+// helper function to get filter mapping
+function getFilterTypeFromTableId(tableId) {
+    const filterMap = {
+        'DataTables_Table_0': 'Resource',
+        'DataTables_Table_1': 'Tags',
+        'DataTables_Table_2': 'Research Discipline',
+        'DataTables_Table_3': 'Software Type'
+    }
+    return filterMap[tableId] || 'unknown'
+}
+
 $('#softwareTable').on('click', '.primary-button', function(e) {
     // e.preventDefault();
     const row = $(this).closest("tr");
     const softwareEntry = row.children()[0]
     const softwareNameHTML = softwareEntry.children[0]
     const softwareName = softwareNameHTML.firstChild.data
+    // track 'Details' view
+    tableAnalytics.trackSoftwareView(softwareName, 'table')
     history.pushState(null, '', '?software=' + encodeURIComponent(softwareName));
     showModalForSoftware(softwareName);
 })
@@ -313,6 +377,10 @@ $('#softwareTable').on('click', '.primary-button', function(e) {
 function handleSimilarSoftwareSelection(selector, tableId, needsDecoding = false) {
     $("#softwareDetails-modal").on('click', selector, function(e) {
         const text = this.innerText.trim();
+
+        // track
+        tableAnalytics.trackFilter('simiar_software_click', [text], 0);
+
         const currentSelections = $('div.dtsp-searchPane table').DataTable().rows({selected: true}).data().toArray();
         const newSelections = [...currentSelections, text];
         const searchPaneTable = $(`.dtsp-searchPanes table#${tableId}`).DataTable();

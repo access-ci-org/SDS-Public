@@ -154,3 +154,11 @@ input {
 .collapsing {
   transition: none;
 }
+
+.bi-stars::before {
+  /* color: var(--primary-color-1); */
+  background: linear-gradient(to top, var(--primary-color-3), var(--secondary-color-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}

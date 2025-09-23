@@ -4,6 +4,8 @@
   - [Custom parsing function](#custom-lmod-parsing-function)
   - [Detailed explanation of regex](#detailed-explanation-of-regex)
 - [Parsing `container definitions`](#parsing-container-definitions)
+  - [SDS Comment Block v1](#sds-comment-block-v1)
+  - [SDS Comment Block v0](#sds-comment-block-v0)
   - [Only parse SDS comment block](#Only-parse-SDS-comment-block)
 
 # Parsing `module spider`
@@ -211,8 +213,96 @@ To implement this you will have to edit the `custom_name_version_parser` functio
 # Parsing `container definitions`
 
 The container parser will attempt to automatically get all the software installed from the definition file.
+
 Sometimes the parser can miss some software. If you want to make sure a particular software/version is captured,
-add the follow section to the **bottom** of your definition file:
+add a `SDS Software` comment block to the **bottom** of your definition file. There are two versions of this comment block available (v1 is recommended):
+
+## SDS Comment Block v1:
+Here is what v1 of the sds comment block looks like:
+```
+## SDS Software v1
+# sds_software:
+#   container_file: /path/file.sinf
+#   def_file: /path/dir/dockerfile
+#   software:
+#     software1:
+#       - version: 'latest'   # version for software1
+#         command: ''         # command to run software1 with version latest
+#       - version: '1'        # second version for software1
+#         command: ''         # command to run sofware1 with version 1
+#     software2:
+#       - version: 'latest'
+#     software3:
+#       - command: 'run software3'
+#
+# --- END SDS Software ---
+
+```
+Note that this is a standard YAML format that has been commented out (so make sure the sapcing
+and syntax conforms to yaml conventions). The header `## SDS Software v1` lets the parsers know
+where to start looking for the data and which version to expect. *Everything* between the
+header and the end delimiter (`--- END SDS Software ---`) will be treated as a part of the SDS block.
+
+Note that not all of the fields need to be present and not all of the fields need values.
+Here is the bare minimum required:
+```
+## SDS Software v1
+# sds_software:
+#   software:
+#     software1:
+#       - version: '1.0'
+#     software2:
+#       - version: 'latest'
+#     software3:
+#       - version: ''
+#
+# --- END SDS Software ---
+```
+Note that at least one of the `command` or `version` is required for each software but can be left empty.
+
+
+Here is an example docker file with the v1 SDS block:
+
+```
+BootStrap: docker
+From: nvidia/cuda:8.0-devel-ubuntu16.04
+
+%post
+    apt-get -y update
+    apt-get -y install git vim wget sudo
+    git clone https://github.com/torch/distro.git /torch --recursive
+    cd /torch;
+    sed 's/sudo/ /g' install-deps > install-deps_no_sudo
+    bash install-deps_no_sudo;
+    ./install.sh
+    /torch/install/bin/luarocks install torch
+    /torch/install/bin/luarocks install nn
+    /torch/install/bin/luarocks install image
+    /torch/install/bin/luarocks install lua-cjson
+    /torch/install/bin/luarocks install https://raw.githubusercontent.com/qassemoquab/stnbhwd/master/stnbhwd-scm-1.rockspec
+    /torch/install/bin/luarocks install https://raw.githubusercontent.com/jcjohnson/torch-rnn/master/torch-rnn-scm-1.rockspec
+    /torch/install/bin/luarocks install cutorch
+    /torch/install/bin/luarocks install cunn
+    git clone https://github.com/jcjohnson/densecap.git /densecap
+
+## SDS Software v1
+# sds_software:
+#   container_file: /path/file.sinf
+#   def_file: /path/dir/dockerfile
+#   software:
+#     torch:
+#       - version: ''
+#     densecap:
+#       - version: 'latest'
+# --- END SDS Software ---
+```
+
+Since the `densecap` software is installed using a url, it would normally not be captured by the parser,
+but with the `## SDS Software` comment, it will find the two software `torch` and `densecap`. `torch` will
+not have a version but `densecap` will have the version `latest`.
+
+## SDS Comment Block v0:
+Here is what a bare minimum sds v0 comment block looks like (note that no version is specified)
 ```
 ## SDS Software
 #	software1/version

@@ -56,10 +56,12 @@ LOGO = styles_conf.get("logo") or  "./logo.svg"
 # general config
 DEFAULT_USER = general_conf.get("user_name")
 DEFAULT_PASS = Users.hash_password(general_conf.get("password"))
-SHARE_SOFTWARE = general_conf.get("share_software") or "False"
+SHARE_WITH_DEVS = general_conf.get("share_with_devs", True)
+SHARE_WITH_OTHERS = general_conf.get("share_with_others", False)
 SHOW_CONTAINER_PAGE = general_conf.get("show_container_page", "True")
 HIDE_DATA = general_conf.get('hide_data',[])
 IFRAME = general_conf.get("iframe",False)
+EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     print("Not using API information")
@@ -97,9 +99,11 @@ app.config.update(
     LOGO=LOGO,
     DEFAULT_PASS=DEFAULT_PASS,
     DEFAULT_USER=DEFAULT_USER,
-    SHARE_SOFTWARE=SHARE_SOFTWARE,
+    SHARE_WITH_DEVS=SHARE_WITH_DEVS,
+    SHARE_WITH_OTHERS=SHARE_WITH_OTHERS,
     SHOW_CONTAINER_PAGE=SHOW_CONTAINER_PAGE,
-    IFRAME=IFRAME
+    IFRAME=IFRAME,
+    EXTERNAL_ANALYTICS=EXTERNAL_ANALYTICS
 )
 
 
@@ -112,7 +116,8 @@ def inject_global_vars():
         "site_title": app.config["SITE_TITLE"],
         "logo": app.config["LOGO"],
         "show_container_page": app.config["SHOW_CONTAINER_PAGE"],
-        "iframe": app.config["IFRAME"]
+        "iframe": app.config["IFRAME"],
+        "external_analytics": app.config["EXTERNAL_ANALYTICS"]
     }
 
 

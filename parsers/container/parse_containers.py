@@ -175,6 +175,60 @@ def extract_SDS_software(content):
         return new_data, container_file, definition_file
     return [], container_file, definition_file
 
+def extract_SDS_software_v1(content):
+    """
+    Extract SDS software metadata from a commented YAML block in the content.
+    Returns:
+        - List of tuples (software/version, command)
+        - container_file path (str)
+        - def_file path (str)
+    """
+    # match everything between the start and end markers
+    sds_block_pattern = r'##\s+SDS\s+Software\s+v1\s*\n(.*?)(?:#\s*---\s*END\s*SDS\s*Software\s*---)'
+    match = re.search(sds_block_pattern, content, re.DOTALL)
+
+    if not match:
+        return [], "", ""
+
+    # extract the block and remove comment characters
+    raw_lines = match.group(1).splitlines()
+    yaml_lines = []
+    for line in raw_lines:
+        line = line.lstrip()
+        if line.startswith("#"):
+            # remove exactly one '#' and one following space, if present
+            uncommented = re.sub(r'^# ?', '', line)
+            yaml_lines.append(uncommented)
+
+    yaml_str = "\n".join(yaml_lines)
+
+    try:
+        sds_data = yaml.safe_load(yaml_str)
+    except yaml.YAMLError as e:
+        raise ValueError(f"Invalid YAML in SDS block: {e}")
+
+    container_file = ""
+    definition_file = ""
+    software_list = []
+
+    sds = sds_data.get("sds_software", {})
+
+    container_file = sds.get("container_file", "")
+    definition_file = sds.get("def_file", "")
+    software_map = sds.get("software", {})
+
+    for software_name, entries in software_map.items():
+        if not isinstance(entries, list):
+            continue  # skip invalid structures
+        for entry in entries:
+            version = entry.get("version", "").strip()
+            command = entry.get("command", "").strip()
+            key = software_name
+            if version:
+                key += f"/{version}"
+            software_list.append((key, command))
+    return software_list, container_file, definition_file
+
 def get_parsed_data(package_string, data) -> Dict[str, str]:
 
     sv_pattern = r"([a-zA-Z0-9._-]+)(?:[-=]|==|/)v?(\d+(?:\.\d+)*(?:[-_.][a-zA-Z0-9]+)*)"
@@ -183,8 +237,11 @@ def get_parsed_data(package_string, data) -> Dict[str, str]:
         s = software_versions.group(1)
         v = software_versions.group(2)
     else:
-        s = package_string
-        v = ""
+        if '/' in package_string:
+            s,v = package_string.split('/',1)
+        else:
+            s = package_string
+            v = ""
     if s not in data or (v and not data["software_versions"]):
         data["software_name"] = s
         data["software_versions"] = v
@@ -210,7 +267,10 @@ def parse_container_def(file_path: Path) -> List[Dict[str, Any]]:
     help_message = extract_help_message(content)
 
     # get comment block info
-    software_command, container_file, def_file = extract_SDS_software(content)
+    if "SDS Software v1" in content:
+        software_command, container_file, def_file = extract_SDS_software_v1(content)
+    else:
+        software_command, container_file, def_file = extract_SDS_software(content)
 
     if not parsing_config.get("comment_block_only", ""):
         package_strings = []

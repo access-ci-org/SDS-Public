@@ -1,6 +1,5 @@
 from flask import render_template, request, jsonify, current_app
 from flask_login import login_required, current_user
-from app.models.users import Users
 from app.logic.table import initialize_table_info
 from . import settings_bp
 
@@ -17,15 +16,16 @@ def settings():
         use_api=current_app.config["USE_API"],
         api_curated_columns=current_app.config["API_CURATED_COLUMNS"],
         api_ai_columns=current_app.config["API_AI_COLUMNS"],
-        share_software=current_user.shareSoftware,
+        share_with_devs=current_app.config["SHARE_WITH_DEVS"],
+        share_with_others=current_app.config["SHARE_WITH_OTHERS"]
     )
 
 @settings_bp.route("/update_col_visibility/<path:column_name>", methods=["POST"])
 @login_required
 def update_col_visibility(column_name):
     if column_name:
-        if column_name == "shareSoftware":
-            current_user.shareSoftware = current_user.toggle_software_share()
+        if column_name == "shareWithDevs":
+            current_user.shareWithDevs = current_user.toggle_share_with_devs()
             return jsonify({"success": "Share preference udpated successfully"})
         return jsonify({"error": "Invalid column name"}), 400
 

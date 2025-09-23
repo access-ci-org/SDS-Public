@@ -194,14 +194,13 @@ function createLinkElements(links) {
         Object.entries(links).map(async ([title, link]) => {
             try {
                 // if title is just url, try to get real title
-                let siteTitle = await getSiteTitle(link);
+                const siteTitle = await getSiteTitle(link);
                 // truncate long title names
-                if (siteTitle && siteTitle.length > 30) {
-                    siteTitle = siteTitle.slice(0, 30) + "...";
+                let displayTitle = siteTitle || link;
+                if (displayTitle && displayTitle.length > 30) {
+                    displayTitle = displayTitle.slice(0, 30) + "...";
                 }
-                const displayTitle = siteTitle || link;
-
-                if (siteTitle) {
+                if (displayTitle) {
                     return `<a target="_blank" href="${link}">${displayTitle}</a>`;
                 }
                 return "";
@@ -309,7 +308,7 @@ function populateInstalledOn(installedOn){
 function populateDescription(description) {
     if (isEmpty(description)) return;
     $("#description").html(`
-        <p class="section-title">DESCRIPTION${use_ai_info === "True" ? " &#10024": ''}</p>
+        <p class="section-title">DESCRIPTION${use_ai_info === "True" ? "<i class='bi bi-stars'></i>": ''}</p>
         <span id="software-ai-description" class="section-text">${description}</span>
         <hr>
     `)
@@ -319,7 +318,7 @@ function populateCoreFeatures(coreFeatures){
     if (isEmpty(coreFeatures)) return;
 
     $("#core-features").html(`
-        <p class="section-title">CORE FEATURES${use_api ? ` &#10024`: ''}</p>
+        <p class="section-title">CORE FEATURES${use_api ? `<i class='bi bi-stars'></i>`: ''}</p>
         <span id="software-ai-core-features" class="section-text">${coreFeatures}</span>
         <hr class="installed-on">
     `)
@@ -327,7 +326,6 @@ function populateCoreFeatures(coreFeatures){
 
 async function populateRelatedLinks(relatedLinks){
     if (isEmpty(relatedLinks)) return;
-
     $("#software-info").append(`
         <div id="related-links" class="more-info">
             <span class="intro more-info-item"><strong>Related Links</strong></span>
@@ -387,7 +385,7 @@ function populateExampleUse(softwareName) {
     if (use_ai_info === "False") return;
     getSoftwareExampleUse(softwareName).then((softwareExampleUse) => {
         $('#example-use').append(`
-            <p class="section-title">EXAMPLE USE &#10024</p>
+            <p class="section-title">EXAMPLE USE<i class='bi bi-stars'></i></p>
             <div id="software-ai-example-use" class="section-text">
                 ${softwareExampleUse}
             </div>

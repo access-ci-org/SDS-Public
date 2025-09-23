@@ -25,6 +25,5 @@ sqlite_db.db
 app/models/api_response.json
 example_uses/
 app/static/last_updated.txt
-test_container_data
-lcc*
-mcc*
+software_uses/*
+analytics/

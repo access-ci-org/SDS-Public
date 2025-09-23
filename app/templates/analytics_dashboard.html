@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+    {{super()}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script type="module" src="{{url_for('static', filename='js/analytics.js')}}"></script>
+{% endblock %}
+
+{% block page_title %}
+<div style="text-align: center;">
+    <br>
+    <h1>Software Table Analytics</h1>
+    <br>
+</div>
+{% endblock %}
+
+{% block app_content %}
+<div class="container-fluid p-4">
+    <!-- Date Range Controls -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body py-2">
+                    <div class="row align-items-center">
+                        <div class="col-auto"><label class="col-form-label">From:</label></div>
+                        <div class="col-auto"><input type="date" id="startDate" class="form-control form-control-sm"></div>
+                        <div class="col-auto"><label class="col-form-label">To:</label></div>
+                        <div class="col-auto"><input type="date" id="endDate" class="form-control form-control-sm"></div>
+                        <div class="col-auto"><button class="btn btn-primary btn-sm" onclick="refreshData()">Update</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nav tabs replacing stats cards -->
+    <ul class="nav nav-tabs mb-4" id="analyticsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                <div class="text-center">
+                    <div class="h5 mb-1 text-primary" id="searchCount">0</div>
+                    <small>Total Searches</small>
+                </div>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="views-tab" data-bs-toggle="tab" data-bs-target="#views" type="button" role="tab">
+                <div class="text-center">
+                    <div class="h5 mb-1 text-success" id="viewsCount">0</div>
+                    <small>Software Views</small>
+                </div>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="filters-tab" data-bs-toggle="tab" data-bs-target="#filters" type="button" role="tab">
+                <div class="text-center">
+                    <div class="h5 mb-1 text-info" id="filtersCount">0</div>
+                    <small>Filter Actions</small>
+                </div>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="terms-tab" data-bs-toggle="tab" data-bs-target="#terms" type="button" role="tab">
+                <div class="text-center">
+                    <div class="h5 mb-1 text-warning" id="termsCount">0</div>
+                    <small>Unique Terms</small>
+                </div>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="analyticsTabContent">
+        <!-- Overview tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header"><h5>Search Activity Over Time</h5></div>
+                                <div class="card-body" style="height: 400px;">
+                                    <canvas id="timeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header"><h5>Most Viewed Software</h5></div>
+                                <div class="card-body" style="height: 400px;">
+                                    <canvas id="softwareChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header"><h6>Top Search Terms</h6></div>
+                                <div class="card-body" style="height: 250px;">
+                                    <canvas id="searchChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header"><h6>Filter Usage</h6></div>
+                                <div class="card-body" style="height: 250px;">
+                                    <canvas id="filterChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed tabs -->
+        <div class="tab-pane fade" id="views" role="tabpanel">
+            <div class="card">
+                <div class="card-header"><h5>Software Views Details</h5></div>
+                <div class="card-body">
+                    <canvas id="viewsDetailChart"></canvas>
+                    <div class="mt-4">
+                        <h6>Raw Data:</h6>
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm" id="viewsTable">
+                                <thead><tr><th>Software</th><th>Views</th><th>Source</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="filters" role="tabpanel">
+            <div class="card">
+                <div class="card-header"><h5>Filter Usage Details</h5></div>
+                <div class="card-body">
+                    <canvas id="filtersDetailChart"></canvas>
+                    <div class="mt-4">
+                        <h6>Raw Data (sorted by Count):</h6>
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm" id="filtersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Filter Type</th>
+                                        <th>Values</th>
+                                        <th>Count</th>
+                                        <th>Num Results</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="terms" role="tabpanel">
+            <div class="card">
+                <div class="card-header"><h5>Search Terms Details</h5></div>
+                <div class="card-body">
+                    <canvas id="termsDetailChart"></canvas>
+                    <div class="mt-4">
+                        <h6>Raw Data (sorted by Num Results and then by Count):</h6>
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm" id="termsTable">
+                                <thead><tr><th>Search Term</th><th>Count</th><th>Column Name</th><th>Num Results</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- <script type="module" src="{{url_for('static', filename='js/analytics.js')}}"></script> -->
+
+{% endblock %}

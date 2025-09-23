@@ -46,6 +46,10 @@
         {% endblock %}
     </title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename=logo) }}">
+
+    <!-- External userdefined analytics -->
+    {{ external_analytics | safe}}
+
 </head>
 <body id="body" style="display: flex; flex-direction: column; min-height: 100vh;">
     <div style="flex: 1;">
@@ -60,7 +64,7 @@
                 <div style="height: auto;">
                     {% if not iframe %}
                         <div class="row justify-content-center">
-                            <div class="col">
+                            <div class="col title">
                                 {%block page_title %}
                                 {#page title is added here#}
                                 {% endblock%}

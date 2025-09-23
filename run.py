@@ -16,7 +16,7 @@ class FlaskWatcher(FileSystemEventHandler):
         self.debounce_delay = 2
 
         # Define what to watch
-        self.data_paths = ["spider_data", "container_data", "software.csv"]
+        self.data_paths = ["spider_data", "container_data", "software_uses", "software.csv"]
         self.config_file = "config.yaml"
 
     def on_modified(self, event):
@@ -95,6 +95,7 @@ def parse_args():
     parser.add_argument("-s_d", "--spider-dir", default="spider_data", help="Spider data directory")
     parser.add_argument("-c_d", "--container-dir", default="container_data", help="Container data directory")
     parser.add_argument("-csv_f", "--csv-file", default="software.csv", help="CSV file path")
+    parser.add_argument("-s_u_d", "--software_use_dir", default="software_uses", help="software use directory")
     parser.add_argument("--no-initial-reset", action="store_true", help="Skip initial database reset")
     return parser.parse_args()
 

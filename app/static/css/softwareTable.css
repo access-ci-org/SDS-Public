@@ -85,6 +85,10 @@ table.dataTable > tbody > tr {
     font-weight: 800 !important;
 }
 
+.dtsp-panesContainer {
+    background: var(--primary-color-4);
+    padding: 0.5rem !important;
+}
 
 /* Styles for the pagination section below the table */
 

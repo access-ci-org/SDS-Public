@@ -106,7 +106,12 @@ def process_csv_data(csv_path: Path, blacklist: set[str]) -> None:
 
 
 @custom_halo(text="Fetching remote software data")
-def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[str, any]]:
+def get_remote_data(
+    api_key: str,
+    software: list[str],
+    share_with_devs:bool,
+    share_with_others: bool,
+    ) -> list[dict[str, any]]:
     logger.info(f"Retreving api data")
 
     BATCH_SIZE = 75
@@ -121,8 +126,9 @@ def get_remote_data(api_key: str, software: list[str], share:bool) -> list[dict[
         }
         data = {
             "software": batch,
-            "share_with_devs": share,
+            "share_with_devs": share_with_devs,
             "verified_only": False,
+            "share_with_others": share_with_others
         }
 
         try:
@@ -264,8 +270,8 @@ def find_site_titles():
             all_urls = [url for url in all_urls if url not in site_titles]
 
     total_urls = len(all_urls)
-    print(f"{Fore.CYAN}{Style.BRIGHT}📢 INFO:{Style.RESET_ALL} {Fore.YELLOW}Fetching URL site titles, this will take a few minutes{Style.RESET_ALL}")
-    print(f"{Fore.BLUE}🔗 Processing {total_urls} new unique URLs...{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}{Style.BRIGHT} INFO:{Style.RESET_ALL} {Fore.YELLOW}Fetching URL site titles, this will take a few minutes{Style.RESET_ALL}")
+    print(f"{Fore.BLUE} Processing {total_urls} new unique URLs...{Style.RESET_ALL}")
     print()  # Add blank line before spinner
     # Progress tracking
     completed = 0
@@ -449,7 +455,12 @@ def main() -> None:
                     all_software = Software.select()
                 software = [software.software_name for software in all_software]
                 logger.info("Starting API data update")
-                remote_data = get_remote_data(api_key, software, app.config["SHARE_SOFTWARE"])
+                remote_data = get_remote_data(
+                    api_key,
+                    software,
+                    app.config["SHARE_WITH_DEVS"],
+                    app.config["SHARE_WITH_OTHERS"]
+                )
                 if remote_data:
                     update_db_from_remote(remote_data)
             else:

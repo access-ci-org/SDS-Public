@@ -46,16 +46,20 @@ General configurations used to define application behaviour.
 general:
   user_name: default admin user
   password: default admin password
-  share_software: False
+  share_with_devs: True
+  share_with_others: False
   show_container_page: True
   hide_data: []
-  ifram: False
+  iframe: False
+  external_analytics: ""
 ```
 - `username`: Set `user_name` to be the default admin user for your website
 
 - `password`: Set `password` to be the password for that default user
 
-- `share_software`: Set `share_software` to be `True` if you want to share the names of the software available on your resources with us. This inforamtion will be used to identify software for which we need to collect more data. Default is `False`.
+- `share_with_devs`: Set `share_with_devs` to be `False` if you do not want to share the names of the software available on your resources with us. This inforamtion will be used to identify software for which we need to collect more data. Default is `True`.
+
+- `share_with_others`: Set `share_with_others` to be `True` if you want to allow other institutions identify what software is available at your institution. Default is `False`
 
 - `show_container_page`: Set `show_container_page` to be `False` if you don't want the container page to be accessible. Default is `True`
 
@@ -73,6 +77,8 @@ general:
         combination of columns may have unintended effects
 
 - `iframe`: Set `iframe` to be `True` if you are showing this page using an iframe. This will just remove the header and title of the page. Default is `False`
+
+- `external_analytics`: Set `external_analytics` to be some html used for tracking the website and user interactions. For example the script/noscript code blocks povided by Microsoft's Clarity, Google Tag Manager, Google Analytics, etc. Basic, anynomous, analytics to track  user searches and clicks are already provided as a base part of the SDS so this `external_analytics` is meant for those who want more or better information. Any code provied here will be placed in the `<head>` section of the website.
 
 ## Parser Configs
 This set of configs can be used to control how the sds parser parsers your data.
