@@ -44,6 +44,7 @@ That should be all the necessary setup
     - To rebuild the image each time: `sudo docker compose up -d --build`
     - You can enter your container by running `sudo docker exec -it sds /bin/bash`
     - All stdout and stderr are logged to `/var/log/supervisor/*` within the container
+    - Sometimes docker cahches builds and you may need to run `sudo docker system prune` before building.
 4. If you want to enable ssl certificates for your website, make the following changes:
     - In the `nginx.conf` file, comment out the entrie first `server {` entry and uncomment the entire second `server {` entry.
     - In the `docker-compose.yml` file, comment out the ` - "8080:80"` line and uncomment the ` - "443:443"`
