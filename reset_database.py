@@ -236,7 +236,8 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
                     )
                     raise
 
-WEBSITE_TITLES = 'app/data/website_titles.json'
+WEBSITE_TITLES = Path('app/data/website_titles.json')
+WEBSITE_TITLES.parent.mkdir(parents=True, exist_ok=True)
 def find_site_titles():
     print("Getting link titles...")
 
