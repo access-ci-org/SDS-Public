@@ -31,7 +31,7 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # make entrypoint executable
 RUN chmod +x /sds/entrypoint.sh
 
-EXPOSE 80
+EXPOSE 80 443
 
 # user supervisor to manage both nginx and sds
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

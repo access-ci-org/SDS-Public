@@ -1,5 +1,4 @@
 #!/bin/bash --login
-cd /sds
 conda activate SDS_ENV
 
 # Initialize the command with the base script
