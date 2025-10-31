@@ -141,7 +141,7 @@ should be the name of a resource to which the files belong. `resource` refers to
 ```
 
 - Custom diefined example use
-  - You can define custom exampel usage for each of your software. This is a good
+  - You can define custom example usage for each of your software. This is a good
     location to add any recommend slurm scripts or other instructions on how you want users to use
     your software.
   - By default the SDS will look for a directory named `software_uses` in the main app directory
@@ -176,3 +176,4 @@ SDS
 ## Parser
 The built in parser will attempt to gather software information based on the data provided, but it may not always be successful depending on your naming scheme.
 You can define how the built in parser parses your information. View the **`PARSER.md`** file for more details on standard formats and how to modify the parsers.
+
