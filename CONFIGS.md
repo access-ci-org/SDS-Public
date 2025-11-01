@@ -12,7 +12,7 @@ file using all categories (but not all configs)
 # Available Configs
 
 ## API configs
-Used to deffine API keys and data to be used from the sds API
+Used to define API keys and data to be used from the sds API
 ```
 api:
   use_api: False
