@@ -12,8 +12,10 @@ file using all categories (but not all configs)
 # Available Configs
 
 ## API configs
-Used to define API keys and data to be used from the sds API
-```
+
+Used to deffine API keys and data to be used from the sds API
+
+```yaml
 api:
   use_api: False
   api_key: "your api key here"
@@ -23,26 +25,30 @@ api:
 
 - `user_api`: Set `use_api` to `True` to connect to a remote SDS database (using the `sds_api_key`). Default: False
 - `api_key`: Set `api_key` API key to the sds website, you can obtain one here: (link to website or email of people to contact)
-- `use_curated_info`: Set `use_curated_info` to `True` to display curated information (such as software descriptions, link to software webpage, etc). If no software descriptions are provided and `use_curated_info` is set to true then it will use informaton from the api call to add descriptions. Default: False
+- `use_curated_info`: Set `use_curated_info` to `True` to display curated information (such as software descriptions, link to software webpage, etc). If no software descriptions are provided and `use_curated_info` is set to true then it will use information from the api call to add descriptions. Default: False
 - `use_ai_info`: Set `use_ai_info` to `True` to display AI generated information (such as AI descriptions, Software example use, etc.) on your website. Default: False
 
 ## Style Configs
+
 Used for setting styles like colors, logo, title, etc.
-```
+
+```yaml
 styles:
   primary_color: "your primary color here"
   secondary_color: "your secondary color"
   site_title: "Title for website here"
   logo: "logo file name"
 ```
+
 - `primary_color`: Set `primary_color` and `secondary_color` to set the colors (in hexadecimal, e.g. #1B365D) for the website. Different shades of these two colors are used in the website. Darker, monochromatic, colors are recommended. Default Primary: #1b365d, Default Secondary: #324a6d
 - `site_title`: Set `site_title` to be the main title you want for your website. Default: SDS
 - `logo`: Set `logo` to be the relative path to the image you want to display as your logo.
 
 ## General Configs
-General configurations used to define application behaviour.
 
-```
+General configurations used to define application behavior.
+
+```yaml
 general:
   user_name: default admin user
   password: default admin password
@@ -53,11 +59,12 @@ general:
   iframe: False
   external_analytics: ""
 ```
+
 - `username`: Set `user_name` to be the default admin user for your website
 
 - `password`: Set `password` to be the password for that default user
 
-- `share_with_devs`: Set `share_with_devs` to be `False` if you do not want to share the names of the software available on your resources with us. This inforamtion will be used to identify software for which we need to collect more data. Default is `True`.
+- `share_with_devs`: Set `share_with_devs` to be `False` if you do not want to share the names of the software available on your resources with us. This information will be used to identify software for which we need to collect more data. Default is `True`.
 
 - `share_with_others`: Set `share_with_others` to be `True` if you want to allow other institutions identify what software is available at your institution. Default is `False`
 
@@ -65,24 +72,26 @@ general:
 
 - `hide_data`: Set `hide_data` to be a list of data/fields/columns e.g. `['Description', 'Containers', 'Tutorials and Usage']` if you don't want certain columns (or data) to be visible. Fields that have a ✨ should have 'AI' in front of the name (e.g: to disable the 'Tags ✨' column, use 'AI Tags'). Default is `[]`
 
-    - Here is the full list of available columns: `['Software', 'Resource', 'Containers',
+  - Here is the full list of available columns: `['Software', 'Resource', 'Containers',
         'Description' 'AI Description', 'Versions', 'AI Software Type', 'AI Software Class',
        'AI Research Field', 'AI Research Area', 'AI Research Discipline',
        'AI Core Features', 'AI Tags', 'Software's Web Page',
        'Software Documentation', 'Tutorials And Usage', 'AI Example Use',
        'Command']`
-    - Note that some columns have been combined on the website for display, you may have to remove
+  - Note that some columns have been combined on the website for display, you may have to remove
         multiple of similar columns to get the intended effect
-    - Also note, just because you can remove some columns doesn't mean you should, removing some
+  - Also note, just because you can remove some columns doesn't mean you should, removing some
         combination of columns may have unintended effects
 
 - `iframe`: Set `iframe` to be `True` if you are showing this page using an iframe. This will just remove the header and title of the page. Default is `False`
 
-- `external_analytics`: Set `external_analytics` to be some html used for tracking the website and user interactions. For example the script/noscript code blocks povided by Microsoft's Clarity, Google Tag Manager, Google Analytics, etc. Basic, anynomous, analytics to track  user searches and clicks are already provided as a base part of the SDS so this `external_analytics` is meant for those who want more or better information. Any code provied here will be placed in the `<head>` section of the website.
+- `external_analytics`: Set `external_analytics` to be some html used for tracking the website and user interactions. For example the script/noscript code blocks provided by Microsoft's Clarity, Google Tag Manager, Google Analytics, etc. Basic, anonymous, analytics to track  user searches and clicks are already provided as a base part of the SDS so this `external_analytics` is meant for those who want more or better information. Any code provided here will be placed in the `<head>` section of the website.
 
 ## Parser Configs
+
 This set of configs can be used to control how the sds parser parsers your data.
-```
+
+```yaml
 parsing:
   lmod_spider:
     section_separator: '\n(?=\s{2}[/\w.+-]+(?:/[\w+\-])*:)'

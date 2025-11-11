@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:latest
+FROM public.ecr.aws/y0o4y9o3/miniconda3:latest
 
 # install nginx and other dependencies
 RUN apt-get update && apt-get install -y \
@@ -14,16 +14,13 @@ RUN mkdir -p /var/log/supervisor
 # copy application files
 COPY . /sds/
 
-# setup aplication
+# setup application
 RUN cd /sds && \
 	chmod +x setup.sh && \
 	./setup.sh
 
 # copy nginx config
 COPY nginx.conf /etc/nginx/sites-available/default
-# Remove default nginx config and create symlink
-RUN rm -f /etc/nginx/sites-enabled/default && \
-    ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
 # copy supervisor configuration
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf

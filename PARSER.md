@@ -1,4 +1,5 @@
 # Table of Contents
+
 - [Parsing `module spider`](#parsing-module-spider)
   - [Spack specific parsing](#spack-specific-parsing)
   - [Custom parsing function](#custom-lmod-parsing-function)
@@ -8,7 +9,7 @@
   - [SDS Comment Block v0](#sds-comment-block-v0)
   - [Only parse SDS comment block](#Only-parse-SDS-comment-block)
 
-# Parsing `module spider`
+## Parsing `module spider`
 
 This application parses the output of the `module spider` command. The `module spider` command is from the [lmod package](https://lmod.readthedocs.io/en/latest/index.html). The parser expects a text file.
 So, technically, any text file with the same format will work.
@@ -17,7 +18,7 @@ The existing parsing script is for data in the following format: `  software: so
 
 If there is are descriptions for a software then it will be included. If a software appears multiple times then only one instance will be recorded with multiple versions. Below is an example of `module spider` output.
 
-```
+```lmod
 $ module spider
 --------------------------------------------------------------
 The following is a list of the modules currently available:
@@ -34,7 +35,7 @@ The parser for the `module spider` command takes in seven key arguments:
 
 ```
 section_separator: Regex pattern to split the file content into sections.
-    A section is an entry of software name, versions, and descriptions (if availabe).
+    A section is an entry of software name, versions, and descriptions (if available).
     Defaults to '\n(?=\s{2}[\/\w.-]+(?:/[\w-])*:)'.
 
 name_version_pattern: Regex pattern to extract software name and version from section.
@@ -58,19 +59,21 @@ custom_name_version_parser: Custom function to parse
 ```
 
 You can define specific parsing regex in the config.yaml file like so:
-```
+
+```yaml
 parsing:
     lmod:
         section_separator: '<custom section_separator>'
         name_version_pattern: '<custom name_version_pattern>'
-        name_pattern: '<custom name_patern>'
+        name_pattern: '<custom name_pattern>'
         version_separator: '<custom version_separator>'
         version_cleaner: '<custom version cleaner>'
         spider_description_separator: '<custom spider_description_separator>'
 ```
 
 Here is what an example `config.yaml` file might look like:
-```
+
+```yaml
 api:
   api_key: abcd
   use_api: True
@@ -79,7 +82,7 @@ api:
 styles:
   primary_color: "#1B365D"
   secondary_color: "#1B365D"
-  site_title: "A reallly long title like so long that it breaks everything yup its a long title"
+  site_title: "A really long title like so long that it breaks everything yup its a long title"
   logo: "hi.png"
 parsing:
   lmod_spider:
@@ -89,16 +92,21 @@ parsing:
     name_pattern: '(.+)' # this basically disables the name_pattern match
     spider_description_separator: '----'
 ```
+
 ### Spack specific parsing
+
 If you are using `spack` to create modules, you should use the following config:
-```
+
+```yaml
 parsing:
   lmod_spider:
     version_cleaner: '/|-(?=\d)'
     name_pattern: '(.*?)-(\d.*?)'
     spider_description_separator: '----'
 ```
+
 It will parse like so:
+
 ```
   cairo-1.16.0-gcc-9.3.0-fmtofpt: cairo-1.16.0-gcc-9.3.0-fmtofpt
 software: cairo version: 1.16.0-gcc-9.3.0-fmtofpt
@@ -106,13 +114,16 @@ software: cairo version: 1.16.0-gcc-9.3.0-fmtofpt
   cmake: cmake/3.19.4
 software: cmke, version: 3.19.4
 ```
-Note that the regex above parses both normal lmod and spack moduel names
+
+Note that the regex above parses both normal lmod and spack module names
 
 ### Custom Lmod Parsing Function
+
 Note that `custom_name_version_parser` cannot be passed in in the `config.yaml` file.
 Modify the `custom_lmod_parser` function in `parsers/lmod/custom_parsers/custom_lmod_parser.py` with your custom logic.
 Here is what the predefined function looks like:
-```
+
+```python
 def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]):
     """
     Define your custom parsing function here.
@@ -121,14 +132,14 @@ def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]
     Args:
         name (str): software name identified by the parser
         version (list): list of versions identified by the parser
-        software_info (dict): list of dictionaries containg 'name', 'versions', and 'discription'
+        software_info (dict): list of dictionaries containing 'name', 'versions', and 'description'
             of all software in current file
 
     Return:
-        name (str): software name identifed by custom parser
+        name (str): software name identified by custom parser
         version (list): list of versions identified by the custom parser
-        software_info (dict): list of dictionaries containg 'name', 'versions', and 'discription'
-            of all software in current file (optionally modifed by the custom parser)
+        software_info (dict): list of dictionaries containing 'name', 'versions', and 'description'
+            of all software in current file (optionally modified by the custom parser)
     """
     # pp(name)
     # pp(versions)
@@ -138,6 +149,7 @@ def custom_lmod_parser(name: str, versions: list[str], software_info: list[dict]
 ```
 
 ### Detailed explanation of regex
+
 The rest of the section will go into a little more detail about each field and how the default selection affects the fields
 
 `section_separator`, `name_version_pattern`, and `name_pattern` create groups of strings that match the given patterns.
@@ -210,16 +222,18 @@ The `name_pattern` will group items separated by a slash. The parser uses the fi
 `custom_name_version_parser` allows the user to define a custom python function for parsing the name and version.
 To implement this you will have to edit the `custom_name_version_parser` function found in `parsers/lmod/parse_spider.py`.
 
-# Parsing `container definitions`
+## Parsing `container definitions`
 
 The container parser will attempt to automatically get all the software installed from the definition file.
 
 Sometimes the parser can miss some software. If you want to make sure a particular software/version is captured,
 add a `SDS Software` comment block to the **bottom** of your definition file. There are two versions of this comment block available (v1 is recommended):
 
-## SDS Comment Block v1:
+### SDS Comment Block v1
+
 Here is what v1 of the sds comment block looks like:
-```
+
+```yaml
 ## SDS Software v1
 # sds_software:
 #   container_file: /path/file.sinf
@@ -229,23 +243,24 @@ Here is what v1 of the sds comment block looks like:
 #       - version: 'latest'   # version for software1
 #         command: ''         # command to run software1 with version latest
 #       - version: '1'        # second version for software1
-#         command: ''         # command to run sofware1 with version 1
+#         command: ''         # command to run software1 with version 1
 #     software2:
 #       - version: 'latest'
 #     software3:
 #       - command: 'run software3'
 #
 # --- END SDS Software ---
-
 ```
-Note that this is a standard YAML format that has been commented out (so make sure the sapcing
+
+Note that this is a standard YAML format that has been commented out (so make sure the spacing
 and syntax conforms to yaml conventions). The header `## SDS Software v1` lets the parsers know
 where to start looking for the data and which version to expect. *Everything* between the
 header and the end delimiter (`--- END SDS Software ---`) will be treated as a part of the SDS block.
 
 Note that not all of the fields need to be present and not all of the fields need values.
 Here is the bare minimum required:
-```
+
+```yaml
 ## SDS Software v1
 # sds_software:
 #   software:
@@ -258,12 +273,12 @@ Here is the bare minimum required:
 #
 # --- END SDS Software ---
 ```
-Note that at least one of the `command` or `version` is required for each software but can be left empty.
 
+Note that at least one of the `command` or `version` is required for each software but can be left empty.
 
 Here is an example docker file with the v1 SDS block:
 
-```
+```dockerfile
 BootStrap: docker
 From: nvidia/cuda:8.0-devel-ubuntu16.04
 
@@ -301,8 +316,10 @@ Since the `densecap` software is installed using a url, it would normally not be
 but with the `## SDS Software` comment, it will find the two software `torch` and `densecap`. `torch` will
 not have a version but `densecap` will have the version `latest`.
 
-## SDS Comment Block v0:
+## SDS Comment Block v0
+
 Here is what a bare minimum sds v0 comment block looks like (note that no version is specified)
+
 ```
 ## SDS Software
 #	software1/version
@@ -310,20 +327,20 @@ Here is what a bare minimum sds v0 comment block looks like (note that no versio
 ```
 
 You can also specify the container file and definition (docker) file locations as well as commands to run particular software like so:
+
 ```
 ## SDS Software
 # container_file: /path/file.sinf
 # def_file: /path/dir/dockerfile
 #	software1/version
-#	software2: command for sofwtare 2
+#	software2: command for software 2
 ```
 
 Note the leading `## SDS Software` which lets the parsers know to specifically look for data there.\
 For the container and definition (docker) file paths, they must have `# container_file` or `#def_file` followed by a colon `:` followed by the file path.\
-For the software, the content to the left of the  `/` will be treated as the software name; the content to the right, the version. Similar to container and def_file, the colon `:` is used to identify the command for a prticular software. Content to the left of the colon is used to identify the software and version and content to the right is used to identify the software.
+For the software, the content to the left of the  `/` will be treated as the software name; the content to the right, the version. Similar to container and def_file, the colon `:` is used to identify the command for a particular software. Content to the left of the colon is used to identify the software and version and content to the right is used to identify the software.
 
 You can add as many software below it as you want, just make sure that there is one leading comment character such as `#`.\
-
 
 Currently, the container parser will ignore all url links. This is by design as there is no set standard for how urls are named, and so it is difficult to get relevant data from them.
 
@@ -331,7 +348,8 @@ The parser will automatically obtain everything in the help (`%help`) section of
 This data is then added to the "Notes" section of each container entry.
 
 Here are some example definition file:
-```
+
+```dockerfile
 BootStrap: docker
 From: nvidia/cuda:8.0-devel-ubuntu16.04
 
@@ -360,20 +378,24 @@ From: nvidia/cuda:8.0-devel-ubuntu16.04
 #	torch
 #   densecap/latest
 ```
+
 Since the `densecap` software is installed using a url, it would normally not be captured by the parser,
 but with the `## SDS Software` comment, it will find the two software `torch` and `densecap`. `torch` will
 not have a version but `densecap` will have the version `latest`.
 
 ### Only parse SDS comment block
+
 You can tell the parser to only parse the "SDS software" comment block rather than parsing the entire definition/docker file. Add the following to your `config.yaml` file:
-```
+
+```yaml
 parsing:
   container:
     comment_block_only: True
 ```
 
 Here is what an example config file might look like:
-```
+
+```yaml
 api:
   api_key: abcd
   use_api: True
@@ -382,7 +404,7 @@ api:
 styles:
   primary_color: "#1B365D"
   secondary_color: "#1B365D"
-  site_title: "A reallly long title like so long that it breaks everything yup its a long title"
+  site_title: "A really long title like so long that it breaks everything yup its a long title"
   logo: "hi.png"
 parsing:
   lmod_spider:
@@ -395,4 +417,4 @@ parsing:
     comment_block_only: True
 ```
 
-Further customization for the definitaion file parser may be added in the future.
+Further customization for the definition file parser may be added in the future.
