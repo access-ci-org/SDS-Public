@@ -112,7 +112,7 @@ function formatSoftwareInfo(softwareInfo) {
             }
         ])
     );
-    softwareData["description"] = softwareInfo["AI Description"] || softwareInfo["Description"] || ""
+    softwareData["description"] =  softwareInfo["Description"] || softwareInfo["AI Description"] || ""
     softwareData["coreFeatures"] = softwareInfo["AI Core Features"] || ""
     softwareData["relatedLinks"] = {
         "websiteLink" : {

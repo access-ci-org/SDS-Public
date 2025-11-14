@@ -5,19 +5,29 @@ import argparse
 import threading
 import time
 from pathlib import Path
-from watchdog.observers.polling import PollingObserver # works better with docker
+from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 
 class FlaskWatcher(FileSystemEventHandler):
     def __init__(self, reset_command):
         self.reset_command = reset_command
         self.flask_process = None
-        self.restart_timer = None
+        self.restart_timer = None # for rerunning app
+        self.rest_timer = None # for resetting db
         self.debounce_delay = 2
 
         # Define what to watch
         self.data_paths = ["spider_data", "container_data", "software_uses", "software.csv"]
         self.config_file = "config.yaml"
+
+    def schedule_reset_and_restart(self):
+        """Debounced database reset and Flask restart for data changes"""
+        if self.reset_timer:
+            self.reset_timer.cancel()
+
+        print("Scheduling database reset and Flask restart...")
+        self.reset_timer = threading.Timer(self.debounce_delay, self.reset_and_restart)
+        self.reset_timer.start()
 
     def on_modified(self, event):
         if event.is_directory:
@@ -33,7 +43,7 @@ class FlaskWatcher(FileSystemEventHandler):
         # Data change - reset database then restart Flask
         elif any(data_path in file_path for data_path in self.data_paths):
             print(f"Data changed: {file_path}")
-            self.reset_and_restart()
+            self.schedule_reset_and_restart()
 
     def on_deleted(self, event):
         print(event.src_path)
@@ -41,10 +51,10 @@ class FlaskWatcher(FileSystemEventHandler):
             return
 
         file_path = str(Path(event.src_path))
-        # Data file deleted - reste database
+        # Data file deleted - reset database
         if any(data_path in file_path for data_path in self.data_paths):
-            print(f"Data file deelted: {file_path}")
-            self.reset_and_restart()
+            print(f"Data file deleted: {file_path}")
+            self.schedule_reset_and_restart()
 
     def schedule_flask_restart(self):
         """Debounced Flask restart for config changes"""

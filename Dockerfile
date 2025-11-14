@@ -1,4 +1,4 @@
-FROM public.ecr.aws/y0o4y9o3/miniconda3:latest
+FROM continuumio/miniconda3:latest
 
 # install nginx and other dependencies
 RUN apt-get update && apt-get install -y \

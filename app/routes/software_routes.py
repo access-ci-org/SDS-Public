@@ -91,13 +91,13 @@ def software_info(software_name):
         table_object = get_table()
         table_info = initialize_table_info()
         df = organize_table(table_object, table_info)
-        df = combine_columns(df, [
+        table = df.loc[df["Software"] == software_name]
+        table = combine_columns(table, [
             ('Description', 'AI Description'),
         ])
-        df = combine_columns(df, [
+        table = combine_columns(table, [
             ('AI Research Discipline', 'AI Research Field')
         ], combine_data= True)
-        table = df.loc[df["Software"] == software_name]
         table = table.to_json(
                 index=False,
                 orient='records'
