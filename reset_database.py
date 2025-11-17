@@ -20,7 +20,6 @@ from app.models.resource import Resource
 from app.models.software import Software
 from app.models.softwareResource import SoftwareResource
 from app.models.aiSoftwareInfo import AISoftwareInfo
-from app.models.userReports import UserReports
 from app.models.users import Users
 from app.models.containers import Container
 from app.models.softwareContainer import SoftwareContainer
@@ -52,9 +51,6 @@ def recreate_table() -> None:
             db.drop_tables(tables)
             logger.info("Creating new tables")
             db.create_tables(tables)
-            if not "userreports" in db.get_tables():
-                logger.info("Creating UserReports table")
-                db.create_tables([UserReports])
             logger.info("Successfully recreated all tables")
         except Exception as e:
             transaction.rollback()
@@ -112,14 +108,14 @@ def get_remote_data(
     share_with_devs:bool,
     share_with_others: bool,
     ) -> list[dict[str, any]]:
-    logger.info(f"Retreving api data")
+    logger.info(f"Retrieving api data")
 
     BATCH_SIZE = 75
     all_data = []
         # request software data in batches
     for i in range(0, len(software), BATCH_SIZE):
         batch = software[i:min(i+BATCH_SIZE, len(software))]
-        url = "http://128.163.202.84:8080/api/v1"
+        url = "https://sds-api.ccs.uky.edu/api/v1"
         headers = {
             "X-API-Key": api_key,
             "Content-Type": "application/json"
@@ -147,9 +143,9 @@ def get_remote_data(
             )
             continue
         except Exception as e:
-            raise DataProcessingError(f"Failed to retreive data from api: {str(e)}") from e
+            raise DataProcessingError(f"Failed to retrieve data from api: {str(e)}") from e
     logger.info(
-        f"Successfully retrievied data from api call. Length of data is {len(all_data)}."
+        f"Successfully retrieved data from api call. Length of data is {len(all_data)}."
     )
     if all_data:
         with open("app/models/api_response.json", "w+") as ar:
@@ -367,8 +363,8 @@ def update_example_uses(example_use_dir: Path) -> None:
 def setup_argparse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Delete and recreate the database using data provided in the input_dir directory.\
-        All files for each arguement (with the exception of csv files) must be within subdirectories.\
-        The name of each subdirecory should be the name of a resource to which the files belong."
+        All files for each argument (with the exception of csv files) must be within subdirectories.\
+        The name of each subdirectory should be the name of a resource to which the files belong."
     )
     parser.add_argument(
         "-s_d",
@@ -392,7 +388,7 @@ def setup_argparse() -> argparse.Namespace:
     parser.add_argument(
         "--software_use_dir",
         "-s_u_d",
-        help="Directory containing a text (markdown) file with instructions on how to use a specific software. Read the data prepeartion section of the README.md file for more info. Default: ./software_uses/"
+        help="Directory containing a text (markdown) file with instructions on how to use a specific software. Read the data preparation section of the README.md file for more info. Default: ./software_uses/"
     )
 
     args = parser.parse_args()
