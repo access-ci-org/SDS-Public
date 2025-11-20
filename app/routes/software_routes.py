@@ -109,7 +109,7 @@ def software_info(software_name):
         return jsonify({}), 204
 
 
-WEBSITE_TITLES = 'app/data/website_titles.json'
+WEBSITE_TITLES = 'app/data/websites/website_titles.json'
 @software_bp.route("/get-external-site-title", methods=['POST'])
 def get_external_site_title():
     try:

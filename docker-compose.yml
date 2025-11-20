@@ -11,13 +11,11 @@ services:
       - ./software.csv:/sds/software.csv
       - ./spider_data:/sds/spider_data
       - ./software_uses:/sds/software_uses
-      # this is here to improve container buildtime for multiple runs
-      # - ./website_tiles.json:/sds/app/data/website_titles.json
-      # copy logs to host machine for easier viewing
-      - ./sds_logs:/var/log/supervisor
 
       # - ./ssl:/etc/nginx/ssl
 
+      # this is here to improve container buildtime for multiple runs
+      - ./websites:/sds/app/data/websites
       # logs and other mounts
       - ./logs:/var/log/supervisor
       - ./analytics:/sds/analytics

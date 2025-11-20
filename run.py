@@ -102,10 +102,10 @@ class FlaskWatcher(FileSystemEventHandler):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Watch files and manage Flask app")
-    parser.add_argument("-s_d", "--spider-dir", default="spider_data", help="Spider data directory")
-    parser.add_argument("-c_d", "--container-dir", default="container_data", help="Container data directory")
-    parser.add_argument("-csv_f", "--csv-file", default="software.csv", help="CSV file path")
-    parser.add_argument("-s_u_d", "--software_use_dir", default="software_uses", help="software use directory")
+    parser.add_argument("-s_d", "--spider_dir", default="spider_data", help="Spider data directory")
+    parser.add_argument("-c_d", "--container_dir", default="container_data", help="Container data directory")
+    parser.add_argument("-csv_f", "--csv_file", default="software.csv", help="CSV file path")
+    parser.add_argument("-s_u_d", "--software_use_dir", default="software_uses", help="Software use directory for custom example use information.")
     parser.add_argument("--no-initial-reset", action="store_true", help="Skip initial database reset")
     return parser.parse_args()
 
@@ -115,7 +115,7 @@ def main():
     # Build reset command
     reset_command = f"python reset_database.py -s_d {args.spider_dir} -c_d {args.container_dir} -csv_f {args.csv_file}"
     print(f"Reset command: {reset_command}")
-    print(f"Watching: {args.spider_dir}, {args.container_dir}, {args.csv_file}, config.yaml")
+    print(f"Watching: {args.spider_dir}, {args.container_dir}, {args.csv_file}, {args.software_use_dir}, config.yaml")
 
     # Initial database reset (optional)
     if not args.no_initial_reset:
