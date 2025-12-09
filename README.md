@@ -97,6 +97,8 @@ cd spider_data
 # create one directory for each resource/HPC system
 mkdir resource1
 
+# Transfer data to the VM hosting sds
+# for example:
 # From where you have the lmod spider data copy/move your `module spider` data into the appropriate directory
 scp your/resource1/spider_data/file sds@your_domain_or_ip:/home/sds/SDS-Public/spider_data/resource1/
 # or

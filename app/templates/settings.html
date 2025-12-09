@@ -23,10 +23,15 @@
   <!-- Nav tabs -->
   <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-tab-pane" type="button" role="tab" aria-controls="user-tab-pane" aria-selected="false">
+        <button class="nav-link active" id="user-tab" data-bs-toggle="tab" data-bs-target="#user-tab-pane" type="button" role="tab" aria-controls="user-tab-pane" aria-selected="true">
           User Settings
         </button>
-      </li>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="download-tab" data-bs-toggle="tab" data-bs-target="#download-tab-pane" type="button" role="tab" aria-controls="download-tab-pane" aria-selected="false">
+        Download Software Table
+      </button>
+    </li>
   </ul>
   <!-- Tab content -->
   <div class="tab-content" id="settingsTabContent">
@@ -47,7 +52,7 @@
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
                   <span class="text-muted">
-                    This inforamtion will be used to identify software for which we need to collect curated data. It may also be used to help other institutions identify what software is available at your institution.
+                    This information will be used to identify software for which we need to collect curated data.
                   </span>
                 </div>
               </div>
@@ -60,13 +65,28 @@
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
                   <span class="text-muted">
-                    This inforamtion will be used to help other institutions identify what software is available at your institution.
+                    This information will be used to help other institutions identify what software is available at your institution.
                   </span>
                 </div>
               </div>
           </div>
         </div>
       </div>
+    </div>
+    <div class="tab-pane" id="download-tab-pane" role="tabpanel" aria-labelledby="download-tab" tabindex="0">
+      <div class="row">
+        <div class="">
+          <button type="button" class="btn-lg primary-button" id="download-csv">
+            <i class="bi bi-filetype-csv" style="font-size: large;"></i>
+            Download CSV
+          </button>
+          <button type="button" class="btn-lg primary-button" id="download-json">
+            <i class="bi bi-filetype-json" style="font-size: large"></i>
+            Download JSON
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

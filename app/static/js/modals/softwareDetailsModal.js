@@ -1,4 +1,3 @@
-
 /*////////////////////////////////////////////////////////////////
     Function for URL identification for quick access to modals //
 *///////////////////////////////////////////////////////////////
@@ -62,7 +61,8 @@ function formatSoftwareInfo(softwareInfo) {
         resource1:
             {resourceLink: allocations_link,
                 resourceDocumentation: documentation link,
-                resourceVersion: [versions]},
+                resourceVersion: {resource:[{version:version, command:command}]}
+            },
         resource2:
             {resourceLink: allocations_link,
                 resourceDocumentation: documentation link,
@@ -90,7 +90,7 @@ function formatSoftwareInfo(softwareInfo) {
         }
     */
     const resources = (softwareInfo["Resource"] || "").split(", ").filter(x => x.trim())
-    const versions = (softwareInfo["Versions"] || "").split(", ").filter(x => x.trim())
+    const versions = softwareInfo["Versions"] || []
     const resourceLink = ""
     // const resourceDocumentation = softwareInfo["RP Software Documentation" || ""].split("\n").filter(x => x.trim())
     const tutorialLinks = (softwareInfo["Tutorials and Usage"]|| "").split("\n").filter(x => x.trim())
@@ -101,14 +101,11 @@ function formatSoftwareInfo(softwareInfo) {
         )]
     const softwareType = (softwareInfo["AI Software Type"]||"").split(",").filter(x => x.trim())
     softwareData["installedOn"] = Object.fromEntries(
-        resources.map(resource => [
+        Object.entries(versions).map(([resource, versionList]) => [
             resource,
             {
                 resourceLink: resourceLink,
-                resourceVersion: versions
-                    .filter(version => version.startsWith(resource + ':'))
-                    .map(version => version.slice((resource + ':').length).trim().split(',').map(item => item.trim()))
-                    .flat()
+                resourceVersion: versionList
             }
         ])
     );
@@ -215,7 +212,6 @@ function createLinkElements(links) {
 export function showModalForSoftware(softwareName) {
     getSoftwareModalData(softwareName).then((softwareInfo) => {
         const softwareData = formatSoftwareInfo(softwareInfo)
-
         $("#software-modal-title").html(softwareName)
 
         setupModalLayout(softwareData);
@@ -287,12 +283,8 @@ function populateInstalledOn(installedOn){
                    v:
             `)
             resource_info.resourceVersion.forEach(version_command => {
-                const split_vc = version_command.split(" c: ")
-                const version = split_vc[0]
-                let command = ""
-                if (split_vc.length > 1) {
-                    command = split_vc[1]
-                }
+                const version = version_command.version
+                const command = version_command.command ? version_command.command : ''
 
                 $(`#${resourceName}-software-version`).append(`
                     ${version}

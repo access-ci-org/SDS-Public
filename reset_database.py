@@ -107,6 +107,7 @@ def get_remote_data(
     software: list[str],
     share_with_devs:bool,
     share_with_others: bool,
+    api_data_save_file: str = "app/data/api_response.json"
     ) -> list[dict[str, any]]:
     logger.info(f"Retrieving api data")
 
@@ -128,7 +129,12 @@ def get_remote_data(
         }
 
         try:
-            request = requests.post(url, headers=headers, json=data, timeout=20)
+            # fetch all data if user doesn't want to share with devs
+            if not share_with_devs:
+                data["software"] = ["*"]
+                request = requests.post(url, headers=headers, json=data, timeout=60)
+            else:
+                request = requests.post(url, headers=headers, json=data, timeout=20)
             if request.status_code == 200:
                 batch_data = request.json()
                 all_data.extend(batch_data['data'])
@@ -137,23 +143,28 @@ def get_remote_data(
                 raise DataProcessingError(f"Unable to fetch data from API: {request.json()}")
             else:
                 logger.warning(f"API returned status {request.status_code} for batch {i//BATCH_SIZE+1}. url: {url}, batch data: {batch}")
+
+            # don't loop if we are getting all data
+            if not share_with_devs:
+                break
         except (requests.ConnectionError, requests.ConnectTimeout) as ex:
             logger.warning(
                 f"Unable to retrieve data from api call for batch {i//BATCH_SIZE + 1}: {ex}. Using cached data."
             )
             continue
         except Exception as e:
-            raise DataProcessingError(f"Failed to retrieve data from api: {str(e)}") from e
+            logger.error(f"Failed to retrieve data form api:  \n {e}")
+            # raise DataProcessingError(f"Failed to retrieve data from api: {str(e)}") from e
     logger.info(
         f"Successfully retrieved data from api call. Length of data is {len(all_data)}."
     )
     if all_data:
-        with open("app/models/api_response.json", "w+") as ar:
+        with open(api_data_save_file, "w") as ar:
             json.dump(all_data, ar, indent=4)
         logger.info(f"Successfully updated local copy of api data")
     else:
         try:
-            with open("app/models/api_response.json", "r") as ar:
+            with open(api_data_save_file, "r") as ar:
                 api_response = json.load(ar)
             return api_response
         except FileNotFoundError as FNE:

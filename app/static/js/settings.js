@@ -15,3 +15,13 @@ $(".form-check-input").change(function(){
         }
     })
 })
+
+$("#download-csv").click(function (){
+    showAlert("Preparing download...", 'info')
+    window.location = "/download_csv"
+})
+
+$("#download-json").click(function () {
+    showAlert("Preparing download...", 'info')
+    window.location = "/download_json"
+})

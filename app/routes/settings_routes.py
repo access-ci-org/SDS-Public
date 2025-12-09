@@ -1,6 +1,8 @@
-from flask import render_template, request, jsonify, current_app
+import csv
+from pathlib import Path
+from flask import render_template, request, jsonify, current_app, send_file
 from flask_login import login_required, current_user
-from app.logic.table import initialize_table_info
+from app.logic.table import initialize_table_info, get_table, organize_table, combine_columns, TableInfo
 from . import settings_bp
 
 
@@ -62,3 +64,51 @@ def update_column_name():
     except Exception as e:
         print(e)
         return jsonify({"error": "Error renaming column"}), 500
+
+@settings_bp.route("/download_csv")
+@login_required
+def download_csv():
+    # get table info exactly like they are in the '/' route
+    table_object = get_table()
+    table_info = TableInfo()
+    df = organize_table(table_object, table_info)
+    df = combine_columns(df, [
+        ('Description', 'AI Description'),
+    ])
+    df = combine_columns(df, [
+        ('AI Research Discipline', 'AI Research Field')
+    ], combine_data= True)
+    try:
+        csv_file_path = Path("table.csv")
+        # create path and file
+        csv_file_path.parent.mkdir(parents=True, exist_ok=True)
+        csv_file_path.touch()
+        df.to_csv(csv_file_path, index=False)
+        return send_file(csv_file_path.resolve(), download_name="software_data.csv", as_attachment=True), 200
+    except Exception as e:
+        return jsonify({"error": "Error creating csv file"}), 500
+
+@settings_bp.route("/download_json")
+@login_required
+def download_json():
+    # get table info exactly like they are in the '/' route
+    table_object = get_table()
+    table_info = TableInfo()
+    df = organize_table(table_object, table_info)
+    df = combine_columns(df, [
+        ('Description', 'AI Description'),
+    ])
+    df = combine_columns(df, [
+        ('AI Research Discipline', 'AI Research Field')
+    ], combine_data= True)
+    # set software col as key
+    df = df.set_index('Software')
+    try:
+        json_file_path = Path("table.json")
+        json_file_path.parent.mkdir(parents=True, exist_ok=True)
+        json_file_path.touch()
+        df.to_json(json_file_path, orient="index", indent=2)
+
+        return send_file(json_file_path.resolve(), download_name="software_data.json", as_attachment=True), 200
+    except Exception as e:
+        return jsonify({"error": "Error creating csv file"}), 500

@@ -5,20 +5,40 @@ import argparse
 import threading
 import time
 from pathlib import Path
+from datetime import datetime
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 
 class FlaskWatcher(FileSystemEventHandler):
-    def __init__(self, reset_command):
+    def __init__(self, reset_command, auto_update_interval=86400):
         self.reset_command = reset_command
         self.flask_process = None
         self.restart_timer = None # for rerunning app
-        self.rest_timer = None # for resetting db
+        self.reset_timer = None # for resetting db
         self.debounce_delay = 2
+        self.auto_update_interval = auto_update_interval # Default 24 hours in seconds
+        self.periodic_timer = None
 
         # Define what to watch
         self.data_paths = ["spider_data", "container_data", "software_uses", "software.csv"]
         self.config_file = "config.yaml"
+
+
+    def schedule_periodic_update(self):
+        """Schedule the next automatic data update"""
+        if self.periodic_timer:
+            self.periodic_timer.cancel()
+
+        print(f"Scheduling next automatic database update in {self.auto_update_interval} seconds ({self.auto_update_interval/3600:.1f} hours)")
+        self.periodic_timer = threading.Timer(self.auto_update_interval, self.periodic_update)
+        self.periodic_timer.start()
+
+    def periodic_update(self):
+        """Perform periodic database update"""
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Performing scheduled 24-hour database update...")
+        self.reset_and_restart()
+        # Reschedule the next periodic update
+        # self.schedule_periodic_update()
 
     def schedule_reset_and_restart(self):
         """Debounced database reset and Flask restart for data changes"""
@@ -26,8 +46,15 @@ class FlaskWatcher(FileSystemEventHandler):
             self.reset_timer.cancel()
 
         print("Scheduling database reset and Flask restart...")
-        self.reset_timer = threading.Timer(self.debounce_delay, self.reset_and_restart)
+        self.reset_timer = threading.Timer(self.debounce_delay, self.reset_and_restart_with_timer_reset)
         self.reset_timer.start()
+
+    def reset_and_restart_with_timer_reset(self):
+        """Wrapper to reset database, restart Flask, and reset the periodic timer"""
+        self.reset_and_restart()
+        # Reset the 24-hour timer since we just did an update
+        # print("Resetting 24-hour auto-update timer...")
+        # self.schedule_periodic_update()
 
     def on_modified(self, event):
         if event.is_directory:
@@ -74,7 +101,7 @@ class FlaskWatcher(FileSystemEventHandler):
 
     def reset_and_restart(self):
         """Reset database then restart Flask (for data changes)"""
-        print("Resetting database and restarting Flask...")
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Resetting database and restarting Flask...")
         self.stop_flask()
 
         try:
@@ -107,6 +134,8 @@ def parse_args():
     parser.add_argument("-csv_f", "--csv_file", default="software.csv", help="CSV file path")
     parser.add_argument("-s_u_d", "--software_use_dir", default="software_uses", help="Software use directory for custom example use information.")
     parser.add_argument("--no-initial-reset", action="store_true", help="Skip initial database reset")
+    parser.add_argument("--update-interval", type=int, default=86400,
+        help="Automatic database update interval in seconds (default: 86400 = 24 hours)")
     return parser.parse_args()
 
 def main():
@@ -116,6 +145,7 @@ def main():
     reset_command = f"python reset_database.py -s_d {args.spider_dir} -c_d {args.container_dir} -csv_f {args.csv_file}"
     print(f"Reset command: {reset_command}")
     print(f"Watching: {args.spider_dir}, {args.container_dir}, {args.csv_file}, {args.software_use_dir}, config.yaml")
+    print(f"Auto-update interval: {args.update_interval} seconds ({args.update_interval/3600:.1f} hours)")
 
     # Initial database reset (optional)
     if not args.no_initial_reset:
@@ -128,14 +158,15 @@ def main():
             sys.exit(1)
 
     # Start watcher
-    watcher = FlaskWatcher(reset_command)
+    watcher = FlaskWatcher(reset_command, auto_update_interval=args.update_interval)
     watcher.start_flask()
+    # watcher.schedule_periodic_update()
 
     observer = PollingObserver()
     observer.schedule(watcher, ".", recursive=True)
     observer.start()
 
-    print("File watcher active. Press Ctrl+C to stop.")
+    print("File watcher active with automatic updates. Press Ctrl+C to stop.")
 
     try:
         while True:

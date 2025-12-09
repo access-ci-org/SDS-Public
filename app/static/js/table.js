@@ -201,17 +201,16 @@ $(document).ready(function()
                     $(this).append($input);
                     // Attach event listener to perform column search and search tracking
                     $input.on('keyup change', function(e) {
-                        const columName = originalText;
+                        const columnName = originalText;
                         const searchTerm = this.value;
                         self = this;
 
                         const columnIndex = api.column(this.closest('th')).index();
                         if (api.column(columnIndex).search() !== this.value) {
-                            // draw(false) prevents page changes and doesfaster draw
-                            api.column(columnIndex).search(this.value).draw(false).one('draw', function(){
+                            api.column(columnIndex).search(this.value).draw().one('draw', function(){
                                 // Track column search
                                 const resultCount = api.rows({search: 'applied'}). count();
-                                tableAnalytics.trackColumnSearch(columName, searchTerm, resultCount);
+                                tableAnalytics.trackColumnSearch(columnName, searchTerm, resultCount);
                                 // minor timeout to ensure DOM updates
                                 setTimeout(function(){
                                     self.focus();

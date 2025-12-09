@@ -156,18 +156,23 @@ def organize_table(
         commands = group["command"].tolist() if has_commands else [""] * len(versions)
 
         # Create combined strings with optional command information
-        combined = []
+        resource_dict = {}
         for r, v, c in zip(resources, versions, commands):
+            if r not in resource_dict:
+                resource_dict[r] = []
+
+            # create version entry
+            version_entry = {"version": v}
             if has_commands and c and str(c).strip():  # If command exists and is not empty
-                # note the separation must be ' c: ' for commands. that is what frontend looks for
-                combined.append(f"{r}: {v} c: {c}")
-            else:
-                combined.append(f"{r}: {v}")
+                version_entry["command"] = c
+
+            if version_entry not in resource_dict[r]:
+                resource_dict[r].append(version_entry)
 
         return pd.Series(
             {
                 "resource_name": ", ".join(set(resources)),
-                "software_version": ", ".join(combined),
+                "software_version": resource_dict,
             }
         )
 
