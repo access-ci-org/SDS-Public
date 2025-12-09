@@ -3,6 +3,7 @@ from pathlib import Path
 from flask import render_template, request, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from app.logic.table import initialize_table_info, get_table, organize_table, combine_columns, TableInfo
+from app.routes.analytics_routes import ANALYTICS_FILE
 from . import settings_bp
 
 
@@ -65,9 +66,9 @@ def update_column_name():
         print(e)
         return jsonify({"error": "Error renaming column"}), 500
 
-@settings_bp.route("/download_csv")
+@settings_bp.route("/download_software_csv")
 @login_required
-def download_csv():
+def download_software_csv():
     # get table info exactly like they are in the '/' route
     table_object = get_table()
     table_info = TableInfo()
@@ -88,9 +89,9 @@ def download_csv():
     except Exception as e:
         return jsonify({"error": "Error creating csv file"}), 500
 
-@settings_bp.route("/download_json")
+@settings_bp.route("/download_software_json")
 @login_required
-def download_json():
+def download_software_json():
     # get table info exactly like they are in the '/' route
     table_object = get_table()
     table_info = TableInfo()
@@ -112,3 +113,16 @@ def download_json():
         return send_file(json_file_path.resolve(), download_name="software_data.json", as_attachment=True), 200
     except Exception as e:
         return jsonify({"error": "Error creating csv file"}), 500
+
+@settings_bp.route("/download_analytics_json")
+@login_required
+def download_analytics_json():
+    try:
+        analytics_file = Path(ANALYTICS_FILE)
+        # ensure file and path exists
+        analytics_file.parent.mkdir(parents=True, exist_ok=True)
+        analytics_file.touch()
+
+        return send_file(analytics_file.resolve(), download_name="analytics_data.json", as_attachment=True), 200
+    except Exception as e:
+        return jsonify({"error": "Error fetching analytics file"}), 500

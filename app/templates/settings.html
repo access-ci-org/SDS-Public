@@ -29,7 +29,7 @@
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="download-tab" data-bs-toggle="tab" data-bs-target="#download-tab-pane" type="button" role="tab" aria-controls="download-tab-pane" aria-selected="false">
-        Download Software Table
+        Download Data
       </button>
     </li>
   </ul>
@@ -73,17 +73,41 @@
         </div>
       </div>
     </div>
+    <!-- Download Tab -->
     <div class="tab-pane" id="download-tab-pane" role="tabpanel" aria-labelledby="download-tab" tabindex="0">
       <div class="row">
-        <div class="">
-          <button type="button" class="btn-lg primary-button" id="download-csv">
-            <i class="bi bi-filetype-csv" style="font-size: large;"></i>
-            Download CSV
-          </button>
-          <button type="button" class="btn-lg primary-button" id="download-json">
-            <i class="bi bi-filetype-json" style="font-size: large"></i>
-            Download JSON
-          </button>
+        <div class="col-md-6">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Download Software Table</h5>
+            </div>
+            <div class="card-body col">
+              <div>
+                <button type="button" class="btn-lg primary-button" id="download-software-csv">
+                  <i class="bi bi-filetype-csv" style="font-size: large;"></i>
+                  Download CSV
+                </button>
+                <button type="button" class="btn-lg primary-button" id="download-software-json">
+                  <i class="bi bi-filetype-json" style="font-size: large"></i>
+                  Download JSON
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">Download Raw Analytics</h5>
+            </div>
+            <div class="card-body col">
+            <div>
+              <button type="button" class="btn-lg primary-button" id="download-analytics-json">
+                <i class="bi bi-filetype-json" style="font-size: large"></i>
+                Download JSON
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -16,12 +16,17 @@ $(".form-check-input").change(function(){
     })
 })
 
-$("#download-csv").click(function (){
+$("#download-software-csv").click(function (){
     showAlert("Preparing download...", 'info')
-    window.location = "/download_csv"
+    window.location = "/download_software_csv"
 })
 
-$("#download-json").click(function () {
+$("#download-software-json").click(function () {
     showAlert("Preparing download...", 'info')
-    window.location = "/download_json"
+    window.location = "/download_software_json"
+})
+
+$("#download-analytics-json").click(function () {
+    showAlert("Preparing download...", 'info')
+    window.location = "/download_analytics_json"
 })
