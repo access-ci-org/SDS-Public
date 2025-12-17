@@ -116,7 +116,7 @@ It is also possible to display container information and other data on SDS. View
 docker image pull public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 
 # Run the container
-docker run --name sds -d -p 8080:80 -v ./config.yaml:/sds/config.yaml -v ./spider_data:/sds/spider_data public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+docker run -d -p 8080:80 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" -v ./spider_data:/sds/spider_data public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 
 
 # See SDS_SETUP.md for more detailed instructions.

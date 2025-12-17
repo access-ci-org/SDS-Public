@@ -123,6 +123,19 @@ docker stop sds && docker rm sds
 docker run -d -p 443:443 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" --mount type=bind,source="./nginx.conf",target="/etc/nginx/sites-available/default" -v ./ssl:/etc/nginx/ssl public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 ```
 
+#### Analytics and Website Titles
+
+If you expect to be moving your container to a new location, stopping and restarting it often, mount teh following directories:
+
+- `-v ./websites:/sds/app/data/websites`
+- `-v ./analytics:/sds/analytics`
+
+The websites directory has a file with all of the url:website_title mappings. Mounting this will save you time from when the container is run to when the website becomes available.
+
+The analytics directory has all of the website analytics (visible after `login` in the `Analytics` tab). Having a local copy of it
+would mean that you don't lose any analytics data when removing the container.
+When re-running the container, just mount the same folder and all previous analytics data will be available as before.
+
 ### Running Locally
 
 1. Clone the repo into your local machine: `git clone https://github.com/access-ci-org/SDS-Public/tree/stand-alone.git`
