@@ -117,6 +117,11 @@ columns.forEach(function(col, index) {
 
 $(document).ready(function()
 {
+
+    if (!$('#softwareTable').length) {
+        // if table doesn't exist then do nothing
+        return;
+    }
     var initialSoftwareName = getURLParameter('software');
     if (initialSoftwareName) {
         tableAnalytics.trackSoftwareView(initialSoftwareName, 'url_direct');

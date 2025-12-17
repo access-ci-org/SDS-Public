@@ -1,5 +1,5 @@
 #!/bin/bash --login
-conda activate SDS_ENV
+conda activate /sds/env/SDS_ENV
 
 # Initialize the command with the base script
 command="python run.py"

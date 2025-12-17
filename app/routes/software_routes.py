@@ -16,6 +16,16 @@ from . import software_bp
 @software_bp.route("/")
 def software_search():
     table_object = get_table()
+    if not table_object:
+        return render_template(
+            "software_search.html",
+            table="No data available to software create table. See https://github.com/access-ci-org/SDS-Public/blob/stand-alone/SDS_SETUP.md#data-preparation for instructions",
+            column_names='{}',
+            last_updated="",
+            use_ai_info="False",
+            use_curated_info="False",
+            use_api="False",
+        )
     table_info = initialize_table_info()
     df = organize_table(table_object, table_info)
     df = combine_columns(df, [

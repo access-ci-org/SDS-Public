@@ -1,0 +1,18 @@
+<!-- env files -->
+.env
+.git
+.gitignore
+.gitattributes
+.github
+.vscode
+
+__pycache__/
+logs/
+env/
+*.log
+config.yaml
+
+software_uses/
+spider_data
+software.csv
+container_data
