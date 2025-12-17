@@ -13,7 +13,7 @@ All they need to do is provide the names of the software and which cluster they 
 ## SDS Quick Start
 
 The following explains how to setup and run SDS on a Linux system using Docker.
-If you would like to discuss implementing the SDS at you institution please contact Sandesh at <sla302@uky.edu>.
+If you would like to discuss implementing the SDS at you institution or would like a walk through of the sds and its setup, please contact Sandesh at <sla302@uky.edu>.
 You can find a more detailed set of instructions with information on different features in the `SDS_SETUP.md` file.
 
 ---
@@ -35,7 +35,7 @@ docker --version
 systemctl status docker
 ```
 
-### Step 1 – Configure Docker access and open ports (as root)
+### Step 1 -- Configure Docker access and open ports (as root)
 
 ```bash
 # Create a new user for SDS
@@ -50,23 +50,21 @@ echo "sds ALL=(ALL) NOPASSWD:/usr/bin/docker" > /etc/sudoers.d/sds
 chmod 440 /etc/sudoers.d/sds
 
 # Open required ports for HTTP (80) and app traffic (8080)
-firewall-cmd --permanent --add-port=80/tcp
 firewall-cmd --permanent --add-port=8080/tcp
+# Also open the following if you want https/ssl
+# firewall-cmd --permanent --add-port=443/tcp
+
 firewall-cmd --reload
 
 # Verify firewall settings
 firewall-cmd --list-ports
 ```
 
-### Step 2 - Download the repo and create config.yaml file
+### Step 2 - Create config.yaml file
 
 ```bash
 # switch to the sds user
 su -l sds
-
-# Clone the SDS repository
-git clone https://github.com/access-ci-org/SDS-Public.git
-cd SDS-Public/
 
 # Create default config file.
 # Edit this to add your API key (contact Sandesh <sla302@uky.edu> to get an api key)
@@ -91,7 +89,7 @@ EOF
 ### Step 3 - Prepare and load data
 
 ```bash
-mkdir spider_data
+mkdir -p spider_data container_data
 cd spider_data
 
 # create one directory for each resource/HPC system
@@ -100,29 +98,31 @@ mkdir resource1
 # Transfer data to the VM hosting sds
 # for example:
 # From where you have the lmod spider data copy/move your `module spider` data into the appropriate directory
-scp your/resource1/spider_data/file sds@your_domain_or_ip:/home/sds/SDS-Public/spider_data/resource1/
+scp your/resource1/spider_data/file sds@your_domain_or_ip:/home/sds/spider_data/resource1/
 # or
-cp your/resource1/spider_data/file ~/SDS-Public/spider_data/resource1/
+cp your/resource1/spider_data/file ~/spider_data/resource1/
 
 # return to sds base directory
-cd ~/SDS-Public/
+cd ~
 ```
 
-It is also possible to display container information on SDS. View the
-`SDS_SETUP.md` file on how. Or contact Sandesh <sla302@uky.edu> for help
+It is also possible to display container information and other data on SDS. View the
+`SDS_SETUP.md` file on how. Or contact Sandesh <sla302@uky.edu> for help.
 
 ### Step 4 - Build and Start Docker Container
 
 ```bash
-# Build and start in detached (daemon) mode
-sudo docker compose up --build -d
+# Download the latest container image
+docker image pull public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 
-# Verify running containers
-sudo docker ps
+# Run the container
+docker run --name sds -d -p 8080:80 -v ./config.yaml:/sds/config.yaml -v ./spider_data:/sds/spider_data public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 
-# All logs will can be found in the logs directory (~/SDS-Public/logs)
-# Modifying the following directories and files will automatically update the SDS within the container:
-# config.yaml, spider_data, container_data, software_uses, software.csv
+
+# See SDS_SETUP.md for more detailed instructions.
+
+# Verify the container is running
+docker ps -a
 ```
 
 ---
@@ -133,7 +133,7 @@ The website will be running and accessible on port **8080** (e.g. <your_ip_addre
 
 If you would like to enable ssl for your service, view the `SDS_SETUP.md` file or contact Sandesh.
 
-If you run into any trouble or have questions email Sandesh (<sla302@uky.edu>). We would be happy to help!
+If you run into any trouble, have questions, or would like to request new features email Sandesh (<sla302@uky.edu>). We would be happy to help!
 
 ---
 
@@ -142,29 +142,22 @@ If you run into any trouble or have questions email Sandesh (<sla302@uky.edu>). 
 Stop and start the container
 
 ```bash
-# Stop running container
-sudo docker compose down
-
-# Rebuild and start again in detached mode
-sudo docker compose up --build -d
+docker stop sds
+docker start sds
 ```
 
-For quick stop/start (no rebuild):
-
-```bash
-sudo docker compose stop
-sudo docker compose start
-```
-
-If you notice that some changes aren't being applied, run the following:
+If you want to delete the container and images
 
 ```bash
 # Stop running container
-sudo docker compose down
+docker stop sds
+docker rm sds
 
-# Prune docker system files
-sudo docker system prune
+# view existing images
+docker image ls
+# delete existing image
+docker image rm public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 
-# Rebuild and start again in detached mode
-sudo docker compose up --build -d
+# remove all unused cache
+docker system prune
 ```

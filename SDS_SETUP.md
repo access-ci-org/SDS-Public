@@ -22,9 +22,8 @@ If you would like a simpler "quick start" guide, view the `README.md` file.
 The SDS tool is meant to exist independent of any HPC clusters and should not be run on any critical systems.
 The recommended method is to run the application inside of a VM and copy/add any important information to it.
 
-1. Clone the repo into your local machine: `git clone https://github.com/access-ci-org/SDS-Public/tree/stand-alone.git`
-2. Follow instructions to set [Config Variables](#config-variables)
-3. Follow instructions in [Data Preparation](#data-preparation) to properly provide data for SDS
+1. Follow instructions to set [Config Variables](#config-variables)
+2. Follow instructions in [Data Preparation](#data-preparation) to properly provide data for SDS
 
 That should be all the necessary setup
 
@@ -33,30 +32,107 @@ That should be all the necessary setup
 ### Using Docker
 
 1. Make sure [docker](https://docs.docker.com/engine/install/) is installed on your machine
-2. Make sure you have the relevant data available based on [Data Preparation](#data-preparation)
-3. Run `sudo docker compose up -d`
+2. Make sure you have the appropriate configs from [config-variables](#config-variables)
+3. Download the image: `docker image pull public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest`
+4. Run `docker run -d -p 8080:80 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest`
     - The website will be available in 5 or so seconds at `localhost:8080` (and <your_ip_address>:8080)
-    - You can stop the services by running `sudo docker compose down`
-    - To rebuild the image each time: `sudo docker compose up -d --build`
+    - You can stop the services by running `sudo docker stop sds`
     - You can enter your container by running `sudo docker exec -it sds /bin/bash`
-    - All stdout and stderr are logged to `/var/log/supervisor/*` within the container
-    - Sometimes docker caches builds and you may need to run `sudo docker system prune` before building.
-4. If you want to enable ssl certificates for your website, make the following changes:
-    - In the `nginx.conf` file, comment out the entire first `server {` entry and uncomment the entire second `server {` entry.
-    - In the `docker-compose.yml` file, comment out the ` - "8080:80"` line and uncomment the ` - "443:443"`
-    - In the `docker-compose.yml` uncomment the `# - ./ssl:/etc/nginx/ssl`
-      - This expects the ssl certificates to be in the project directory. If your ssl certificates are somewhere else,
-        change the `./ssl` portion to be the path to the directory where the certificates are stored.
+
+#### Adding Data
+
+To add software data to the SDS, you will need to mount the relevant files to the container.
+
+First make sure you have the data in the as specified in the [Data Preparation](#data-preparation) section.
+
+To mount you will need to:
+
+- Stop and remove the existing container `docker stop sds && docker rm sds`
+- Run the `docker run` script mentioned above with any or all of the following (add these before the `public.ecr.aws/access-ci...` section of the script):
+  - `-v ./spider_data:/sds/spider_data`
+  - `-v ./container_data:/sds/container_data`
+  - `-v ./software_uses:/sds/software_uses`
+  - `--mount type=bind,source="./software.csv",target="/sds/software.csv"`
+
+Here is an example command:
+
+```bash
+sudo docker run --name sds -d -p 8080:80 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" -v ./spider_data:/sds/spider_data public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+```
+
+To update the data just change the files/folders on the machine running the SDS as necessary,
+**no need to touch the container**.
+You will only ever need to stop and re-run the container if you need to mount a new item.
+
+#### Monitoring and Logs
+
+All stdout and stderr output as well as nginx logs are logged to `/var/log/supervisor/*` within the container.
+The SDS program logs are logged to `/sds/logs/sds.log`.
+If you would like to save the logs locally (either for backup or for an easier way to view them),
+add the following mounts to the container:
+
+- `-v ./logs:/var/log/supervisor`
+- `--mount type=bind,source="./logs/sds-internal.log",target="/sds/logs/sds.log"`
+
+This will show all log data in your local `./logs/` directory.
+
+#### SSL Certificates
+
+If you want to enable ssl certificates for your website, make the following changes:
+
+First, make sure you have the SSL certificate and key stored in an appropriate location (a `./ssl` directory is fine)
+
+Second, create `nginx.conf` file locally with the appropriate settings:
+
+```bash
+cat << EOF > nginx.conf
+server {
+    listen 443 ssl;
+    server_name localhost;
+
+    ssl_certificate /etc/nginx/ssl/cert.pem;
+    ssl_certificate_key /etc/nginx/ssl/key.pem;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    access_log /var/log/supervisor/nginx-access.log;
+
+    client_max_body_size 100M;
+}
+EOF
+```
+
+Third, stop and re-run the container with the following changes:
+
+- Add the appropriate ports (change `-p 8080:80` to `-p 443:443`)
+- Mount the new config to the container (`--mount type=bind,source="./nginx.conf",target="/etc/nginx/sites-available/default"`)
+
+Here is an example command.
+
+```bash
+# stop and remove the container
+docker stop sds && docker rm sds
+
+# rerun the container with the appropriate port and mounts
+# assumes ssl certs are in the ./ssl directory
+docker run -d -p 443:443 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" --mount type=bind,source="./nginx.conf",target="/etc/nginx/sites-available/default" -v ./ssl:/etc/nginx/ssl public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+```
 
 ### Running Locally
 
-1. Run `source setup.sh` to setup your environment
-2. Run `python reset_database.py` to create and load your database
+1. Clone the repo into your local machine: `git clone https://github.com/access-ci-org/SDS-Public/tree/stand-alone.git`
+2. Run `source setup.sh` to setup your environment
+3. Run `python reset_database.py` to create and load your database
    - You can pass in three different arguments to `reset_database.py`. Type `python reset_database.py -h` for more info. Read the entire help message before continuing.
 
-3. To exclude some softwares from being displayed on the website, add them to the `software_blacklist.txt` file in the project directory. A basic list of blacklisted names is already provided
+4. To exclude some softwares from being displayed on the website, add them to the `software_blacklist.txt` file in the project directory. A basic list of blacklisted names is already provided
 
-4. Run the application with `flask run`
+5. Run the application with `flask run`
    - If you want to run the application with a watcher (which will automatically update the db and app when the data is updated). Run `python run.py` see `python run.py --help` for more information
 
 ## Config Variables
@@ -72,13 +148,13 @@ api:
   use_curated_info: False
   use_ai_info: False
 styles:
-  primary_color: "your primary color here"
-  secondary_color: "your secondary color"
+  primary_color: ""
+  secondary_color: ""
   site_title: "Title for website here"
-  logo: "logo file name"
+  logo: ""
 general:
-  user_name: default admin user
-  password: default admin password
+  user_name: user
+  password: password
   share_with_devs: True
 ```
 
@@ -89,6 +165,8 @@ general:
 The SDS tool requires the names of the software available on each system. You can provide this information in two different ways: curated and/or raw output.
 
 ### Curated
+
+How it works: you provide sds the data it needs in the specific format it needs them
 
 - Curated data should be in the form of a CSV with the following requirements
   - If you are using docker, then the file must be named `software.csv`
@@ -108,6 +186,8 @@ A `software.csv`file with just the columns is already provided.
 
 ### Raw Output
 
+How it works: you provide sds with the output of a few commands, the sds will automatically extract and format that data.
+
 #### Collector Script
 
 For obtaining the raw output, use the `collector.py` script located in this repo.
@@ -115,7 +195,7 @@ The `COLLECTOR.md` file goes over how to use it. The `collector.py` file will cr
 
 #### Manual
 
-If you would rather collect the data manually, the rest of the section will cover how to format that data.
+If you would rather collect the data manually, the rest of the section will cover how to structure that data.
 
 The raw output of a specific command or supported file types (SDS will parse it and extract the software info)
 All files for this section must be within subdirectories. The name of each subdirectory
@@ -130,7 +210,6 @@ should be the name of a resource to which the files belong. `resource` refers to
   - You can also provide container definition files within the proper resource directory
  and the SDS tool will attempt to parse it and extract any relevant software information.
  The name of the `.def` is treated as the container name.
-  - If you are using the version of sds docker, then the parent directory must be named `container_data`
   - Aside from the raw `.def` file, you can also add curated information for specific containers in a csv file or in a custom SDS comment block (see the `PARSER.md` file).
  All csv files must have a software_name and (container_file or definition_file) columns.
  Here is the complete list of supported columns: `software_name, software_versions, container_name,
