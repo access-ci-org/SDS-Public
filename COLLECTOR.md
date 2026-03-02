@@ -20,7 +20,7 @@ The collector serves as a key component of the broader Software Documentation Se
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.7+
 - SSH access (for remote mode)
 - rsync (for synchronization)
 - Lmod module system (for module data collection)
@@ -37,7 +37,7 @@ If you want to use it in a different location:
     scp collector.py your_username@your_server:~/
     ```
 
-2. Ensure Python 3.6+ is installed:
+2. Ensure Python 3.7+ is installed:
 
     ```bash
     python3 --version
@@ -90,7 +90,7 @@ If your remote system has an older Python version with compatibility issues and 
 python3 collector.py --directory /path/to/search --resource cluster_name --remote cluster.example.edu --username your_username --pre_command "module load python/3.8" --sync
 ```
 
-Change the `--pre_command` to the command you need to switch your environment to python3.6+
+Change the `--pre_command` to the command you need to switch your environment to python3.7+
 This loads a newer Python version before executing the script on the remote system.
 
 ## Command Line Arguments
