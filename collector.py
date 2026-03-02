@@ -66,7 +66,7 @@ def find_container_files(start_dir: Path, max_depth: int, resource_name: str) ->
 
     try:
         # Use shell=True to allow redirecting stderr with 2>/dev/null
-        result = subprocess.run(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run(" ".join(cmd), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         found_files = result.stdout.strip().split('\n')
         # Remove empty entries
         found_files = [f for f in found_files if f]
@@ -134,7 +134,7 @@ def collect_module_spider_data(resource_name: str) -> Path:
 
         # Run module spider command and save output
         # Run command within login shell
-        result = subprocess.run(["bash", "-l", "-c", f"module spider > {spider_file}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+        result = subprocess.run(["bash", "-l", "-c", f"module spider > {spider_file}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
 
         if result.returncode != 0:
             print(f"Error running module spider command: {result.stderr}")
@@ -311,7 +311,7 @@ def run_on_remote_and_sync_back(args):
                     f"test -d {container_remote_path} && echo 'exists' || echo 'not-exists'"
                 ])
 
-                result = subprocess.run(check_cmd, stdout=subprocess.PIPE, check=True)
+                result = subprocess.run(check_cmd, stdout=subprocess.PIPE, text=True, check=True)
                 if "exists" in result.stdout:
                     print(f"Syncing container_data from remote cluster...")
                     # Create local directories if they don't exist
@@ -344,7 +344,7 @@ def run_on_remote_and_sync_back(args):
                     f"test -d {spider_remote_path} && echo 'exists' || echo 'not-exists'"
                 ])
 
-                result = subprocess.run(check_cmd, stdout=subprocess.PIPE, check=True)
+                result = subprocess.run(check_cmd, stdout=subprocess.PIPE, text=True, check=True)
                 if "exists" in result.stdout:
                     print(f"Syncing spider_data from remote cluster...")
                     Path(f"./spider_data/{args.resource}").mkdir(parents=True, exist_ok=True)

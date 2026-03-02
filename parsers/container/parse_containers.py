@@ -243,6 +243,10 @@ def get_parsed_data(package_string, data) -> Dict[str, str]:
             s = package_string
             v = ""
     if s not in data or (v and not data["software_versions"]):
+        # remove characters that cause issue with parsing or rendering data (`"` for json parsing)
+        chars_to_remove = ['"']
+        for char in chars_to_remove:
+            s = s.replace(char,"")
         data["software_name"] = s
         data["software_versions"] = v
 
