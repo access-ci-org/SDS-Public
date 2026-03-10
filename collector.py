@@ -129,12 +129,10 @@ def collect_module_spider_data(resource_name: str) -> Path:
 
     try:
         env = os.environ.copy()
-        env["COLUMNS"] = "1000" # set a very wide terminal width so 'module spider' doesn't get truncated
-        env["TERM"] = "xterm-256-color" # set a terminal type that supports wide width
 
         # Run module spider command and save output
         # Run command within login shell
-        result = subprocess.run(["bash", "-l", "-c", f"module --redirect spider > {spider_file}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+        result = subprocess.run(["bash", "-l", "-c", f"module --redirect --width=1000 spider > {spider_file}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
 
         if result.returncode != 0:
             print(f"Error running module spider command: {result.stderr}")
