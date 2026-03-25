@@ -210,6 +210,7 @@ function createLinkElements(links) {
 }
 
 export function showModalForSoftware(softwareName) {
+    $("#software-data").empty() // empty modal before adding data
     getSoftwareModalData(softwareName).then((softwareInfo) => {
         const softwareData = formatSoftwareInfo(softwareInfo)
         $("#software-modal-title").html(softwareName)
@@ -273,12 +274,12 @@ function populateInstalledOn(installedOn){
                         <strong>${resource}</strong>
                     </a>
                 </div>
-                <div id="${resourceName}-software-version" class="col">
+                <div id="${resourceName}-software-version" class="col" aria-label="software version">
                 </div>
                 <hr class="installed-on">
             </div>
         `)
-        if (!(isEmpty(resource_info.resourceVersion)) && resource_info.resourceVersion[0] != "") {
+        if (!(isEmpty(resource_info.resourceVersion)) && resource_info.resourceVersion[0].version !== "") {
             $(`#${resourceName}-software-version`).append(`
                    v:
             `)
@@ -288,7 +289,7 @@ function populateInstalledOn(installedOn){
 
                 $(`#${resourceName}-software-version`).append(`
                     ${version}
-                    <div class="text-muted small mb-2">
+                    <div class="text-muted small mb-2" aria-label="Command for software">
                         ${command}
                     </div>
                     `)
@@ -311,7 +312,9 @@ function populateCoreFeatures(coreFeatures){
 
     $("#core-features").html(`
         <p class="section-title">CORE FEATURES${use_api ? `<i class='bi bi-stars'></i>`: ''}</p>
-        <span id="software-ai-core-features" class="section-text">${coreFeatures}</span>
+        <div>
+          <span id="software-ai-core-features" class="section-text">${coreFeatures}</span>
+        </div>
         <hr class="installed-on">
     `)
 }
@@ -320,10 +323,7 @@ async function populateRelatedLinks(relatedLinks){
     if (isEmpty(relatedLinks)) return;
     $("#software-info").append(`
         <div id="related-links" class="more-info">
-            <span class="intro more-info-item"><strong>Related Links</strong></span>
-            <div id="software-webpage" class="more-info-item"></div>
-            <div id="software-documentation" class="more-info-item"></div>
-            <div id="software-usage" class="more-info-item"></div>
+            <span class="intro more-info-item section-title">Related Links</span>
         </div>
     `)
 
@@ -331,7 +331,7 @@ async function populateRelatedLinks(relatedLinks){
         if (!isEmpty(relatedLinks[linkType])){
             const linkElements = await createLinkElements(relatedLinks[linkType]);
             if (!(linkElements === "")) {
-                $("#related-links").show();
+                $(`#related-links`).append(`<div id="${config.containerId}" class="more-info-item"></div>`)
                 $(`#${config.containerId}`).html(`
                     <div id="${config.containerId}-title">
                         <i class="bi bi-${config.icon}"></i>
@@ -348,17 +348,17 @@ async function populateRelatedLinks(relatedLinks){
 
 function populateSimilarSoftware(similarSoftware){
     if (isEmpty(similarSoftware)) return;
-
+    // don't change similar-sof to similar-software as that will mess with styles
     $("#software-info").append(`
-        <div id="similar-software" class="more-info">
-            <span class="intro more-info-item"><strong>Find Similar Software</strong></span>
+        <div id="similar-sof" class="more-info">
+            <span class="intro more-info-item section-title">Find Similar Software</span>
         </div>
     `)
 
     Object.entries(SIMILAR_SOFTWARE_CONFIGS).forEach(([key, config]) => {
         if (!isEmpty(similarSoftware[key])) {
             const containerId = `software-${key.toLocaleLowerCase()}`;
-            $("#similar-software").append(`
+            $("#similar-sof").append(`
                 <div id="${containerId}" class="more-info-item">
                     <div id="${containerId}-title">
                         <i class="bi bi-${config.icon}"></i>

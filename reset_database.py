@@ -116,7 +116,7 @@ def get_remote_data(
         # request software data in batches
     for i in range(0, len(software), BATCH_SIZE):
         batch = software[i:min(i+BATCH_SIZE, len(software))]
-        url = "https://sds-api.ccs.uky.edu/api/v1"
+        url = f"{app.config["SDS_API_URL"]}api/v1"
         headers = {
             "X-API-Key": api_key,
             "Content-Type": "application/json"

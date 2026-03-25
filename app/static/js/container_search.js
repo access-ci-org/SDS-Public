@@ -7,26 +7,30 @@ function createContainerCard(container) {
             <div class="card container-card h-100">
                 <div class="card-body">
                     <div class="d-inline-flex justify-content-between align-items-start">
-                            <i class="bi bi-boxes me-2"></i>
-                            <h5 class="card-title text-break" style="line-height:30px;">${container.container_name}</h5>
+                        <i class="bi bi-boxes me-2" aria-hidden="true"></i>
+                        <h2 class="card-title text-break" style="line-height:30px;">${container.container_name}</h2>
                     </div>
                     <div class="text-muted small mb-2">
-                        <i class="bi bi-hdd-stack-fill"></i>
+                        <i class="bi bi-hdd-stack-fill" aria-hidden="true"></i>
+                        <span class="visually-hidden">Resource:</span>
                         ${container.resource}
                     </div>
                     <div class="mt-3">
-                        <div class="text-muted small mb-2">
-                            <i class="bi bi-grid-fill"></i>
+                        <div class="text-muted small mb-2" id="installed-software-label-${container.container_name}">
+                            <i class="bi bi-grid-fill" aria-hidden="true"></i>
                             Installed Software
                         </div>
-                        <div class="d-flex flex-wrap gap-2">
+                        <div class="d-flex flex-wrap gap-2" role="list" aria-labelledby="installed-software-label-${container.container_name}">
                             ${container.software.map(sw => `
-                                <span class="badge software-badge rounded-pill">${sw}</span>
+                                <span class="badge software-badge rounded-pill" role="listitem">${sw}</span>
                             `).join('')}
                         </div>
                     </div>
                     <div class="mt-3 pt-3 border-top">
-                        <button class="btn btn-link btn-sm p-0 text-decoration-none view-details" data-container-name="${container.container_name}" data-resource-name="${container.resource}">
+                        <button class="btn btn-link btn-sm p-0 text-decoration-none view-details"
+                            data-container-name="${container.container_name}"
+                            data-resource-name="${container.resource}"
+                            aria-label="View details for ${container.container_name}">
                             View Details
                         </button>
                     </div>

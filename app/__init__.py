@@ -63,6 +63,12 @@ HIDE_DATA = general_conf.get('hide_data',[])
 IFRAME = general_conf.get("iframe",False)
 EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 
+# Current SDS Version
+SDS_VERSION = "1.3.0"
+
+# API URL
+SDS_API_URL = "http://127.0.0.1:4200/"
+
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     print("Not using API information")
     USE_API = False
@@ -103,11 +109,14 @@ app.config.update(
     SHARE_WITH_OTHERS=SHARE_WITH_OTHERS,
     SHOW_CONTAINER_PAGE=SHOW_CONTAINER_PAGE,
     IFRAME=IFRAME,
-    EXTERNAL_ANALYTICS=EXTERNAL_ANALYTICS
+    EXTERNAL_ANALYTICS=EXTERNAL_ANALYTICS,
+
+    SDS_VERSION=SDS_VERSION,
+    SDS_API_URL=SDS_API_URL
 )
 
 
-# Global template varialbes (used for by html files)
+# Global template variables (used for by html files)
 @app.context_processor
 def inject_global_vars():
     return {

@@ -11,6 +11,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
 # the packages in base conda install don't get used but are updated anyway to remove any CVEs
 RUN conda update --all -y
 
+RUN conda install --name base conda-anaconda-tos
+
 # accept channel anaconda tos
 RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
 RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r

@@ -36,7 +36,8 @@ function buildColumns() {
                 }
             };
             column.searchPanes = {
-                orthogonal: 'sp'
+                orthogonal: 'sp',
+                header: 'Filter Tags'
             };
             column.width = "15%" // sets max width to 10% of table
         } else if (internalKey === 'ai_research_discipline') {
@@ -49,13 +50,15 @@ function buildColumns() {
                 }
             };
             column.searchPanes = {
-                orthogonal: 'sp'
+                orthogonal: 'sp',
+                header: `Filter Research Discipline`
             };
             column.visible = false;
         } else if (internalKey === 'ai_software_type') {
             column.visible = false;
             column.searchPanes = {
-                orthogonal: 'sp'
+                orthogonal: 'sp',
+                header: 'Filter Software Type'
             };
         }
 
@@ -69,7 +72,8 @@ function buildColumns() {
                 }
             };
             column.searchPanes = {
-                orthogonal: 'sp'
+                orthogonal: 'sp',
+                header: 'Filter Resource'
             };
             column.width = "10%" // sets max width to 10% of table
         }
@@ -188,11 +192,7 @@ $(document).ready(function()
                     let new_header;
                     if (originalText.includes("Tags") || originalText.includes("Description")) {
                         originalText = originalText.replace("AI ", "")
-                        new_header = `
-                            <span style="display:block; font-weight:bold;">${originalText}
-                                <i class="bi bi-stars"></i>
-                            </span>
-                        `
+                        new_header = `<span style="display:block; font-weight:bold;">${originalText}<i class="bi bi-stars"></i></span>`
                     } else {
                         new_header = `
                             <span style="display:block; font-weight:bold;">${originalText}</span>
@@ -202,7 +202,7 @@ $(document).ready(function()
                     $(this).empty().append(new_header);
 
                     // Create an input field with a placeholder and append it to the header cell
-                    let $input = $('<input type="text" class="col-search" style="width: 100%;" placeholder="Search ">');
+                    let $input = $(`<input type="text" class="col-search" style="width: 100%;" placeholder="Search ${originalText}">`);
                     $(this).append($input);
                     // Attach event listener to perform column search and search tracking
                     $input.on('keyup change', function(e) {
@@ -264,10 +264,10 @@ $(document).ready(function()
     $(".dtsp-panesContainer").hide();
     // Add filter button to the table
     $("#table-filters").append(`
-        <div id="toggle-filters" class="filter-button">
+        <button id="toggle-filters" class="filter-button">
             <span id="filter-text">Show Filters</span>
             <i class="bi bi-filter"></i>
-        </div>
+        </button>
     `);
 
     $("#toggle-filters").click(() => {
@@ -277,6 +277,8 @@ $(document).ready(function()
             if (!(isVisible)){
                 const table = $("#softwareTable").DataTable();
                 table.searchPanes.clearSelections();
+            } else {
+              $(".dtsp-title").first().attr("tabindex", "-1").focus();
             }
             $("#filter-text").html(buttonText);
         });
@@ -327,14 +329,8 @@ $(document).ready(function()
         staticTable.draw();
     });
 
-    // Check initial URL for parameter
-    var initialSoftwareName = getURLParameter('software');
-    if (initialSoftwareName) {
-        showModalForSoftware(initialSoftwareName);
-    }
-
     // main search table input
-    $(".dt-search input").attr('placeholder', 'Search All')
+    $(".dt-search input").attr('placeholder', 'Search Table')
 
     // datatables search panes buttons
     $(".dtsp-titleRow button").addClass('tag')

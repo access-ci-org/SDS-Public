@@ -15,7 +15,7 @@ class FlaskWatcher(FileSystemEventHandler):
         self.flask_process = None
         self.restart_timer = None # for rerunning app
         self.reset_timer = None # for resetting db
-        self.debounce_delay = 2
+        self.debounce_delay = 5
         self.auto_update_interval = auto_update_interval # Default 24 hours in seconds
         self.periodic_timer = None
 
@@ -57,8 +57,6 @@ class FlaskWatcher(FileSystemEventHandler):
         # self.schedule_periodic_update()
 
     def on_modified(self, event):
-        if event.is_directory:
-            return
 
         file_path = str(Path(event.src_path))
 
@@ -72,8 +70,21 @@ class FlaskWatcher(FileSystemEventHandler):
             print(f"Data changed: {file_path}")
             self.schedule_reset_and_restart()
 
+    def on_moved(self, event):
+        # no return for directory as it will ignore children dirs/files
+        file_path = str(Path(event.src_path))
+        if any(data_path in file_path for data_path in self.data_paths):
+            print(f"Data moved: {file_path}")
+            self.schedule_reset_and_restart()
+
+    def on_created(self, event):
+        # no return for directory as it will ignore children dirs/files
+        file_path = str(Path(event.src_path))
+        if any(data_path in file_path for data_path in self.data_paths):
+            print(f"Data file created: {file_path}")
+            self.schedule_reset_and_restart()
+
     def on_deleted(self, event):
-        print(event.src_path)
         if event.is_directory:
             return
 

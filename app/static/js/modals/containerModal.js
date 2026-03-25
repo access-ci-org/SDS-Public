@@ -161,7 +161,6 @@ export function onViewContainerClick(e, table) {
             // Clear previous content
             $("#container-accordion").empty();
             $("#container-modal-title").text(softwareName);
-            console.log(response)
 
             response.forEach((containerData, index) => {
                 $("#container-accordion").append(`

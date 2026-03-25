@@ -27,19 +27,24 @@
     <div class="search-container">
         <div class="mb-4">
             <div class="position-relative">
-                <div class="input-group mb-3">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <div class="search-input-container">
-                        <div id="tagContainer" class="tag-container"></div>
-                        <input type="text" id="searchInput" class="search-input" placeholder=" Search containers or software...">
-                    </div>
-                    <select id="resourceSelect" class="form-select">
-                        <option value="all">All Resources</option>
-                        {% for resource in resources %}
-                            <option value="{{ resource }}">{{ resource }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+              <div class="input-group mb-3" role="search">
+                  <i class="fa-solid fa-magnifying-glass search-icon" aria-hidden="true"></i>
+                  <div class="search-input-container">
+                      <div id="tagContainer" class="tag-container" role="list" aria-label="Active search filters"></div>
+                      <input type="text" id="searchInput" class="search-input"
+                          placeholder="Search containers or software..."
+                          aria-label="Search containers or software"
+                          aria-controls="tagContainer"
+                          autocomplete="off">
+                  </div>
+                  <label for="resourceSelect" class="visually-hidden">Filter by resource</label>
+                  <select id="resourceSelect" class="form-select" aria-label="Filter by resource">
+                      <option value="all">All Resources</option>
+                      {% for resource in resources %}
+                          <option value="{{ resource }}">{{ resource }}</option>
+                      {% endfor %}
+                  </select>
+              </div>
             </div>
         </div>
         <div class="masonry-grid" id="containerGrid">

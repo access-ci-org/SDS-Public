@@ -2,6 +2,7 @@ from flask import request, redirect, flash, url_for, render_template
 from flask_login import login_user, logout_user, login_required, current_user
 from peewee import DoesNotExist
 from app.models.users import Users
+from app.logic.sdsVersions import get_pending_updates, PRIORITY_TO_ALERT
 from . import auth_bp
 
 
@@ -22,6 +23,13 @@ def login():
             user = Users.get(Users.username == username)
             if user and user.check_password(password=password):
                 login_user(user)
+                updates = get_pending_updates()
+                if updates:
+                  for update in updates:
+                      flash(
+                        update["alert_message"],
+                        update["alert_type"]
+                      )
                 next_page = request.args.get("next")
                 return redirect(
                     next_page if next_page else url_for("software.software_search")
