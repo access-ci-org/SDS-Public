@@ -23,7 +23,7 @@ RUN conda config --file /root/.condarc --remove channels defaults
 
 # create directories
 WORKDIR /sds
-RUN mkdir -p /var/log/supervisor
+RUN mkdir -p /var/log/supervisor /sds/container_data
 
 # copy application files
 COPY . /sds/
