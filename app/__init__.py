@@ -67,7 +67,7 @@ EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 SDS_VERSION = "1.3.0"
 
 # API URL
-SDS_API_URL = "http://127.0.0.1:4200/"
+SDS_API_URL = "https://sds-api.ccs.uky.edu/"
 
 if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     print("Not using API information")
