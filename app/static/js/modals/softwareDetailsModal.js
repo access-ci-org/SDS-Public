@@ -93,7 +93,7 @@ function formatSoftwareInfo(softwareInfo) {
     const versions = softwareInfo["Versions"] || []
     const resourceLink = ""
     // const resourceDocumentation = softwareInfo["RP Software Documentation" || ""].split("\n").filter(x => x.trim())
-    const tutorialLinks = (softwareInfo["Tutorials and Usage"]|| "").split("\n").filter(x => x.trim())
+    const tutorialLinks = (softwareInfo["Tutorials and Usage"]|| "").split(/[\n,\s]+/).map(x => x.trim()).filter(x => x)
     const researchDiscipline = [... new Set(
             (softwareInfo["AI Research Field"]||"").split(",")
             .concat((softwareInfo["AI Research Discipline"]||"").split(","))
@@ -183,7 +183,7 @@ async function getSiteTitle(url){
 }
 
 function createTagElements(tags, className) {
-    return tags.map(tag => `<span class="${className}">${tag}</span>`).join('');
+    return tags.map(tag => `<button type="button" class="${className}">${tag}</button>`).join('');
 }
 
 function createLinkElements(links) {
@@ -301,7 +301,7 @@ function populateInstalledOn(installedOn){
 function populateDescription(description) {
     if (isEmpty(description)) return;
     $("#description").html(`
-        <p class="section-title">DESCRIPTION${use_ai_info === "True" ? "<i class='bi bi-stars'></i>": ''}</p>
+        <p class="section-title">DESCRIPTION${use_ai_info === "True" ? "<i class='bi bi-stars' aria-hidden='true'></i>": ''}</p>
         <span id="software-ai-description" class="section-text">${description}</span>
         <hr>
     `)
@@ -311,7 +311,7 @@ function populateCoreFeatures(coreFeatures){
     if (isEmpty(coreFeatures)) return;
 
     $("#core-features").html(`
-        <p class="section-title">CORE FEATURES${use_api ? `<i class='bi bi-stars'></i>`: ''}</p>
+        <p class="section-title">CORE FEATURES${use_api ? `<i class='bi bi-stars' aria-hidden='true'></i>`: ''}</p>
         <div>
           <span id="software-ai-core-features" class="section-text">${coreFeatures}</span>
         </div>
@@ -334,7 +334,7 @@ async function populateRelatedLinks(relatedLinks){
                 $(`#related-links`).append(`<div id="${config.containerId}" class="more-info-item"></div>`)
                 $(`#${config.containerId}`).html(`
                     <div id="${config.containerId}-title">
-                        <i class="bi bi-${config.icon}"></i>
+                        <i class="bi bi-${config.icon}" aria-hidden="true"></i>
                         <span class="section-title">${config.title}</span>
                     </div>
                     <div id="${config.containerId}-link" class="section-text">
@@ -361,7 +361,7 @@ function populateSimilarSoftware(similarSoftware){
             $("#similar-sof").append(`
                 <div id="${containerId}" class="more-info-item">
                     <div id="${containerId}-title">
-                        <i class="bi bi-${config.icon}"></i>
+                        <i class="bi bi-${config.icon}" aria-hidden="true"></i>
                         <span class="section-title">${config.title}</span>
                     </div>
                     <div class="section-text">
@@ -377,7 +377,7 @@ function populateExampleUse(softwareName) {
     if (use_ai_info === "False") return;
     getSoftwareExampleUse(softwareName).then((softwareExampleUse) => {
         $('#example-use').append(`
-            <p class="section-title">EXAMPLE USE<i class='bi bi-stars'></i></p>
+            <p class="section-title">EXAMPLE USE<i class='bi bi-stars' aria-hidden='true'></i></p>
             <div id="software-ai-example-use" class="section-text">
                 ${softwareExampleUse}
             </div>

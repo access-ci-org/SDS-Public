@@ -88,7 +88,7 @@ function buildColumns() {
         } else if (internalKey === 'more_info') {
             column.render = function(data, type, row) {
                 if (type === 'display') {
-                    return '<button class="primary-button" type="button">DETAILS</button>';
+                    return `<button class="primary-button" type="button" aria-label="View details for ${row.software_name}">DETAILS</button>`;
                 }
                 return data || '';
             };
@@ -148,7 +148,7 @@ $(document).ready(function()
                     f\
                 >\
                 rt\
-                <"#table_footer_menu.d-flex justify-content-between "lip>',
+                <"#table_footer_menu.d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 "lip>',
         language: {
             paginate: { // Change Arrows (< and >) into Word Equivalents
                 previous: "Prev",
@@ -264,9 +264,9 @@ $(document).ready(function()
     $(".dtsp-panesContainer").hide();
     // Add filter button to the table
     $("#table-filters").append(`
-        <button id="toggle-filters" class="filter-button">
+        <button id="toggle-filters" class="filter-button" aria-expanded="false" aria-controls="filters-container">
             <span id="filter-text">Show Filters</span>
-            <i class="bi bi-filter"></i>
+            <i class="bi bi-filter" aria-hidden="true"></i>
         </button>
     `);
 
@@ -274,6 +274,7 @@ $(document).ready(function()
          $(".dtsp-panesContainer").toggle("fast", function() {
             const isVisible = $(".dtsp-panesContainer").is(":visible");
             const buttonText = isVisible ? "Hide Filters" : "Show Filters";
+            $("#toggle-filters").attr("aria-expanded", isVisible ? "true" : "false");
             if (!(isVisible)){
                 const table = $("#softwareTable").DataTable();
                 table.searchPanes.clearSelections();
@@ -330,7 +331,8 @@ $(document).ready(function()
     });
 
     // main search table input
-    $(".dt-search input").attr('placeholder', 'Search Table')
+    $(".dt-search input").attr({ 'placeholder': 'Search Table', 'aria-label': 'Search Table' })
+    $(".dt-search label").attr('aria-hidden', 'true')
 
     // datatables search panes buttons
     $(".dtsp-titleRow button").addClass('tag')

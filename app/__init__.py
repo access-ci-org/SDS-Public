@@ -64,7 +64,7 @@ IFRAME = general_conf.get("iframe",False)
 EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 
 # Current SDS Version
-SDS_VERSION = "1.3.0"
+SDS_VERSION = "1.3.1"
 
 # API URL
 SDS_API_URL = "https://sds-api.ccs.uky.edu/"
@@ -126,7 +126,8 @@ def inject_global_vars():
         "logo": app.config["LOGO"],
         "show_container_page": app.config["SHOW_CONTAINER_PAGE"],
         "iframe": app.config["IFRAME"],
-        "external_analytics": app.config["EXTERNAL_ANALYTICS"]
+        "external_analytics": app.config["EXTERNAL_ANALYTICS"],
+        "sds_version": app.config["SDS_VERSION"]
     }
 
 

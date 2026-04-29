@@ -9,6 +9,9 @@
 {% endblock %}
 
 {% block app_content %}
+    <div class="alert alert-info alert-dismissible fade show" id="alert" role="alert">
+        This page is for administrators only
+    </div>
     <form id="loginForm" method="post" role="form" action="{{url_for('auth.login')}}">
         <div class="mb-3">
             <input type="text" class="form-control" id="username" placeholder="Username" name="username" required>
