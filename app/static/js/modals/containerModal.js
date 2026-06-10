@@ -1,3 +1,6 @@
+import { escapeHtml } from "../utils.js";
+import { showAlert } from "../alerts.js";
+
 export function createContainerDetailsTemplate(containerData, includeTitle = false) {
     const {
         container_name,
@@ -16,13 +19,15 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
     const commandDisplay = command || '';
     const notesDisplay = notes || container_notes || '';
     const softwareArray = Array.isArray(software) ? software : [];
+    const defFile = definition_file || '';
+    const contFile = container_file || '';
 
     return `
         ${includeTitle ? `
         <div class="mb-3">
             <h5 class="card-title text-break">
                 <i class="bi bi-boxes me-2"></i>
-                ${container_name || 'Unnamed Container'}
+                ${escapeHtml(container_name || 'Unnamed Container')}
             </h5>
         </div>
         ` : ''}
@@ -33,11 +38,11 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                 <i class="bi bi-hdd-stack-fill"></i>
                 Resource
             </div>
-            <div>${resourceDisplay}</div>
+            <div>${escapeHtml(resourceDisplay)}</div>
         </div>
 
 
-        ${definition_file.length > 0 ?`
+        ${defFile.length > 0 ?`
             <!-- Definition File -->
             <div class="mb-4">
                 <div class="text-muted small mb-2">
@@ -45,14 +50,15 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                     Definition File
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
-                    ${definition_file.startsWith("https://") || definition_file.startsWith('http://') ?
-                        '<a href='+definition_file+' target="_blank">'+definition_file+'</a>' : definition_file || '<span class="text-muted">No definition file available</span>'
+                    ${defFile.startsWith("https://") || defFile.startsWith('http://') ?
+                        `<a href="${escapeHtml(defFile)}" target="_blank">${escapeHtml(defFile)}</a>` :
+                        escapeHtml(defFile) || '<span class="text-muted">No definition file available</span>'
                     }
                 </div>
             </div>
         `: ''}
 
-        ${container_file.length > 0 ?`
+        ${contFile.length > 0 ?`
             <!-- Container File -->
             <div class="mb-4">
                 <div class="text-muted small mb-2">
@@ -60,23 +66,23 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                     Container File
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
-                    ${container_file.startsWith("https://") || container_file.startsWith('http://') ?
-                        '<a href='+container_file+' target="_blank">'+container_file+'</a>' :
-                        container_file || '<span class="text-muted">No definition file available</span>'
+                    ${contFile.startsWith("https://") || contFile.startsWith('http://') ?
+                        `<a href="${escapeHtml(contFile)}" target="_blank">${escapeHtml(contFile)}</a>` :
+                        escapeHtml(contFile) || '<span class="text-muted">No definition file available</span>'
                     }
                 </div>
             </div>
         `: ''}
 
         ${commandDisplay.length > 0 ?`
-            <!-- Command File -->
+            <!-- Command -->
             <div class="mb-4">
                 <div class="text-muted small mb-2">
                     <i class="bi bi-code-square"></i>
                     Command
                 </div>
                 <div class="font-monospace p-2 bg-light rounded">
-                    ${commandDisplay.replace(",","<br>") || '<span class="text-muted">No container file available</span>'}
+                    ${escapeHtml(commandDisplay).replace(",", "<br>") || '<span class="text-muted">No container file available</span>'}
                 </div>
             </div>
         `: ''}
@@ -90,7 +96,7 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
             </div>
             <div class="d-flex flex-wrap gap-2">
                 ${softwareArray.map(sw => `
-                    <span class="badge software-badge rounded-pill">${sw}</span>
+                    <span class="badge software-badge rounded-pill">${escapeHtml(sw)}</span>
                 `).join('')}
             </div>
         </div>
@@ -104,7 +110,7 @@ export function createContainerDetailsTemplate(containerData, includeTitle = fal
                     Notes
                 </div>
                 <div class="small p-2 bg-light rounded" style="max-height: 150px; overflow-y: auto; white-space: pre-line;">
-                    ${notesDisplay || '<span class="text-muted fst-italic">No notes available</span>'}
+                    ${escapeHtml(notesDisplay) || '<span class="text-muted fst-italic">No notes available</span>'}
                 </div>
             </div>
         `: ''}
@@ -154,7 +160,7 @@ export function onViewContainerClick(e, table) {
     let softwareName = row['software_name'];
 
     $.ajax({
-        url: "/container/" + softwareName,
+        url: "/container/" + encodeURIComponent(softwareName),
         type: "GET",
         dataType: "json",
         success: function(response) {
@@ -171,10 +177,10 @@ export function onViewContainerClick(e, table) {
                                 aria-controls="container-${index}">
                                 <i class="bi bi-boxes me-2"></i>
                                 <div class="flex-grow-1">
-                                    ${containerData['container_name'] || 'Unnamed'}
+                                    ${escapeHtml(containerData['container_name'] || 'Unnamed')}
                                 </div>
                                 <div class="px-5">
-                                    v: ${containerData['software_versions']}
+                                    v: ${escapeHtml(containerData['software_versions'] || '')}
                                 </div>
                             </button>
                         </h2>
@@ -189,10 +195,11 @@ export function onViewContainerClick(e, table) {
             });
 
             setupToggleAccordion();
-            $('#container-modal').modal('show');;
+            $('#container-modal').modal('show');
         },
         error: function(xhr, status, error) {
             console.error("Error: ", error);
+            showAlert("Unable to load container details. Please try again.", "danger");
         }
     });
 }

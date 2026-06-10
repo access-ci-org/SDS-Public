@@ -9,7 +9,12 @@ from app.logic.lastUpdated import get_last_updated
 from app.logic.convertMarkdown import convert_markdown_to_html
 from app.logic.containers import get_containers_for_software
 from app.logic.table import initialize_table_info
+from app.paths import state_dir
 from . import software_bp
+
+
+def website_titles_path():
+    return state_dir() / "websites" / "website_titles.json"
 
 
 # Main Route
@@ -84,15 +89,18 @@ def get_example_use(software_name):
 
 @software_bp.route("/container/<path:software_name>")
 def get_software_container(software_name):
-    software_id = Software.get(Software.software_name == software_name).id
     try:
-        containers = get_containers_for_software(software_id)
+        software = Software.get(Software.software_name == software_name)
+    except DoesNotExist:
+        return jsonify({"error": "Software not found"}), 404
+    try:
+        containers = get_containers_for_software(software.id)
         container_json = json.dumps(containers)
         return container_json
     except Exception as e:
         print(e)
-        flash(f"Unable to retireve containers for {software_name}", "danger")
-        return redirect(url_for("software_search"))
+        flash(f"Unable to retrieve containers for {software_name}", "danger")
+        return redirect(url_for("software.software_search"))
 
 @software_bp.route("/software_info/<path:software_name>")
 def software_info(software_name):
@@ -102,6 +110,8 @@ def software_info(software_name):
         table_info = initialize_table_info()
         df = organize_table(table_object, table_info)
         table = df.loc[df["Software"] == software_name]
+        if table.empty:
+            return "", 204
         table = combine_columns(table, [
             ('Description', 'AI Description'),
         ])
@@ -119,16 +129,15 @@ def software_info(software_name):
         return jsonify({}), 204
 
 
-WEBSITE_TITLES = 'app/data/websites/website_titles.json'
 @software_bp.route("/get-external-site-title", methods=['POST'])
 def get_external_site_title():
     try:
         data = request.get_json()
         url = data.get('url').strip()
-        webiste_titles = {}
-        with open(WEBSITE_TITLES, 'r') as wt:
-            webiste_titles = json.load(wt)
-        title = webiste_titles.get(url, "")
+        website_titles = {}
+        with open(website_titles_path(), 'r') as wt:
+            website_titles = json.load(wt)
+        title = website_titles.get(url, "")
         return jsonify({
             'title': title,
             'url': url
@@ -141,4 +150,4 @@ def get_external_site_title():
             'url' : url
         })
     except Exception as e:
-        return jsonify({'error': f'An error occured: {str(e)}'}), 500
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500

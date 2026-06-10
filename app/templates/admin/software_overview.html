@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+
+{% block styles %}
+{{ super() }}
+<style>
+  /* Stat cards */
+  .osc { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: 16px 20px; }
+  .osc-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #888; }
+  .osc-value { font-size: 34px; font-weight: 800; color: var(--primary-color-1, #1b365d); line-height: 1.1; }
+  .osc-sub   { font-size: 12px; color: var(--muted-text-color, #767676); }
+  .osc.ok  .osc-value { color: #1a7a4a; }
+
+  /* Section cards */
+  .ov-card { background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 20px; }
+  .ov-card-head {
+    padding: 12px 18px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .ov-card-head h5 { margin: 0; font-size: 14px; font-weight: 700; color: var(--primary-color-1, #1b365d); }
+  .ov-card-body { padding: 16px 18px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .filter-bar input[type=search],
+  .filter-bar select {
+    font-size: 13px;
+    padding: 4px 9px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+  }
+  .filter-bar input[type=search] { width: 200px; }
+  .filter-bar select:focus,
+  .filter-bar input[type=search]:focus { border-color: var(--secondary-color-1,#324a6d); outline: none; }
+
+  /* Software table */
+  .sw-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .sw-table th {
+    background: #f4f6f9;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #555;
+    padding: 8px 12px;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+  }
+  .sw-table td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  .sw-table tr:hover td { background: #f9fbff; }
+  .sw-table .sw-name { font-weight: 700; }
+  .sw-table .sw-name a { color: var(--secondary-color-1,#324a6d); text-decoration: none; }
+  .sw-table .sw-name a:hover { text-decoration: underline; }
+  .sw-table .sw-desc { color: #555; max-width: 340px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .ov-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .ov-badge-admin { background: #fff3cd; color: #664d03; }
+
+  .btn-ov-edit {
+    background: none;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    font-size: 12px;
+    color: #555;
+    padding: 3px 9px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .btn-ov-edit:hover { background: var(--primary-color-1,#1b365d); color: #fff; border-color: var(--primary-color-1,#1b365d); }
+
+  .pagination-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-top: 1px solid #f0f0f0; font-size: 12px; color: #888; }
+  .pagination-bar .pg-btns { display: flex; gap: 6px; }
+
+  /* Recently edited */
+  .re-list { font-size: 13px; list-style: none; padding: 0; margin: 0; }
+  .re-list li { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+  .re-list li:last-child { border-bottom: none; }
+  .re-name { font-weight: 700; color: var(--secondary-color-1,#324a6d); text-decoration: none; }
+  .re-name:hover { text-decoration: underline; }
+  .re-meta { font-size: 11px; color: var(--muted-text-color, #767676); white-space: nowrap; margin-left: 10px; }
+
+  /* Import/Export */
+  .dropzone {
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    background: #fafafa;
+    text-align: center;
+    padding: 24px 16px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    position: relative;
+  }
+  .dropzone:hover { border-color: var(--secondary-color-1,#324a6d); background: #f0f4ff; }
+  .dropzone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  .dropzone i { font-size: 28px; color: var(--muted-text-color, #767676); display: block; margin-bottom: 6px; }
+  .dropzone .dz-text { font-size: 13px; color: #888; }
+  .dropzone .dz-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
+
+  .btn-primary-ov {
+    background: var(--secondary-color-1,#324a6d);
+    border: 2px solid var(--secondary-color-1,#324a6d);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 6px 16px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary-ov:hover { background: #fff; color: #232323; border-color: #232323; }
+</style>
+{% endblock %}
+
+{% block page_title %}
+<div class="admin-page-header">
+    <h1 class="admin-page-header__title">Software Edits</h1>
+    <span class="admin-page-version">v{{ sds_version }}</span>
+</div>
+{% endblock %}
+
+{% block app_content %}
+<div class="admin-page">
+
+  <!-- Stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+      <div class="osc">
+        <div class="osc-label">Total Software</div>
+        <div class="osc-value">{{ total_count }}</div>
+        <div class="osc-sub">across all resources</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="osc ok">
+        <div class="osc-label">Admin Overrides</div>
+        <div class="osc-value">{{ override_count }}</div>
+        <div class="osc-sub">entries with at least one edit</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4">
+      <div class="osc">
+        <div class="osc-label">Not Yet Edited</div>
+        <div class="osc-value">{{ not_edited_count }}</div>
+        <div class="osc-sub">fully auto-populated</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+
+    <!-- Left: software list -->
+    <div class="col-md-8">
+      <div class="ov-card">
+        <div class="ov-card-head">
+          <h5><i class="bi bi-list-ul me-2" aria-hidden="true"></i>Software List</h5>
+          <form class="filter-bar" method="get" action="{{ url_for('edit.admin_software_overview') }}">
+            <input type="search" name="search" placeholder="Search name…" value="{{ search }}" aria-label="Search software name">
+            <select name="filter" aria-label="Filter by edit status" onchange="this.form.submit()">
+              <option value="all"         {% if filter_mode == 'all'         %}selected{% endif %}>All software</option>
+              <option value="overrides"   {% if filter_mode == 'overrides'   %}selected{% endif %}>Has admin overrides</option>
+              <option value="no_overrides"{% if filter_mode == 'no_overrides'%}selected{% endif %}>No overrides yet</option>
+            </select>
+            <button type="submit" class="btn-ov-edit">Go</button>
+          </form>
+        </div>
+
+        <div style="overflow-x:auto;">
+          <table class="sw-table" aria-label="Software list">
+            <thead>
+              <tr>
+                <th style="width:170px;">Name</th>
+                <th>Description</th>
+                <th style="width:110px;">Overrides</th>
+                <th style="width:70px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+              <tr>
+                <td class="sw-name">
+                  <a href="/?software={{ row.name | urlencode }}">{{ row.name }}</a>
+                </td>
+                <td class="sw-desc" title="{{ row.description }}">
+                  {{ row.description if row.description else '(no description)' }}
+                </td>
+                <td>
+                  {% if row.n_overrides > 0 %}
+                    <span class="ov-badge ov-badge-admin">{{ row.n_overrides }} edited</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a class="btn-ov-edit" href="/?software={{ row.name | urlencode }}">
+                    <i class="bi bi-pencil" aria-hidden="true"></i> Edit
+                  </a>
+                </td>
+              </tr>
+              {% else %}
+              <tr>
+                <td colspan="4" style="text-align:center;color:var(--muted-text-color, #767676);padding:20px;">No software found.</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-bar">
+          <span>
+            {% if total_filtered == 0 %}
+              No results
+            {% else %}
+              Showing {{ (page - 1) * per_page + 1 }}–{{ [page * per_page, total_filtered] | sort | first }} of {{ total_filtered }}
+            {% endif %}
+          </span>
+          <div class="pg-btns">
+            {% if page > 1 %}
+              <a class="btn-ov-edit" href="{{ url_for('edit.admin_software_overview', page=page-1, search=search, filter=filter_mode) }}">← Prev</a>
+            {% else %}
+              <span class="btn-ov-edit" style="opacity:.4;cursor:default;">← Prev</span>
+            {% endif %}
+            {% if page < total_pages %}
+              <a class="btn-ov-edit" href="{{ url_for('edit.admin_software_overview', page=page+1, search=search, filter=filter_mode) }}">Next →</a>
+            {% else %}
+              <span class="btn-ov-edit" style="opacity:.4;cursor:default;">Next →</span>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /left col -->
+
+    <!-- Right: recently edited + export + import -->
+    <div class="col-md-4">
+
+      <!-- Recently edited -->
+      <div class="ov-card">
+        <div class="ov-card-head">
+          <h5><i class="bi bi-clock-history me-2" aria-hidden="true"></i>Recently Edited</h5>
+        </div>
+        <div class="ov-card-body" style="padding-top:8px;padding-bottom:8px;">
+          {% if recently_edited %}
+          <ul class="re-list">
+            {% for edit in recently_edited %}
+            <li>
+              <a class="re-name" href="/?software={{ edit.software_name | urlencode }}">{{ edit.software_name }}</a>
+              <span class="re-meta">
+                {{ edit.edited_by or '—' }} · {{ edit.edited_at[:10] if edit.edited_at else '' }}
+              </span>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p style="font-size:13px;color:var(--muted-text-color, #767676);margin:0;">No edits recorded yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Export -->
+      <div class="ov-card">
+        <div class="ov-card-head">
+          <h5><i class="bi bi-download me-2" aria-hidden="true"></i>Export Overrides</h5>
+        </div>
+        <div class="ov-card-body">
+          <p style="font-size:13px;color:#666;margin-bottom:12px;">
+            Download all admin overrides as JSON. Can be re-imported after a database reset.
+          </p>
+          <a class="btn-primary-ov" href="{{ url_for('edit.export_overrides') }}">
+            <i class="bi bi-filetype-json" aria-hidden="true"></i> Export JSON
+          </a>
+        </div>
+      </div>
+
+      <!-- Import -->
+      <div class="ov-card">
+        <div class="ov-card-head">
+          <h5><i class="bi bi-upload me-2" aria-hidden="true"></i>Import Overrides</h5>
+        </div>
+        <div class="ov-card-body">
+          <form method="post" action="{{ url_for('edit.import_overrides') }}" enctype="multipart/form-data" id="import-form">
+            <div class="dropzone mb-3" id="dropzone">
+              <input type="file" name="overrides_file" accept=".json" id="import-file-input"
+                     onchange="document.getElementById('dz-filename').textContent = this.files[0]?.name || ''">
+              <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
+              <div class="dz-text">Drop JSON file here or click to browse</div>
+              <div class="dz-hint" id="dz-filename">Exported from this tool</div>
+            </div>
+            <button type="submit" class="btn-primary-ov" style="width:100%;justify-content:center;">
+              <i class="bi bi-upload" aria-hidden="true"></i> Import
+            </button>
+          </form>
+        </div>
+      </div>
+
+    </div><!-- /right col -->
+  </div>
+
+</div>
+{% endblock %}

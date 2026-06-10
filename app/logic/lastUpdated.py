@@ -6,9 +6,13 @@ def get_last_updated(
     file_path: str = "app/static/last_updated.txt", timezone: str = "US/Eastern"
 ) -> str:
     """
-    returns datetime of when the software_table data was last updated
+    returns datetime of when the software_table data was last updated.
+    Returns "" if the file is missing — happens on a fresh checkout
+    before the pipeline has run (e.g. CI).
     """
     path = Path.cwd() / file_path
+    if not path.exists():
+        return ""
     with open(path, "r") as luf:
         date_time = luf.readline().strip()
 

@@ -16,12 +16,21 @@
         <link rel="stylesheet" type="text/css" href="../static/css/exampleUse.css">
         <link rel="stylesheet" type="text/css" href="../static/css/navbar.css">
 
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+        <!-- Admin edit panel -->
+        <link rel="stylesheet" type="text/css" href="../static/css/adminEditPanel.css">
+        <!-- Shared admin page layout -->
+        <link rel="stylesheet" type="text/css" href="../static/css/admin_page.css">
+        <!-- Banners -->
+        <link rel="stylesheet" type="text/css" href="../static/css/banners.css">
         <!-- JQuery -->
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
         <style>
             :root {
                 --primary-color-1 : {{primary_color}};
                 --secondary-color-1 : {{secondary_color}};
+                --muted-text-color: #767676;   /* neutral helper text — WCAG AA on white */
             }
         </style>
 
@@ -37,6 +46,8 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <!-- DataTables -->
         <script src="https://cdn.datatables.net/v/dt/dt-2.0.8/b-3.0.2/b-colvis-3.0.2/fc-5.0.1/fh-4.0.1/sb-1.7.1/sp-2.3.1/sl-2.0.3/datatables.min.js"></script>
+        <!-- HTMX (admin editing) -->
+        <script src="https://unpkg.com/htmx.org@1.9.12" crossorigin="anonymous"></script>
 
     {% endblock %}
 
@@ -52,6 +63,7 @@
 
 </head>
 <body id="body" style="display: flex; flex-direction: column; min-height: 100vh;">
+    <a href="#app_content" class="visually-hidden-focusable position-absolute top-0 start-0 p-2 bg-light">Skip to main content</a>
     <div style="flex: 1;">
         {%block content%}
             {% if not iframe %}
@@ -85,6 +97,20 @@
                                     {% endif %}
                                 {% endwith %}
                             </div>
+                            {% if banners %}
+                            <div id="banner-area">
+                                {% for b in banners %}
+                                    <div class="alert alert-{{ b.severity }}{% if b.dismissible %} alert-dismissible fade show{% endif %}"
+                                         role="alert"
+                                         data-banner-id="{{ b.id }}">
+                                        {{ b.html | safe }}
+                                        {% if b.dismissible %}
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row justify-content-center">

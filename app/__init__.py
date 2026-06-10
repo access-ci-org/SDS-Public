@@ -1,15 +1,23 @@
 import secrets
 import sys
 from pathlib import Path
-from flask import Flask, send_file
-from flask_login import LoginManager
+from flask import Flask, request, send_file
+from flask_login import LoginManager, current_user
 import yaml
 from peewee import DoesNotExist
 from app.models.users import Users
+from app.models import persistent_db, ensure_snapshot_columns
+from app.models.software_edit import SoftwareEdit
+from app.models.command_edit import CommandEdit
+from app.models.banner import Banner
 from app.logic.table import initialize_table_info
 
 app = Flask(__name__)
 app.secret_key = secrets.token_hex()
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
 
 # Login manager setup
 login_manager = LoginManager()
@@ -64,7 +72,7 @@ IFRAME = general_conf.get("iframe",False)
 EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 
 # Current SDS Version
-SDS_VERSION = "1.3.1"
+SDS_VERSION = "1.4.0"
 
 # API URL
 SDS_API_URL = "https://sds-api.ccs.uky.edu/"
@@ -116,9 +124,45 @@ app.config.update(
 )
 
 
+# Ensure SoftwareEdit table exists in persistent db
+persistent_db.connect(reuse_if_open=True)
+persistent_db.create_tables([SoftwareEdit, CommandEdit, Banner], safe=True)
+ensure_snapshot_columns(persistent_db)
+persistent_db.close()
+
+
+# Per-request DB connection lifecycle.
+# Without these hooks, peewee connections leak across requests, and concurrent
+# requests serialize through a single connection — observable as
+# "database is locked" errors under load.
+@app.before_request
+def _db_connect():
+    from app.models import db as _db, persistent_db as _pdb
+    _db.connect(reuse_if_open=True)
+    _pdb.connect(reuse_if_open=True)
+
+
+@app.teardown_appcontext
+def _db_close(exception):
+    from app.models import db as _db, persistent_db as _pdb
+    if not _db.is_closed():
+        _db.close()
+    if not _pdb.is_closed():
+        _pdb.close()
+
+
 # Global template variables (used for by html files)
+ENDPOINT_TO_PAGE_KEY = {
+    "software.software_search": "software",
+    "container.search_container": "container",
+    "auth.login": "login",
+}
+
+
 @app.context_processor
 def inject_global_vars():
+    from app.logic.banners import banners_for_page
+    page_key = ENDPOINT_TO_PAGE_KEY.get(request.endpoint) if request else None
     return {
         "primary_color": app.config["PRIMARY_COLOR"],
         "secondary_color": app.config["SECONDARY_COLOR"],
@@ -127,7 +171,9 @@ def inject_global_vars():
         "show_container_page": app.config["SHOW_CONTAINER_PAGE"],
         "iframe": app.config["IFRAME"],
         "external_analytics": app.config["EXTERNAL_ANALYTICS"],
-        "sds_version": app.config["SDS_VERSION"]
+        "sds_version": app.config["SDS_VERSION"],
+        "is_admin": current_user.is_authenticated and current_user.is_admin,
+        "banners": banners_for_page(page_key),
     }
 
 

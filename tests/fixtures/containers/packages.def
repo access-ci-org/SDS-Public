@@ -1,0 +1,11 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%post
+  apt-get update
+  apt-get install -y python3 vim
+  pip install numpy pandas
+  conda install -c conda-forge scipy
+
+%help
+  Auto-extracted SDS container fixture for tests.

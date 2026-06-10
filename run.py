@@ -139,11 +139,13 @@ class FlaskWatcher(FileSystemEventHandler):
         print("Flask started")
 
 def parse_args():
+    from app.paths import data_dir
+    d = data_dir()
     parser = argparse.ArgumentParser(description="Watch files and manage Flask app")
-    parser.add_argument("-s_d", "--spider_dir", default="spider_data", help="Spider data directory")
-    parser.add_argument("-c_d", "--container_dir", default="container_data", help="Container data directory")
-    parser.add_argument("-csv_f", "--csv_file", default="software.csv", help="CSV file path")
-    parser.add_argument("-s_u_d", "--software_use_dir", default="software_uses", help="Software use directory for custom example use information.")
+    parser.add_argument("-s_d", "--spider_dir", default=str(d / "spider_data"), help="Spider data directory")
+    parser.add_argument("-c_d", "--container_dir", default=str(d / "container_data"), help="Container data directory")
+    parser.add_argument("-csv_f", "--csv_file", default=str(d / "software.csv"), help="CSV file path")
+    parser.add_argument("-s_u_d", "--software_use_dir", default=str(d / "software_uses"), help="Software use directory for custom example use information.")
     parser.add_argument("--no-initial-reset", action="store_true", help="Skip initial database reset")
     parser.add_argument("--update-interval", type=int, default=86400,
         help="Automatic database update interval in seconds (default: 86400 = 24 hours)")

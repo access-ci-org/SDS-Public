@@ -1,3 +1,7 @@
+import { escapeHtml } from "../utils.js";
+import { showAlert } from "../alerts.js";
+import { attachTabPreservation } from "../adminEditPanel.js";
+
 /*////////////////////////////////////////////////////////////////
     Function for URL identification for quick access to modals //
 *///////////////////////////////////////////////////////////////
@@ -183,7 +187,7 @@ async function getSiteTitle(url){
 }
 
 function createTagElements(tags, className) {
-    return tags.map(tag => `<button type="button" class="${className}">${tag}</button>`).join('');
+    return tags.map(tag => `<button type="button" class="${escapeHtml(className)}">${escapeHtml(tag)}</button>`).join('');
 }
 
 function createLinkElements(links) {
@@ -198,29 +202,65 @@ function createLinkElements(links) {
                     displayTitle = displayTitle.slice(0, 30) + "...";
                 }
                 if (displayTitle) {
-                    return `<a target="_blank" href="${link}">${displayTitle}</a>`;
+                    return `<a target="_blank" href="${escapeHtml(link)}">${escapeHtml(displayTitle)}</a>`;
                 }
                 return "";
             } catch (error) {
                 console.error(error)
-                return `<a target="_blank" href="${link}">${link}</a>`;
+                return `<a target="_blank" href="${escapeHtml(link)}">${escapeHtml(link)}</a>`;
             }
         })
     ).then(linkElements => linkElements.join(''));
 }
 
+function renderLoadingSpinner() {
+    return `
+        <div class="col-12 text-center p-4">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+}
+
+function renderModalError(message) {
+    return `
+        <div class="col-12 text-center p-4">
+            <p class="text-danger">${escapeHtml(message)}</p>
+        </div>
+    `;
+}
+
 export function showModalForSoftware(softwareName) {
-    $("#software-data").empty() // empty modal before adding data
+    // Open modal immediately with a spinner so the user has feedback while data loads.
+    $("#software-data").empty().append(renderLoadingSpinner());
+    $("#software-modal-title").text(softwareName);
+    showModal();
+
     getSoftwareModalData(softwareName).then((softwareInfo) => {
         const softwareData = formatSoftwareInfo(softwareInfo)
-        $("#software-modal-title").html(softwareName)
+        $("#software-data").empty();
+        $("#software-modal-title").text(softwareName);
 
         setupModalLayout(softwareData);
         populateModalSections(softwareData);
         populateExampleUse(softwareName);
-        showModal();
+
+        if (typeof isAdmin !== 'undefined' && isAdmin) {
+            const $container = $('<div></div>').attr({
+                'id': 'admin-edit-panel-container',
+                'hx-get': '/admin/edit/software/' + softwareName.split('/').map(encodeURIComponent).join('/'),
+                'hx-trigger': 'load',
+                'hx-swap': 'innerHTML'
+            });
+            $('#software-data').append($('<div class="col-12"></div>').append($container));
+            attachTabPreservation($container[0]);
+            htmx.process($container[0]);
+        }
     }).catch(error => {
         console.error("Unable to find software data:", error)
+        $("#software-data").empty().append(renderModalError("Unable to load details for this software."));
+        showAlert("Unable to load details for this software.", "danger");
     })
 }
 
@@ -267,14 +307,15 @@ function populateInstalledOn(installedOn){
     resources.forEach(resource => {
         const resource_info = installedOn[resource]
         const resourceName = resource.replace(" ", "-")
+        const safeResourceName = escapeHtml(resourceName)
         $("#installed-on").append(`
             <div class="row section-text">
-                <div id="${resourceName}-software" class="col">
-                    <a href=${resource_info.resourceLink} >
-                        <strong>${resource}</strong>
+                <div id="${safeResourceName}-software" class="col">
+                    <a href="${escapeHtml(resource_info.resourceLink)}">
+                        <strong>${escapeHtml(resource)}</strong>
                     </a>
                 </div>
-                <div id="${resourceName}-software-version" class="col" aria-label="software version">
+                <div id="${safeResourceName}-software-version" class="col" aria-label="software version">
                 </div>
                 <hr class="installed-on">
             </div>
@@ -285,13 +326,29 @@ function populateInstalledOn(installedOn){
             `)
             resource_info.resourceVersion.forEach(version_command => {
                 const version = version_command.version
-                const command = version_command.command ? version_command.command : ''
+                const raw = version_command.command ? version_command.command : ''
+                const commands = raw ? raw.split(',').map(s => s.trim()).filter(s => s) : []
+                const firstCmd = commands[0] || ''
+                const extraCmds = commands.slice(1)
+
+                let commandHtml = `<div class="text-muted small" aria-label="Command for software">${escapeHtml(firstCmd)}</div>`
+                if (extraCmds.length > 0) {
+                    const uid = `${resourceName}-${version}`.replace(/[^a-zA-Z0-9]/g, '_')
+                    commandHtml += `
+                        <div id="cmd-extra-${uid}" style="display:none;">
+                            ${extraCmds.map(c => `<div class="text-muted small">${escapeHtml(c)}</div>`).join('')}
+                        </div>
+                        <button type="button" class="btn btn-link btn-sm p-0"
+                                style="font-size:11px;color:#888;vertical-align:baseline;"
+                                data-cmd-target="cmd-extra-${uid}"
+                                data-cmd-extra="${extraCmds.length}">
+                            + ${extraCmds.length} more
+                        </button>`
+                }
 
                 $(`#${resourceName}-software-version`).append(`
-                    ${version}
-                    <div class="text-muted small mb-2" aria-label="Command for software">
-                        ${command}
-                    </div>
+                    ${escapeHtml(version)}
+                    <div class="mb-2">${commandHtml}</div>
                     `)
             })
         }
@@ -302,7 +359,7 @@ function populateDescription(description) {
     if (isEmpty(description)) return;
     $("#description").html(`
         <p class="section-title">DESCRIPTION${use_ai_info === "True" ? "<i class='bi bi-stars' aria-hidden='true'></i>": ''}</p>
-        <span id="software-ai-description" class="section-text">${description}</span>
+        <span id="software-ai-description" class="section-text">${escapeHtml(description)}</span>
         <hr>
     `)
 }
@@ -313,7 +370,7 @@ function populateCoreFeatures(coreFeatures){
     $("#core-features").html(`
         <p class="section-title">CORE FEATURES${use_api ? `<i class='bi bi-stars' aria-hidden='true'></i>`: ''}</p>
         <div>
-          <span id="software-ai-core-features" class="section-text">${coreFeatures}</span>
+          <span id="software-ai-core-features" class="section-text">${escapeHtml(coreFeatures)}</span>
         </div>
         <hr class="installed-on">
     `)
@@ -395,3 +452,26 @@ function showModal() {
     }
     modal.show();
 }
+
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-cmd-target]');
+    if (!btn) return;
+    const target = document.getElementById(btn.dataset.cmdTarget);
+    if (!target) return;
+    const n = btn.dataset.cmdExtra;
+    if (target.style.display === 'none') {
+        target.style.display = '';
+        btn.textContent = `− ${n} fewer`;
+    } else {
+        target.style.display = 'none';
+        btn.textContent = `+ ${n} more`;
+    }
+});
+
+// HTMX error handler — surface failures from admin edit save/revert
+document.body.addEventListener('htmx:responseError', () => {
+    showAlert("Save failed. Please try again.", "danger");
+});
+document.body.addEventListener('htmx:sendError', () => {
+    showAlert("Network error. Please try again.", "danger");
+});

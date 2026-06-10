@@ -1,0 +1,15 @@
+#banner-area {
+    margin-bottom: 12px;
+}
+
+#banner-area .alert {
+    text-align: left;
+}
+
+/* Strip trailing margin from markdown-rendered paragraphs so single-line
+   banners don't get awkward extra height. Multi-paragraph banners still
+   keep inter-paragraph spacing because the rule only flattens the LAST
+   paragraph. */
+#banner-area .markdown-content > p:last-child {
+    margin-bottom: 0;
+}

@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg">
    <div class="container">
        <a class="navbar-brand d-flex align-items-center" href="/">
-           <img src="{{ url_for('image_file')}}" alt="Logo" class="me-2">
+           <img src="{{ url_for('image_file')}}" alt="" class="me-2">
            <span class="navbar-brand-text text-white">{{site_title}}</span>
        </a>
        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,6 +19,9 @@
                 {% if current_user.is_authenticated %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('analytics.analytics_dashboard') }}">Analytics</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('settings.settings') }}">Settings</a></li>
+                    {% if is_admin %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('edit.admin_software_overview') }}">Software Edits</a></li>
+                    {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a></li>
                {% else %}
                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Login</a></li>

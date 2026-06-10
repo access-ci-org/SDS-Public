@@ -8,13 +8,13 @@ from app.app_logging import logger
 
 
 def get_containers_for_software(software_id: int) -> List[Dict[str, str]]:
-    software_contianers = (
+    software_containers = (
         SoftwareContainer.select(SoftwareContainer, Container, Resource)
         .where(SoftwareContainer.software_id == software_id)
         .join(Container)
         .join(Resource, on=(Container.resource_id == Resource.id))
     )
-    sc_df = pd.DataFrame(list(software_contianers.dicts()))
+    sc_df = pd.DataFrame(list(software_containers.dicts()))
     sc_df = sc_df.loc[:, ~sc_df.columns.str.contains("_id")]
     sc_df = sc_df.drop(columns="id")
     # change newline for front end
@@ -51,13 +51,17 @@ def get_container_info(container_name: str = "", resource_name: str = ""):
 
     if not (container_name and resource_name):
         logger.debug(
-            f"Unable to get container info, not enough information provied container_name: {container_name}, resource_name: {resource_name}"
+            f"Unable to get container info, not enough information provided container_name: {container_name}, resource_name: {resource_name}"
         )
         return {}
     resource = Resource.get_or_none(Resource.resource_name == resource_name)
+    if resource is None:
+        return {}
     container = Container.get_or_none(
         Container.container_name == container_name, Container.resource_id == resource
     )
+    if container is None:
+        return {}
     software_containers = SoftwareContainer.select().where(
         SoftwareContainer.container_id == container
     )

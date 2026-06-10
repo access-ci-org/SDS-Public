@@ -41,40 +41,35 @@ That should be all the necessary setup
 
 #### Adding Data
 
-To add software data to the SDS, you will need to mount the relevant files to the container.
+To add software data to the SDS, place your input files in a `./data/` directory next to your `config.yaml`. The container expects exactly one data mount at `/sds/data`. SDS reads user inputs from there and writes its own state under `./data/state/`.
 
-First make sure you have the data in the as specified in the [Data Preparation](#data-preparation) section.
+First make sure you have the data in the form specified in the [Data Preparation](#data-preparation) section.
 
-To mount you will need to:
+To mount:
 
-- Stop and remove the existing container `docker stop sds && docker rm sds`
-- Run the `docker run` script mentioned above with any or all of the following (add these before the `public.ecr.aws/access-ci...` section of the script):
-  - `-v ./spider_data:/sds/spider_data`
-  - `-v ./container_data:/sds/container_data`
-  - `-v ./software_uses:/sds/software_uses`
-  - `--mount type=bind,source="./software.csv",target="/sds/software.csv"`
-
-Here is an example command:
+- Stop and remove the existing container: `docker stop sds && docker rm sds`
+- Re-run with `-v ./data:/sds/data` added:
 
 ```bash
-sudo docker run --name sds -d -p 8080:80 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" -v ./spider_data:/sds/spider_data public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+sudo docker run --name sds -d -p 8080:80 \
+  --mount type=bind,source="./config.yaml",target="/sds/config.yaml" \
+  -v ./data:/sds/data \
+  public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
 ```
 
-To update the data just change the files/folders on the machine running the SDS as necessary,
-**no need to touch the container**.
-You will only ever need to stop and re-run the container if you need to mount a new item.
+To update the data just change files in `./data/` on the host — no need to touch the container. You only need to stop and re-run the container if you change `config.yaml` or want to add a new mount.
+
+**Upgrading from the multi-mount layout?** If your existing deployment mounts `software.csv`, `container_data/`, etc. separately, run `bash migrate_data_layout.sh` from your repo root on the host. It moves your existing files into `./data/`, refuses to clobber anything, and prints the new run command. After that, update your compose file (or docker run) to use the single `-v ./data:/sds/data` mount.
 
 #### Monitoring and Logs
 
-All stdout and stderr output as well as nginx logs are logged to `/var/log/supervisor/*` within the container.
-The SDS program logs are logged to `/sds/logs/sds.log`.
-If you would like to save the logs locally (either for backup or for an easier way to view them),
-add the following mounts to the container:
+All SDS logs are written to `/sds/data/state/logs/` inside the container, which appears on your host at `./data/state/logs/`. Files:
 
-- `-v ./logs:/var/log/supervisor`
-- `--mount type=bind,source="./logs/sds-internal.log",target="/sds/logs/sds.log"`
-
-This will show all log data in your local `./logs/` directory.
+- `sds.log` — structured SDS application logs (rotates monthly)
+- `sds-stdout.log` — raw stdout/stderr from the SDS process (startup output, crashes, anything that didn't go through the application logger)
+- `nginx-access.log` / `nginx-error.log` — nginx request and error logs
+- `nginx.log` — nginx process stdout captured by supervisord (usually empty)
+- `supervisord.log` — process manager log; usually only interesting if services are failing to start
 
 #### SSL Certificates
 
@@ -85,7 +80,7 @@ First, make sure you have the SSL certificate and key stored in an appropriate l
 Second, create `nginx.conf` file locally with the appropriate settings:
 
 ```bash
-cat << EOF > nginx.conf
+cat << 'EOF' > nginx.conf
 server {
     listen 443 ssl;
     server_name localhost;
@@ -94,13 +89,13 @@ server {
     ssl_certificate_key /etc/nginx/ssl/key.pem;
 
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://127.0.0.1:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-    access_log /var/log/supervisor/nginx-access.log;
+    access_log /sds/data/state/logs/nginx-access.log;
 
     client_max_body_size 100M;
 }
@@ -125,16 +120,10 @@ docker run -d -p 443:443 --mount type=bind,source="./config.yaml",target="/sds/c
 
 #### Analytics and Website Titles
 
-If you expect to be moving your container to a new location, stopping and restarting it often, mount teh following directories:
+Both of these live under `./data/state/` and survive container replacement:
 
-- `-v ./websites:/sds/app/data/websites`
-- `-v ./analytics:/sds/analytics`
-
-The websites directory has a file with all of the url:website_title mappings. Mounting this will save you time from when the container is run to when the website becomes available.
-
-The analytics directory has all of the website analytics (visible after `login` in the `Analytics` tab). Having a local copy of it
-would mean that you don't lose any analytics data when removing the container.
-When re-running the container, just mount the same folder and all previous analytics data will be available as before.
+- `./data/state/websites/` — cached url:website_title mappings. Persisting this saves the time spent re-fetching titles when the container starts.
+- `./data/state/analytics/` — recorded website analytics (visible after login in the Analytics tab). Persisting this means analytics history isn't lost when the container is replaced.
 
 ### Running Locally
 
@@ -170,6 +159,8 @@ general:
   password: password
   share_with_devs: True
 ```
+
+To use a custom logo, place the image in your `./data/` directory and set `logo: "data/your_logo.svg"` — it reaches the container through the existing data mount, so no extra mount is needed.
 
 *View the `CONFIGS.md` file for information on what these configs do and other available configs.*
 
@@ -243,9 +234,7 @@ should be the name of a resource to which the files belong. `resource` refers to
   - You can define custom example usage for each of your software. This is a good
     location to add any recommend slurm scripts or other instructions on how you want users to use
     your software.
-  - By default the SDS will look for a directory named `software_uses` in the main app directory
-    if your directory is located else where or defined separately you can pass in the appropriate path when calling `reset_database.py` or if you're using docker update the appropriate mount
-    in `docker-compose.yml`
+  - Place the directory at `./data/software_uses/`.
   - All files within the `software_uses` directory should be the name of a software. If a software
     matching the provided file isn't found then the data is ignored. So if you have some example use
     for the software `python` your file with that information must be named `python` or `python.md`
@@ -256,20 +245,23 @@ Here is an example of a proper directory structure for the data:
 
 ```
 SDS
-  ├──container_data/
-  |    └── {resource_name}/
-  |         ├── {resource_name}.csv    # CSV file with container metadata
-  |         └── {preserved_directory_structure}/
-  |             └── {definition_files}  # Original definition files with paths preserved
-  |
-  └──spider_data/
-  |    └── {resource_name}/
-  |        └── {resource_name}_spider  # Complete output from module spider
-  |
-  └──software.csv
-  |
-  └──software_uses/
-      └── {software_name}.md
+  └── data/
+       ├── container_data/
+       |    └── {resource_name}/
+       |         ├── {resource_name}.csv    # CSV file with container metadata
+       |         └── {preserved_directory_structure}/
+       |             └── {definition_files}  # Original definition files with paths preserved
+       |
+       ├── spider_data/
+       |    └── {resource_name}/
+       |        └── {resource_name}_spider  # Complete output from module spider
+       |
+       ├── software.csv
+       |
+       ├── software_uses/
+       |    └── {software_name}.md
+       |
+       └── state/    # SDS-written: db, analytics, logs, cached website titles
 ```
 
 *Note for container files: If you are defining your container file/definition file location by using the  SDS comment block (see PARSER.md file), you do not need to have a preserved directory structure. So your container_data directory structure would be like this,`container_data/{resource_name}/{definition_files}`*

@@ -1,0 +1,24 @@
+Bootstrap: docker
+From: ubuntu:22.04
+
+%post
+  apt-get update
+  apt-get install -y python3
+
+%help
+  V1 SDS container fixture for tests.
+
+## SDS Software v1
+# sds_software:
+#   container_file: "lcc/v1.sif"
+#   def_file: "lcc/v1.def"
+#   software:
+#     pytorch:
+#       - version: "2.0.1"
+#         command: "module load pytorch/2.0.1"
+#       - version: "1.13.1"
+#         command: "module load pytorch/1.13.1"
+#     numpy:
+#       - version: "1.24.0"
+#         command: ""
+# --- END SDS Software ---

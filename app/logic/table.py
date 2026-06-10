@@ -177,7 +177,9 @@ def organize_table(
         )
 
     # Apply the grouping
-    result = df.groupby("software_name").apply(combine_resources_versions).reset_index()
+    result = df.groupby("software_name").apply(
+        combine_resources_versions, include_groups=False
+    ).reset_index()
     # Merge the result back with one row from each group to get other columns
     first_rows = df.groupby("software_name").first().reset_index()
     column_order = df.columns.tolist()

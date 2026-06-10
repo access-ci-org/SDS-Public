@@ -1,3 +1,5 @@
+from urllib.parse import urljoin, urlparse
+
 from flask import request, redirect, flash, url_for, render_template
 from flask_login import login_user, logout_user, login_required, current_user
 from peewee import DoesNotExist
@@ -6,11 +8,24 @@ from app.logic.sdsVersions import get_pending_updates, PRIORITY_TO_ALERT
 from . import auth_bp
 
 
+def _is_safe_url(target: str) -> bool:
+    """Only allow redirects to URLs on this same host."""
+    if not target:
+        return False
+    ref = urlparse(request.host_url)
+    test = urlparse(urljoin(request.host_url, target))
+    return test.scheme in ("http", "https") and ref.netloc == test.netloc
+
+
+def _safe_next() -> str | None:
+    nxt = request.args.get("next")
+    return nxt if _is_safe_url(nxt) else None
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        next_page = request.args.get("next")
-        return redirect(next_page if next_page else url_for("software.software_search"))
+        return redirect(_safe_next() or url_for("software.software_search"))
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -30,10 +45,7 @@ def login():
                         update["alert_message"],
                         update["alert_type"]
                       )
-                next_page = request.args.get("next")
-                return redirect(
-                    next_page if next_page else url_for("software.software_search")
-                )
+                return redirect(_safe_next() or url_for("software.software_search"))
             flash("Invalid username and password", "danger")
         except DoesNotExist:
             flash("Invalid username or password", "danger")

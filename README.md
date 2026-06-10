@@ -25,6 +25,8 @@ You can find a more detailed set of instructions with information on different f
 dnf install -y docker
 # or
 yum install -y docker
+# or, on Debian/Ubuntu
+apt install -y docker.io
 
 # Enable and start Docker service
 systemctl enable docker
@@ -35,36 +37,28 @@ docker --version
 systemctl status docker
 ```
 
-### Step 1 -- Configure Docker access and open ports (as root)
+### Step 1 -- Configure Docker access and open ports
 
 ```bash
-# Create a new user for SDS
-adduser sds
-passwd sds
+# Add your user to the docker group so you can run `docker` without sudo
+sudo usermod -aG docker $USER
+# Log out and back in (or run `newgrp docker`) for the group change to take effect
 
-# Add 'sds' to docker group
-usermod -aG docker sds
-
-# Allow passwordless docker for user 'sds'
-echo "sds ALL=(ALL) NOPASSWD:/usr/bin/docker" > /etc/sudoers.d/sds
-chmod 440 /etc/sudoers.d/sds
-
-# Open required ports for HTTP (80) and app traffic (8080)
-firewall-cmd --permanent --add-port=8080/tcp
-# Also open the following if you want https/ssl
-# firewall-cmd --permanent --add-port=443/tcp
-
-firewall-cmd --reload
+# Open port 8080 for the SDS website
+sudo firewall-cmd --permanent --add-port=8080/tcp
+# Also open 443 if you want https/ssl
+# sudo firewall-cmd --permanent --add-port=443/tcp
+sudo firewall-cmd --reload
 
 # Verify firewall settings
-firewall-cmd --list-ports
+sudo firewall-cmd --list-ports
 ```
 
 ### Step 2 - Create config.yaml file
 
 ```bash
-# switch to the sds user
-su -l sds
+# Create a working directory for SDS and move into it
+mkdir ~/sds && cd ~/sds
 
 # Create default config file.
 # Edit this to add your API key (contact Sandesh <sla302@uky.edu> to get an api key)
@@ -89,22 +83,13 @@ EOF
 ### Step 3 - Prepare and load data
 
 ```bash
-mkdir -p spider_data container_data
-cd spider_data
+mkdir -p data/spider_data data/container_data
 
-# create one directory for each resource/HPC system
-mkdir resource1
-
-# Transfer data to the VM hosting sds
-# for example:
-# From where you have the lmod spider data copy/move your `module spider` data into the appropriate directory
-scp your/resource1/spider_data/file sds@your_domain_or_ip:/home/sds/spider_data/resource1/
-# or
-cp your/resource1/spider_data/file ~/spider_data/resource1/
-
-# return to sds base directory
-cd ~
+# Create one subdirectory per resource/HPC system, e.g.
+mkdir -p data/spider_data/<resource_name>
 ```
+
+Transfer your `module spider` output for each cluster into the matching `data/spider_data/<resource_name>/` directory (any method — scp, rsync, cp from a mounted filesystem).
 
 It is also possible to display container information and other data on SDS. View the
 `SDS_SETUP.md` file on how. Or contact Sandesh <sla302@uky.edu> for help.
@@ -112,18 +97,24 @@ It is also possible to display container information and other data on SDS. View
 ### Step 4 - Build and Start Docker Container
 
 ```bash
-# Download the latest container image
+# Download the latest container image and tag it with a short local alias
 docker image pull public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+docker tag public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest sds-image:latest
 
 # Run the container
-docker run -d -p 8080:80 --mount type=bind,source="./config.yaml",target="/sds/config.yaml" -v ./spider_data:/sds/spider_data --name sds public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
-
-
-# See SDS_SETUP.md for more detailed instructions.
+docker run -d --name sds \
+  -p 8080:80 \
+  --mount type=bind,source="./config.yaml",target="/sds/config.yaml" \
+  -v ./data:/sds/data \
+  sds-image:latest
 
 # Verify the container is running
 docker ps -a
 ```
+
+SDS stores its state (database, logs, cached analytics, etc.) under `./data/state/` on the host. As long as you keep that directory, container replacement is non-destructive.
+
+See `SDS_SETUP.md` for more detailed instructions on additional data types, SSL, log locations, and tuning.
 
 ---
 
@@ -138,6 +129,8 @@ If you run into any trouble, have questions, or would like to request new featur
 ---
 
 ### Optional - Restarting the Container and Pruning Files
+
+Data changes hot-reload — edit files in `./data/` and SDS picks them up without a restart. You only need to stop and start the container if you change `config.yaml` or want to add a new mount.
 
 Stop and start the container
 
@@ -156,8 +149,20 @@ docker rm sds
 # view existing images
 docker image ls
 # delete existing image
-docker image rm public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+docker image rm sds-image:latest
 
 # remove all unused cache
 docker system prune
 ```
+
+### Upgrading from the multi-mount layout
+
+If your existing deployment uses separate mounts for `software.csv`, `container_data/`, `spider_data/`, etc., run the migration script on the host (with the container stopped):
+
+```bash
+bash migrate_data_layout.sh
+```
+
+It moves your existing files into `./data/`, refuses to clobber anything, and prints the new `docker run` command to use. Then re-run with the single `-v ./data:/sds/data` mount as in Step 4.
+
+**Don't forget to update any scripts that push data to the SDS VM** (cron jobs, rsync wrappers, post-deploy hooks, etc.). Destination paths shift from `~/spider_data/<resource>/`, `~/container_data/<resource>/`, etc. to `~/sds/data/spider_data/<resource>/`, `~/sds/data/container_data/<resource>/`, etc.

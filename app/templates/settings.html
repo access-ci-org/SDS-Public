@@ -10,17 +10,15 @@
     <link rel="stylesheet" type="text/css" href="../static/css/settings.css">
 {% endblock %}
 
-{% block page_title%}
-    <div style="text-align: center;">
-        <br>
-        <h1 id="page_title">Settings</h1>
-        <br>
-    </div>
+{% block page_title %}
+<div class="admin-page-header">
+    <h1 class="admin-page-header__title">Settings</h1>
+    <span class="admin-page-version">v{{ sds_version }}</span>
+</div>
 {% endblock %}
 
 {% block app_content %}
-<div class="settings-container">
-  <span class="text-muted small float-end font-monospace">v{{ sds_version }}</span>
+<div class="admin-page">
   <!-- Nav tabs -->
   <ul class="nav nav-tabs mb-4" id="settingsTabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -33,6 +31,13 @@
         Download Data
       </button>
     </li>
+    {% if is_admin %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="banners-tab" data-bs-toggle="tab" data-bs-target="#banners-tab-pane" type="button" role="tab" aria-controls="banners-tab-pane" aria-selected="false">
+        Banners
+      </button>
+    </li>
+    {% endif %}
   </ul>
   <!-- Tab content -->
   <div class="tab-content" id="settingsTabContent">
@@ -46,7 +51,7 @@
               </div>
               <div class="card-body col">
                 <div class="mb-3 d-flex justify-content-between align-items-center">
-                  <label class="form-label mb-0">Share software names with SDS developers</label>
+                  <label class="form-label mb-0" for="shareWithDevs">Share software names with SDS developers</label>
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="shareWithDevs" {{'checked' if share_with_devs}} disabled>
                   </div>
@@ -56,10 +61,11 @@
                     This information will be used to identify software for which we need to collect curated data.
                   </span>
                 </div>
+                <small class="text-muted d-block mt-2">Configured in <code>config.yaml</code>; not editable from the UI.</small>
               </div>
               <div class="card-body col">
                 <div class="mb-3 d-flex justify-content-between align-items-center">
-                  <label class="form-label mb-0">Share software names with other institutions</label>
+                  <label class="form-label mb-0" for="shareWithOthers">Share software names with other institutions</label>
                   <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" id="shareWithOthers" {{'checked' if share_with_others}} disabled>
                   </div>
@@ -69,6 +75,7 @@
                     This information will be used to help other institutions identify what software is available at your institution.
                   </span>
                 </div>
+                <small class="text-muted d-block mt-2">Configured in <code>config.yaml</code>; not editable from the UI.</small>
               </div>
           </div>
         </div>
@@ -102,16 +109,23 @@
               <h5 class="mb-0">Download Raw Analytics</h5>
             </div>
             <div class="card-body col">
-            <div>
-              <button type="button" class="btn-lg primary-button" id="download-analytics-json">
-                <i class="bi bi-filetype-json" style="font-size: large"></i>
-                Download JSON
-              </button>
+              <div>
+                <button type="button" class="btn-lg primary-button" id="download-analytics-json">
+                  <i class="bi bi-filetype-json" style="font-size: large"></i>
+                  Download JSON
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+    {% if is_admin %}
+    <!-- Banners Tab -->
+    <div class="tab-pane" id="banners-tab-pane" role="tabpanel" aria-labelledby="banners-tab" tabindex="0">
+      {% include 'admin/banners_tab.html' %}
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

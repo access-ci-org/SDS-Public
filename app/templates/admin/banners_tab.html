@@ -1,0 +1,175 @@
+{# Banners tab — admin only. Included from settings.html on initial load,
+   returned standalone from banner_routes for HTMX swaps. Either way the
+   surrounding tab pane stays in place, so the active Bootstrap tab is
+   preserved across save/edit/toggle/delete actions. #}
+
+{% set SEVERITY_LABELS = {'info': 'Blue', 'success': 'Green', 'warning': 'Yellow', 'danger': 'Red'} %}
+
+{% macro banner_form(action, banner=None, form_id=None) %}
+  {% set b_message     = banner.message if banner else '' %}
+  {% set b_severity    = banner.severity if banner else 'info' %}
+  {% set b_pages       = banner.pages.split(',') if banner else [] %}
+  {% set b_pages_set   = b_pages | map('trim') | list %}
+  {% set b_is_active   = banner.is_active if banner else true %}
+  {% set b_dismissible = banner.dismissible if banner else true %}
+  <form hx-post="{{ action }}"
+        hx-target="#banners-tab-content"
+        hx-swap="outerHTML"
+        class="banner-form"{% if form_id %} id="{{ form_id }}"{% endif %}>
+    <div class="mb-3">
+      <label class="form-label" for="{{ form_id }}-message">Message <small class="text-muted">(markdown)</small></label>
+      <textarea id="{{ form_id }}-message" name="message" class="form-control" rows="3" required>{{ b_message }}</textarea>
+      <small class="text-muted">Use <code>[link text](https://example.com)</code> for clickable links.</small>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="{{ form_id }}-severity">Severity</label>
+      <select id="{{ form_id }}-severity" name="severity" class="form-select" required>
+        {% for sev in ['info', 'success', 'warning', 'danger'] %}
+          <option value="{{ sev }}" {% if b_severity == sev %}selected{% endif %}>{{ SEVERITY_LABELS[sev] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label d-block">Pages</label>
+      <div class="banner-pages-group">
+        {% for key, label in [('software', 'Software Search'), ('container', 'Containers'), ('login', 'Login')] %}
+          <div class="form-check form-check-inline">
+            <input class="form-check-input banner-page-specific" type="checkbox" name="pages" value="{{ key }}"
+                   id="{{ form_id }}-page-{{ key }}"
+                   {% if key in b_pages_set %}checked{% endif %}>
+            <label class="form-check-label" for="{{ form_id }}-page-{{ key }}">{{ label }}</label>
+          </div>
+        {% endfor %}
+        <div class="form-check form-check-inline">
+          <input class="form-check-input banner-page-all" type="checkbox" name="pages" value="all-user-facing"
+                 id="{{ form_id }}-page-all"
+                 {% if 'all-user-facing' in b_pages_set %}checked{% endif %}>
+          <label class="form-check-label" for="{{ form_id }}-page-all">All user-facing pages</label>
+        </div>
+      </div>
+    </div>
+    <div class="mb-3 d-flex gap-4">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" name="dismissible" id="{{ form_id }}-dismissible"
+               {% if b_dismissible %}checked{% endif %}>
+        <label class="form-check-label" for="{{ form_id }}-dismissible">Dismissible</label>
+      </div>
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" name="is_active" id="{{ form_id }}-active"
+               {% if b_is_active %}checked{% endif %}>
+        <label class="form-check-label" for="{{ form_id }}-active">Active</label>
+      </div>
+    </div>
+    <button type="submit" class="btn primary-button">
+      {% if banner %}Save Changes{% else %}Create Banner{% endif %}
+    </button>
+  </form>
+{% endmacro %}
+
+<div id="banners-tab-content">
+
+{% if notice %}
+<div class="alert alert-{{ notice_kind or 'info' }} alert-dismissible fade show" role="alert">
+  {{ notice }}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">New Banner</h5>
+      </div>
+      <div class="card-body">
+        {{ banner_form(url_for('banner.create_banner'), form_id='banner-new') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Existing Banners</h5>
+      </div>
+      <div class="card-body">
+        {% if all_banners %}
+          {% for banner in all_banners %}
+            <div class="banner-row mb-3 pb-3 border-bottom" id="banner-row-{{ banner.id }}">
+              <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                  <span class="badge bg-{{ banner.severity }} text-uppercase me-2">{{ SEVERITY_LABELS.get(banner.severity, banner.severity) }}</span>
+                  {% if banner.is_active %}
+                    <span class="badge bg-success-subtle text-success-emphasis">active</span>
+                  {% else %}
+                    <span class="badge bg-secondary-subtle text-secondary-emphasis">inactive</span>
+                  {% endif %}
+                  <small class="text-muted ms-2">pages: {{ banner.pages }}</small>
+                </div>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-secondary" type="button"
+                          data-bs-toggle="collapse" data-bs-target="#banner-edit-{{ banner.id }}"
+                          aria-expanded="false">Edit</button>
+                  <form hx-post="{{ url_for('banner.toggle_banner', banner_id=banner.id) }}"
+                        hx-target="#banners-tab-content"
+                        hx-swap="outerHTML"
+                        class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                      {% if banner.is_active %}Deactivate{% else %}Activate{% endif %}
+                    </button>
+                  </form>
+                  <form hx-post="{{ url_for('banner.delete_banner', banner_id=banner.id) }}"
+                        hx-target="#banners-tab-content"
+                        hx-swap="outerHTML"
+                        hx-confirm="Delete this banner permanently?"
+                        class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                  </form>
+                </div>
+              </div>
+              <div class="banner-preview small text-muted">{{ banner.message }}</div>
+              <small class="text-muted">
+                by {{ banner.created_by }} · {{ banner.created_at[:16] | replace('T', ' ') }}
+                {% if banner.updated_at %} · edited {{ banner.updated_at[:16] | replace('T', ' ') }}{% endif %}
+              </small>
+              <div class="collapse mt-3" id="banner-edit-{{ banner.id }}">
+                {{ banner_form(url_for('banner.edit_banner', banner_id=banner.id), banner=banner, form_id='banner-edit-form-' ~ banner.id) }}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted mb-0">No banners yet. Create one on the left.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>{# /#banners-tab-content #}
+
+<script>
+(function () {
+    // Enforce "all" vs specific page checkboxes are mutually exclusive,
+    // matching the server-side validation in banner_routes._extract_form.
+    // Re-runs after every HTMX swap because htmx.process re-evaluates this
+    // included script block on the new content.
+    document.querySelectorAll(".banner-form").forEach((form) => {
+        if (form.dataset.bannerFormBound === "1") return;
+        form.dataset.bannerFormBound = "1";
+        const allBox = form.querySelector(".banner-page-all");
+        const specificBoxes = form.querySelectorAll(".banner-page-specific");
+        function sync() {
+            if (allBox.checked) {
+                specificBoxes.forEach(b => { b.checked = false; b.disabled = true; });
+            } else {
+                specificBoxes.forEach(b => { b.disabled = false; });
+                const anySpecific = Array.from(specificBoxes).some(b => b.checked);
+                allBox.disabled = anySpecific;
+            }
+        }
+        allBox.addEventListener("change", sync);
+        specificBoxes.forEach(b => b.addEventListener("change", sync));
+        sync();
+    });
+})();
+</script>

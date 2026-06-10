@@ -55,7 +55,7 @@ Run the script directly on the system where you want to search for container def
 python3 collector.py --directory /path/to/search --resource cluster_name
 ```
 
-This will search the specified directory for container definition files and save them to ./container_data/cluster_name/ while preserving their original directory structure.
+This will search the specified directory for container definition files and save them to ./data/container_data/cluster_name/ while preserving their original directory structure.
 
 ### Remote Mode (Execute on Cluster)
 
@@ -80,7 +80,7 @@ Include module system information in your collection:
 python3 collector.py --directory /path/to/search --resource cluster_name --lmod
 ```
 
-Add the `--lmod` flag. This will collect container definitions and also run module spider to gather information about available software modules, saving the output to ./spider_data/cluster_name/.
+Add the `--lmod` flag. This will collect container definitions and also run module spider to gather information about available software modules, saving the output to ./data/spider_data/cluster_name/.
 
 ### Using with Python Version Issues
 
@@ -112,16 +112,19 @@ This loads a newer Python version before executing the script on the remote syst
 The script creates an organized directory structure:
 
 ```
-./container_data/
-  └── {resource_name}/
-      ├── {resource_name}.csv    # CSV file with container metadata
-      └── {preserved_directory_structure}/
-          └── {definition_files}  # Original definition files with paths preserved
-
-./spider_data/
-  └── {resource_name}/
-      └── {resource_name}_spider.txt  # Complete output from module spider
+./data/
+  ├── container_data/
+  |    └── {resource_name}/
+  |        ├── {resource_name}.csv    # CSV file with container metadata
+  |        └── {preserved_directory_structure}/
+  |            └── {definition_files}  # Original definition files with paths preserved
+  |
+  └── spider_data/
+       └── {resource_name}/
+           └── {resource_name}_spider.txt  # Complete output from module spider
 ```
+
+This layout mirrors SDS's expected `data/` directory. If you run the collector from your SDS deployment root (`~/sds/`), the output lands directly where SDS expects — no manual move needed.
 
 ## Detailed Examples
 
@@ -137,7 +140,7 @@ This will:
 
 - Search the /apps directory recursively up to depth 4
 - Identify all .def files and Dockerfiles
-- Copy them to ./container_data/local_system/ while preserving paths
+- Copy them to ./data/container_data/local_system/ while preserving paths
 - Create a local_system.csv file with basic metadata
 
 ### Execute on a remote HPC cluster and sync results back

@@ -1,3 +1,5 @@
+import { escapeHtml } from "./utils.js";
+
 document.addEventListener('DOMContentLoaded', async function() {
     // Set default date range (last 30 days)
     const today = new Date();
@@ -226,9 +228,9 @@ function createViewsDetailView() {
     tbody.innerHTML = '';
     sortedViews.forEach(view => {
         tbody.innerHTML += `<tr>
-            <td>${view.softwareName}</td>
+            <td>${escapeHtml(view.softwareName)}</td>
             <td>${view.count}</td>
-            <td>${view.source}</td>
+            <td>${escapeHtml(view.source)}</td>
         </tr>`;
     });
 }
@@ -282,8 +284,8 @@ function createFiltersDetailView() {
     sortedFilters.forEach(item => {
         tbody.innerHTML += `
             <tr>
-                <td>${item.type}</td>
-                <td>${item.values}</td>
+                <td>${escapeHtml(item.type)}</td>
+                <td>${escapeHtml(item.values)}</td>
                 <td>${item.count}</td>
                 <td>${item.resultCount}</td>
             </tr>
@@ -348,9 +350,9 @@ function createTermsDetailView() {
     sortedTerms.forEach(item => {
         tbody.innerHTML += `
             <tr>
-                <td>${item.term}</td>
+                <td>${escapeHtml(item.term)}</td>
                 <td>${item.count}</td>
-                <td>${item.columnName}</td>
+                <td>${escapeHtml(item.columnName)}</td>
                 <td>${item.resultCount}</td>
             </tr>
         `;

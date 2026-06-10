@@ -1,0 +1,30 @@
+# Runtime dependencies needed to run the backend test suite.
+# Mirror of env.yaml's pip section + the conda-installed pip-resolvable
+# entries (pandas, Pygments). Excluded on purpose:
+#   - pyuwsgi (production WSGI server, not needed at test time)
+#   - ipython, pylint, black (dev tooling)
+#   - watchdog (used only by run.py dev server)
+#   - python-magic (stubbed in tests/conftest.py — also fails to install
+#     without the system libmagic, which CI doesn't have)
+#   - python-dotenv (not imported anywhere — env.yaml entry is dead)
+#
+# Keep this in sync with env.yaml. When adding or bumping a runtime
+# dependency, update both files.
+
+Flask==3.0.3
+flask-login==0.6.3
+peewee==3.17.5
+pandas==2.2.2
+Pygments>=2.15.1
+lxml==5.2.2
+beautifulsoup4==4.14.2
+markdown2>=2.4.8
+pyyaml==6.0.3
+halo==0.0.31
+requests
+packaging==25.0
+pytz
+
+# Test-only
+pytest
+pytest-cov

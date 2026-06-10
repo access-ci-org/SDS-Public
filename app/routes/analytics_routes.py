@@ -2,26 +2,34 @@ from flask import render_template, request, jsonify, current_app
 from flask_login import login_required, current_user
 from pathlib import Path
 import json
+from app.app_logging import logger
 from app.logic.table import initialize_table_info
+from app.paths import state_dir
 from . import analytics_bp
 
-# File to store analytics data
-ANALYTICS_FILE = Path('analytics/analytics_data.json')
+
+def analytics_file() -> Path:
+    return state_dir() / "analytics" / "analytics_data.json"
+
 
 def load_analytics_data():
-    if not ANALYTICS_FILE.exists():
+    f = analytics_file()
+    if not f.exists():
         return {'searches': [], 'filters': [], 'softwareViews': []}
 
     try:
-        with ANALYTICS_FILE.open('r') as af:
+        with f.open('r') as af:
             return json.load(af)
-    except:
+    except (json.JSONDecodeError, OSError, ValueError) as e:
+        logger.error(f"Analytics data load failed: {e}")
         return {'searches': [], 'filters': [], 'softwareViews':[]}
 
 
 def save_analytics_data(data):
-    with ANALYTICS_FILE.open('w') as f:
-        json.dump(data, f, indent=2)
+    f = analytics_file()
+    f.parent.mkdir(parents=True, exist_ok=True)
+    with f.open('w') as af:
+        json.dump(data, af, indent=2)
 
 @analytics_bp.route('/analytics/track', methods=['POST'])
 def track_analytics():

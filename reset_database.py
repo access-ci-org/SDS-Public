@@ -15,7 +15,7 @@ from halo import Halo
 
 
 from app import app
-from app.models import db
+from app.models import db, persistent_db, ensure_snapshot_columns
 from app.models.resource import Resource
 from app.models.software import Software
 from app.models.softwareResource import SoftwareResource
@@ -23,7 +23,15 @@ from app.models.aiSoftwareInfo import AISoftwareInfo
 from app.models.users import Users
 from app.models.containers import Container
 from app.models.softwareContainer import SoftwareContainer
+from app.models.software_edit import SoftwareEdit
+from app.models.command_edit import CommandEdit
+from app.models.banner import Banner
 from app.cli_loading import custom_halo
+from app.paths import data_dir, state_dir
+
+
+def website_titles_path():
+    return state_dir() / "websites" / "website_titles.json"
 from app.app_logging import logger
 from parsers.exceptions import DataProcessingError
 from parsers.utils import process_software, update_software_resource
@@ -96,7 +104,7 @@ def process_csv_data(csv_path: Path, blacklist: set[str]) -> None:
     except pd.errors.EmptyDataError as ede:
         raise DataProcessingError("CSV file is empty") from ede
     except pd.errors.ParserError as pe:
-        raise DataProcessingError(f"CSV parsing failed: {str(e)}") from pe
+        raise DataProcessingError(f"CSV parsing failed: {str(pe)}") from pe
     except Exception as e:
         raise DataProcessingError(f"CSV data processing failed: {str(e)}") from e
 
@@ -183,17 +191,15 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
     df = pd.DataFrame(remote_data)
 
     for s in software:
-        try:
-            remote_s_info = df[
-                df["software_name"] == s.software_name.lower()
-            ].squeeze()  # ensure there is exactly one item that matches, otherwise return an error
-        except IndexError:
+        matches = df[df["software_name"] == s.software_name.lower()]
+        if len(matches) == 0:
             logger.debug(f"No remote info found for software: {s.software_name}")
             continue
-
-        if remote_s_info.empty:
-            logger.debug(f"Empty remote info for software: {s.software_name}")
-            continue
+        if len(matches) > 1:
+            logger.warning(
+                f"Duplicate remote entries for '{s.software_name}', using first match"
+            )
+        remote_s_info = matches.iloc[0]
 
         if app.config["USE_CURATED_INFO"]:
             # logger.info(f"Updating curated info for software: {s.software_name}")
@@ -235,7 +241,13 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
             }
             with db.atomic() as transaction:
                 try:
-                    AISoftwareInfo.create(**ai_software_info)
+                    AISoftwareInfo.insert(**ai_software_info).on_conflict(
+                        conflict_target=[AISoftwareInfo.software_id],
+                        update={
+                            k: v for k, v in ai_software_info.items()
+                            if k != "software_id"
+                        },
+                    ).execute()
                 except Exception as e:
                     transaction.rollback()
                     logger.error(
@@ -243,10 +255,10 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
                     )
                     raise
 
-WEBSITE_TITLES = Path('app/data/websites/website_titles.json')
-WEBSITE_TITLES.parent.mkdir(parents=True, exist_ok=True)
 def find_site_titles():
     print("Getting link titles...")
+    titles_path = website_titles_path()
+    titles_path.parent.mkdir(parents=True, exist_ok=True)
 
     all_urls = set()
     links = []
@@ -266,12 +278,12 @@ def find_site_titles():
     all_urls = [url for url in all_urls if url and str(url).strip()]
 
     site_titles = {}
-    if Path(WEBSITE_TITLES).exists():
+    if titles_path.exists():
         try:
-            with open(WEBSITE_TITLES, 'r', encoding='utf-8') as wt:
+            with open(titles_path, 'r', encoding='utf-8') as wt:
                 site_titles = json.load(wt)
         except Exception as e:
-            logger.error(f'Error reading data from {WEBSITE_TITLES}. \n error: {e}')
+            logger.error(f'Error reading data from {titles_path}. \n error: {e}')
 
         if site_titles: # if site titles is not empty
             # remove urls for which data already exists
@@ -287,9 +299,16 @@ def find_site_titles():
     spinner  = Halo(text=f"Processing URLs: 0/{total_urls}", spinner="dots")
     spinner.start()
 
+    # One shared session for the whole batch — connection pooling + retry
+    session = requests.Session()
+    retry_strategy = Retry(total=2, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retry_strategy, pool_connections=20, pool_maxsize=20)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+
     def get_title_with_progress(url):
         nonlocal completed
-        result = get_external_site_title(url)
+        result = get_external_site_title(url, session)
         with completed_lock: # to avoid race conditions when incrementing
             completed += 1
             spinner.text = (f"Processing URLs: {completed}/{total_urls}")
@@ -310,20 +329,13 @@ def find_site_titles():
     for url, title in zip(all_urls, results):
         site_titles[url] = title
 
-    with open(WEBSITE_TITLES, 'w', encoding="utf-8") as wt:
+    with open(titles_path, 'w', encoding="utf-8") as wt:
         json.dump(site_titles, wt, indent=4)
 
     return site_titles
 
-def get_external_site_title(url):
+def get_external_site_title(url, session):
     try:
-        # Session with connection pooling
-        session = requests.Session()
-        retry_strategy = Retry(total=2, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
-        adapter = HTTPAdapter(max_retries=retry_strategy, pool_connections=20, pool_maxsize=20)
-        session.mount("http://", adapter)
-        session.mount("https://", adapter)
-
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
@@ -371,6 +383,107 @@ def update_example_uses(example_use_dir: Path) -> None:
             print(e)
 
 
+@custom_halo(text="Applying admin overrides")
+def apply_overrides(software_uses_dir: Path) -> None:
+    """
+    Apply SoftwareEdit overrides to sds_db after a reset.
+    Also migrates legacy software_uses markdown files into SoftwareEdit on first run.
+
+    Snapshots auto_values / auto_command from the freshly derived sds_db row
+    BEFORE stomping with the override, so revert restores the current
+    pipeline value.
+    """
+    persistent_db.connect(reuse_if_open=True)
+    persistent_db.create_tables([SoftwareEdit, CommandEdit, Banner], safe=True)
+    ensure_snapshot_columns(persistent_db)
+
+    # One-time migration: import markdown files into SoftwareEdit if not already there
+    if software_uses_dir.exists() and software_uses_dir.is_dir():
+        for md_file in software_uses_dir.glob("*.md"):
+            sw_name = md_file.stem
+            try:
+                edit = SoftwareEdit.get(SoftwareEdit.software_name == sw_name)
+                if edit.ai_example_use is None:
+                    edit.ai_example_use = md_file.read_text(encoding="utf-8")
+                    edit.save()
+            except SoftwareEdit.DoesNotExist:
+                SoftwareEdit.create(
+                    software_name=sw_name,
+                    ai_example_use=md_file.read_text(encoding="utf-8"),
+                )
+
+    sw_field_map = [
+        ("description", "software_description"),
+        ("web_page", "software_web_page"),
+        ("documentation", "software_documentation"),
+        ("use_link", "software_use_link"),
+    ]
+    ai_fields = [
+        "ai_description", "ai_software_type", "ai_software_class",
+        "ai_research_field", "ai_research_area", "ai_research_discipline",
+        "ai_core_features", "ai_general_tags", "ai_example_use",
+    ]
+
+    for edit in SoftwareEdit.select():
+        sw = Software.get_or_none(Software.software_name == edit.software_name)
+        if sw is None:
+            continue
+
+        try:
+            snapshots = json.loads(edit.auto_values) if edit.auto_values else {}
+        except (json.JSONDecodeError, TypeError):
+            snapshots = {}
+        snapshots_changed = False
+
+        sw_changed = False
+        for edit_field, sw_field in sw_field_map:
+            val = getattr(edit, edit_field)
+            if val is not None:
+                snapshots[edit_field] = getattr(sw, sw_field, "") or ""
+                snapshots_changed = True
+                setattr(sw, sw_field, val)
+                sw_changed = True
+        if sw_changed:
+            sw.save()
+
+        ai = AISoftwareInfo.get_or_none(AISoftwareInfo.software_id == sw.id)
+        if ai is not None:
+            ai_changed = False
+            for field in ai_fields:
+                val = getattr(edit, field)
+                if val is not None:
+                    snapshots[field] = getattr(ai, field, "") or ""
+                    snapshots_changed = True
+                    setattr(ai, field, val)
+                    ai_changed = True
+            if ai_changed:
+                ai.save()
+
+        if snapshots_changed:
+            edit.auto_values = json.dumps(snapshots) if snapshots else None
+            edit.save()
+
+    for cmd_edit in CommandEdit.select():
+        if cmd_edit.command is None:
+            continue
+        sw = Software.get_or_none(Software.software_name == cmd_edit.software_name)
+        if sw is None:
+            continue
+        try:
+            resource = Resource.get(Resource.resource_name == cmd_edit.resource_name)
+            sr = SoftwareResource.get(
+                (SoftwareResource.software_id == sw.id) &
+                (SoftwareResource.resource_id == resource.id) &
+                (SoftwareResource.software_version == cmd_edit.software_version)
+            )
+            cmd_edit.auto_command = sr.command or ""
+            cmd_edit.save()
+            sr.command = cmd_edit.command
+            sr.save()
+        except (Resource.DoesNotExist, SoftwareResource.DoesNotExist):
+            continue
+
+
 def setup_argparse() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Delete and recreate the database using data provided in the input_dir directory.\
@@ -408,6 +521,7 @@ def setup_argparse() -> argparse.Namespace:
 
 
 def main() -> None:
+    init()  # initialize colorama (cross-platform terminal colors)
     args = setup_argparse()
 
     if not any([args.spider_dir, args.container_dir, args.csv_file]):
@@ -431,13 +545,14 @@ def main() -> None:
         logger.info("Starting database processing")
         recreate_table()
 
+        # Inputs are optional: deployments may provide any subset, so a
+        # missing location is skipped with a warning rather than fatal.
         if args.spider_dir:
             spider_path = Path(args.spider_dir).resolve()
             if spider_path.is_dir():
                 process_spider_data(spider_path, blacklist)
             else:
-                logger.error(f"{spider_path} is not a directory")
-                sys.exit(1)
+                logger.warning(f"{spider_path} is not a directory, skipping spider data")
 
         if args.container_dir:
             container_path = Path(args.container_dir).resolve()
@@ -445,16 +560,14 @@ def main() -> None:
                 # parse_container_files(container_path)
                 process_container_data(container_path, blacklist)
             else:
-                logger.error(f"{container_path} is not a directory")
-                sys.exit(1)
+                logger.warning(f"{container_path} is not a directory, skipping container data")
 
         if args.csv_file:
             csv_path = Path(args.csv_file).resolve()
             if csv_path.is_file():
                 process_csv_data(csv_path, blacklist)
             else:
-                logger.error(f"{csv_path} is not a file")
-                # sys.exit(1)
+                logger.warning(f"{csv_path} is not a file, skipping CSV data")
 
         if app.config["USE_API"]:
             api_key = app.config["API_KEY"]
@@ -476,13 +589,17 @@ def main() -> None:
                     "SDS API key not found in environment variables. Skipping API data update."
                 )
 
-        default_software_use_path = Path('./software_uses')
-        if args.software_use_dir or (default_software_use_path.exists() and default_software_use_path.is_dir()):
-            # Add example use
-            example_use = args.software_use_dir or default_software_use_path
-            update_example_uses(example_use)
+        if args.software_use_dir:
+            software_use_path = Path(args.software_use_dir)
+        else:
+            software_use_path = data_dir() / "software_uses"
+        if software_use_path.is_dir():
             logger.info("Found software uses directory. Attempting to parse")
-            pass
+            update_example_uses(software_use_path)
+        elif args.software_use_dir:
+            logger.warning(f"{software_use_path} is not a directory, skipping example use data")
+
+        apply_overrides(software_use_path)
 
         logger.info("Creating admin user")
         hashed_password = app.config["DEFAULT_PASS"]
@@ -495,11 +612,10 @@ def main() -> None:
         with open(LAST_UPDATED_PATH, 'w') as f:
             f.write(str(datetime.now(EST).strftime("%Y-%m-%d %H:%M:%S")))
 
-        init() # initialize colorama
         find_site_titles()
     except Exception as e:
         logger.error(f"Fatal error occurred: {str(e)}", exc_info=True)
-        raise e
+        raise
 
 
 if __name__ == "__main__":

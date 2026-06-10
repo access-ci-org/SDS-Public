@@ -16,14 +16,14 @@ def get_pending_updates():
     - A deprecation notice if the current version is deprecated
     """
     headers = {
-        "X-API-KEY": app.config["API_KEY"],
+        "X-API-Key": app.config["API_KEY"],
         "Content-Type": "application/json"
     }
     try:
         response = requests.get(
             f"{app.config['SDS_API_URL']}api/v1.1/get-sds-version",
             headers=headers,
-            timeout=60
+            timeout=8
         )
         if response.status_code != 200:
             logger.warning(f"Error from api server while trying to fetch SDS versions: status {response.status_code}")

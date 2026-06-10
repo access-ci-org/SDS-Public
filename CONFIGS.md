@@ -42,7 +42,7 @@ styles:
 
 - `primary_color`: Set `primary_color` and `secondary_color` to set the colors (in hexadecimal, e.g. #1B365D) for the website. Different shades of these two colors are used in the website. Darker, monochromatic, colors are recommended. Default Primary: #1b365d, Default Secondary: #324a6d
 - `site_title`: Set `site_title` to be the main title you want for your website. Default: SDS
-- `logo`: Set `logo` to be the relative path to the image you want to display as your logo.
+- `logo`: Set `logo` to be the relative path to the image you want to display as your logo. For container deployments, place the image in your `./data/` directory and set `logo: "data/your_logo.svg"` — it reaches the container through the existing data mount, so no extra mount is needed.
 
 ## General Configs
 

@@ -1,0 +1,210 @@
+#admin-edit-panel {
+  border-top: 2px solid #dee2e6;
+  margin-top: 28px;
+  padding-top: 20px;
+}
+
+.admin-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.badge-admin-mode {
+  background: var(--primary-color-1, #1b365d);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  letter-spacing: .04em;
+}
+
+.admin-toggle-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-color-1, #1b365d);
+  cursor: pointer;
+  padding: 0;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.admin-toggle-btn:hover { color: var(--secondary-color-1, #324a6d); }
+
+.edit-field-row {
+  display: grid;
+  grid-template-columns: 160px 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+.edit-field-row:last-of-type { border-bottom: none; }
+
+.field-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #444;
+  padding-top: 6px;
+}
+
+.field-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.source-admin { background: #ffc107; color: #5a3e00; }
+.source-auto  { background: #e2e3e5; color: #41464b; }
+
+.field-control { display: flex; flex-direction: column; gap: 4px; }
+.field-control input,
+.field-control textarea {
+  font-size: 14px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 5px 8px;
+  width: 100%;
+  font-family: inherit;
+}
+.field-control textarea { resize: vertical; min-height: 72px; }
+.field-control input:focus,
+.field-control textarea:focus {
+  border-color: var(--secondary-color-1, #324a6d);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(50,74,109,.18);
+}
+
+.field-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding-top: 4px;
+  min-width: 60px;
+}
+
+.revert-link {
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+  text-decoration: underline;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.revert-link:hover { color: #c0392b; text-decoration: underline; }
+
+.ai-fields-toggle {
+  padding: 8px 0 4px;
+  color: #888;
+  font-size: 12px;
+}
+.ai-fields-toggle button {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.ai-fields-toggle button:hover { color: #333; }
+
+/* Tabs */
+.admin-edit-tabs {
+  margin-bottom: 0;
+  border-bottom: 1px solid #dee2e6;
+}
+.admin-edit-tabs .nav-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  border-radius: 4px 4px 0 0;
+  padding: 7px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.admin-edit-tabs .nav-link.active {
+  color: var(--primary-color-1, #1b365d);
+  border-bottom-color: #fff;
+}
+.tab-edit-count {
+  background: #ffc107;
+  color: #5a3e00;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+.admin-tab-content {
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  padding: 4px 12px 0;
+  margin-bottom: 0;
+}
+
+.panel-footer {
+  margin-top: 16px;
+  padding-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid #eee;
+}
+
+.save-scope-note {
+  font-size: 11px;
+  color: var(--muted-text-color, #767676);
+}
+
+.btn-save {
+  background: var(--secondary-color-1, #324a6d);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 22px;
+  cursor: pointer;
+}
+.btn-save:hover { background: var(--primary-color-1, #1b365d); }
+
+.last-edited-note {
+  font-size: 11px;
+  color: var(--muted-text-color, #767676);
+  margin-left: auto;
+}
+
+/* Loading state while HTMX fetches the panel */
+#admin-edit-panel-container:empty::after {
+  content: "Loading edit panel…";
+  display: block;
+  padding: 16px 0;
+  font-size: 13px;
+  color: var(--muted-text-color, #767676);
+  border-top: 2px solid #dee2e6;
+  margin-top: 28px;
+}
+
+@media (max-width: 600px) {
+  .edit-field-row {
+    grid-template-columns: 1fr;
+  }
+  .field-actions { align-items: flex-start; }
+}

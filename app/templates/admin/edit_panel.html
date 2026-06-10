@@ -1,0 +1,199 @@
+{% set FIELD_LABELS = {
+    'description':            'Description',
+    'web_page':               'Web Page',
+    'documentation':          'Documentation',
+    'use_link':               'Usage Link',
+    'ai_description':         'AI Description',
+    'ai_software_type':       'Software Type',
+    'ai_software_class':      'Software Class',
+    'ai_research_field':      'Research Field',
+    'ai_research_area':       'Research Area',
+    'ai_research_discipline': 'Research Discipline',
+    'ai_core_features':       'Core Features',
+    'ai_general_tags':        'Tags',
+    'ai_example_use':         'Example Use',
+} %}
+
+{% set TEXTAREA_FIELDS = ['description', 'ai_description', 'ai_core_features', 'ai_example_use'] %}
+{% set URL_FIELDS      = ['web_page', 'documentation', 'use_link'] %}
+{% set CORE_FIELDS     = ['description', 'web_page', 'documentation', 'use_link'] %}
+{% set AI_FIELDS       = ['ai_description', 'ai_software_type', 'ai_software_class',
+                           'ai_research_field', 'ai_research_area', 'ai_research_discipline',
+                           'ai_core_features', 'ai_general_tags', 'ai_example_use'] %}
+
+{% macro field_row(field_name) %}
+  {% set fd = fields[field_name] %}
+  <div class="edit-field-row" id="field-{{ field_name }}">
+
+    <div class="field-label">
+      {{ FIELD_LABELS[field_name] }}
+      {% if fd.is_overridden %}
+        <span class="field-source source-admin">
+          <i class="bi bi-pencil" aria-hidden="true" style="font-size:9px;"></i> admin
+        </span>
+      {% else %}
+        <span class="field-source source-auto">
+          <i class="bi bi-stars" aria-hidden="true" style="font-size:9px;"></i> auto
+        </span>
+      {% endif %}
+    </div>
+
+    <div class="field-control">
+      {% if field_name in TEXTAREA_FIELDS %}
+        <textarea name="{{ field_name }}"
+                  rows="{{ 4 if field_name == 'ai_example_use' else 3 }}">{{ fd.value }}</textarea>
+      {% elif field_name in URL_FIELDS %}
+        <input type="url" name="{{ field_name }}" value="{{ fd.value }}">
+      {% else %}
+        <input type="text" name="{{ field_name }}" value="{{ fd.value }}">
+      {% endif %}
+    </div>
+
+    <div class="field-actions">
+      {% if fd.is_overridden %}
+        <a class="revert-link"
+           hx-delete="/admin/edit/software/{{ software_name }}/{{ field_name }}"
+           hx-target="#admin-edit-panel"
+           hx-swap="outerHTML"
+           hx-confirm="Revert this field? The override will be removed and the auto-populated value restored."
+           role="button">
+          <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Revert
+        </a>
+      {% endif %}
+    </div>
+
+  </div>
+{% endmacro %}
+
+<div id="admin-edit-panel">
+  <div class="admin-panel-header">
+    <button class="admin-toggle-btn"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#admin-edit-body"
+            aria-expanded="true"
+            aria-controls="admin-edit-body">
+      <i class="bi bi-pencil-square" aria-hidden="true"></i>
+      Admin Edit Panel
+      <i class="bi bi-chevron-up" aria-hidden="true" style="font-size:11px;"></i>
+    </button>
+    <span class="badge-admin-mode">ADMIN</span>
+  </div>
+
+  <div id="admin-edit-body" class="collapse show">
+    <form hx-put="/admin/edit/software/{{ software_name }}"
+          hx-target="#admin-edit-panel"
+          hx-swap="outerHTML">
+
+      <!-- Tab nav -->
+      <ul class="nav nav-tabs admin-edit-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="tab-core-btn"
+                  data-bs-toggle="tab" data-bs-target="#tab-core"
+                  type="button" role="tab" aria-controls="tab-core" aria-selected="true">
+            Core Metadata
+            {% set core_overrides = fields.values() | selectattr('is_overridden') | list | length %}
+            {# count only core fields #}
+            {% set core_override_count = namespace(n=0) %}
+            {% for f in CORE_FIELDS %}{% if fields[f].is_overridden %}{% set core_override_count.n = core_override_count.n + 1 %}{% endif %}{% endfor %}
+            {% if core_override_count.n > 0 %}
+              <span class="tab-edit-count">{{ core_override_count.n }} edited</span>
+            {% endif %}
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-ai-btn"
+                  data-bs-toggle="tab" data-bs-target="#tab-ai"
+                  type="button" role="tab" aria-controls="tab-ai" aria-selected="false">
+            AI Fields
+            {% set ai_override_count = namespace(n=0) %}
+            {% for f in AI_FIELDS %}{% if fields[f].is_overridden %}{% set ai_override_count.n = ai_override_count.n + 1 %}{% endif %}{% endfor %}
+            {% if ai_override_count.n > 0 %}
+              <span class="tab-edit-count">{{ ai_override_count.n }} edited</span>
+            {% endif %}
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="tab-cmd-btn"
+                  data-bs-toggle="tab" data-bs-target="#tab-cmd"
+                  type="button" role="tab" aria-controls="tab-cmd" aria-selected="false">
+            Resource Commands
+            {% set cmd_override_count = command_data | selectattr('is_overridden') | list | length %}
+            {% if cmd_override_count > 0 %}
+              <span class="tab-edit-count">{{ cmd_override_count }} edited</span>
+            {% endif %}
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content admin-tab-content">
+        <div class="tab-pane fade show active" id="tab-core" role="tabpanel" aria-labelledby="tab-core-btn">
+          {% for field_name in CORE_FIELDS %}
+            {{ field_row(field_name) }}
+          {% endfor %}
+        </div>
+        <div class="tab-pane fade" id="tab-ai" role="tabpanel" aria-labelledby="tab-ai-btn">
+          {% for field_name in AI_FIELDS %}
+            {{ field_row(field_name) }}
+          {% endfor %}
+        </div>
+        <div class="tab-pane fade" id="tab-cmd" role="tabpanel" aria-labelledby="tab-cmd-btn">
+          {% if not command_data %}
+            <p style="padding: 14px 0 6px; font-size: 13px; color: #aaa;">No resource commands found.</p>
+          {% else %}
+            {% for entry in command_data %}
+              <div class="edit-field-row">
+                <div class="field-label">
+                  {{ entry.resource_name }}
+                  <div style="font-weight:normal;font-size:11px;color:#999;">v{{ entry.software_version }}</div>
+                  {% if entry.is_overridden %}
+                    <span class="field-source source-admin">
+                      <i class="bi bi-pencil" aria-hidden="true" style="font-size:9px;"></i> admin
+                    </span>
+                  {% else %}
+                    <span class="field-source source-auto">
+                      <i class="bi bi-stars" aria-hidden="true" style="font-size:9px;"></i> auto
+                    </span>
+                  {% endif %}
+                </div>
+                <div class="field-control">
+                  <textarea name="cmd__{{ entry.resource_name }}__{{ entry.software_version }}"
+                            rows="3"
+                            placeholder="One command per line">{{ entry.display_value }}</textarea>
+                  <span style="font-size:11px;color:#aaa;">Each line is one full load command (e.g. <code>module load dep &amp;&amp; module load pkg</code>)</span>
+                </div>
+                <div class="field-actions">
+                  {% if entry.is_overridden %}
+                    <a class="revert-link"
+                       hx-delete="/admin/edit/software/{{ software_name }}/command/{{ entry.resource_name }}/{{ entry.software_version }}"
+                       hx-target="#admin-edit-panel"
+                       hx-swap="outerHTML"
+                       hx-confirm="Revert this command? The override will be removed and the auto-populated command restored."
+                       role="button">
+                      <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Revert
+                    </a>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Save — outside tabs, applies to all fields -->
+      <div class="panel-footer">
+        <button type="submit" class="btn-save">
+          <i class="bi bi-check-lg me-1" aria-hidden="true"></i> Save Changes
+        </button>
+        <span class="save-scope-note">Saves all fields across all tabs</span>
+        {% if edit and edit.edited_at %}
+          <span class="last-edited-note">
+            Last edited by {{ edit.edited_by }} · {{ edit.edited_at[:16] | replace('T', ' ') }}
+          </span>
+        {% endif %}
+      </div>
+
+    </form>
+  </div>
+</div>

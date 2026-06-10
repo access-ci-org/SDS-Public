@@ -17,12 +17,14 @@ def search_container():
 
 @container_bp.route("/container_details", methods=["POST"])
 def container_details():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
+    container_name = data.get("containerName")
+    resource_name = data.get("resourceName")
 
-    container_info = get_container_info(
-        data.get("containerName"), data.get("resourceName")
-    )
-    if container_info:
-        return container_info
-    else:
-        return jsonify({"error": "Missing column name"}), 400
+    if not (container_name and resource_name):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    container_info = get_container_info(container_name, resource_name)
+    if not container_info:
+        return jsonify({"error": "Container not found"}), 404
+    return container_info

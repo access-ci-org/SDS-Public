@@ -79,7 +79,7 @@ export class DataTablesAnalytics {
         // top search terms
         const searchCounts = {};
         searches.forEach(search => {
-            searchCounts[searchCounts.searchTerm] = (searchCounts[search.searchTerm] || 0) + 1
+            searchCounts[search.searchTerm] = (searchCounts[search.searchTerm] || 0) + 1
         });
         const topSearchTerms = Object.entries(searchCounts)
             .sort(([,a], [,b]) => b -a)

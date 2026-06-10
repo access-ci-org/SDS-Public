@@ -1,36 +1,40 @@
 import { createContainerDetailsTemplate } from "./modals/containerModal.js"
+import { escapeHtml } from "./utils.js";
+import { showAlert } from "./alerts.js";
 const containers = JSON.parse(container_data);
 
 function createContainerCard(container) {
+    const name = escapeHtml(container.container_name);
+    const resource = escapeHtml(container.resource);
     return `
         <div class="col-12">
             <div class="card container-card h-100">
                 <div class="card-body">
                     <div class="d-inline-flex justify-content-between align-items-start">
                         <i class="bi bi-boxes me-2" aria-hidden="true"></i>
-                        <h2 class="card-title text-break" style="line-height:30px;">${container.container_name}</h2>
+                        <h2 class="card-title text-break" style="line-height:30px;">${name}</h2>
                     </div>
                     <div class="text-muted small mb-2">
                         <i class="bi bi-hdd-stack-fill" aria-hidden="true"></i>
                         <span class="visually-hidden">Resource:</span>
-                        ${container.resource}
+                        ${resource}
                     </div>
                     <div class="mt-3">
-                        <div class="text-muted small mb-2" id="installed-software-label-${container.container_name}">
+                        <div class="text-muted small mb-2" id="installed-software-label-${name}">
                             <i class="bi bi-grid-fill" aria-hidden="true"></i>
                             Installed Software
                         </div>
-                        <div class="d-flex flex-wrap gap-2" role="list" aria-labelledby="installed-software-label-${container.container_name}">
+                        <div class="d-flex flex-wrap gap-2" role="list" aria-labelledby="installed-software-label-${name}">
                             ${container.software.map(sw => `
-                                <span class="badge software-badge rounded-pill" role="listitem">${sw}</span>
+                                <span class="badge software-badge rounded-pill" role="listitem">${escapeHtml(sw)}</span>
                             `).join('')}
                         </div>
                     </div>
                     <div class="mt-3 pt-3 border-top">
                         <button class="btn btn-link btn-sm p-0 text-decoration-none view-details"
-                            data-container-name="${container.container_name}"
-                            data-resource-name="${container.resource}"
-                            aria-label="View details for ${container.container_name}">
+                            data-container-name="${name}"
+                            data-resource-name="${resource}"
+                            aria-label="View details for ${name}">
                             View Details
                         </button>
                     </div>
@@ -152,6 +156,7 @@ document.addEventListener('click', async (e) => {
             },
             error: function(xhr, status, error) {
                 console.error("Error: ", error);
+                showAlert("Unable to load container details. Please try again.", "danger");
             }
         });
     }

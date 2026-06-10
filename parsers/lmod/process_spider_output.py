@@ -38,4 +38,4 @@ def process_spider_data(spider_path: Path, blacklist: set[str]) -> None:
                         logger.warning(f"Skipping entry: {str(e)}")
                         continue
     except Exception as e:
-        raise DataProcessingError(f"Spider data processnig failed: {str(e)}") from e
+        raise DataProcessingError(f"Spider data processing failed: {str(e)}") from e

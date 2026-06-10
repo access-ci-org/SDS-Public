@@ -1,0 +1,21 @@
+api:
+  api_key: "test-api-key"
+  use_api: false
+  use_curated_info: false
+  use_ai_info: false
+
+styles:
+  primary_color: "#1b365d"
+  secondary_color: "#324a6d"
+  site_title: "SDS Test"
+  logo: "./logo.svg"
+
+general:
+  user_name: "admin"
+  password: "adminpass"
+  share_with_devs: false
+  share_with_others: false
+  show_container_page: true
+  hide_data: []
+  iframe: false
+  external_analytics: ""

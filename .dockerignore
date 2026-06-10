@@ -1,18 +1,20 @@
-<!-- env files -->
-.env
+
+# Git internals + CI config
 .git
 .gitignore
 .gitattributes
 .github
-.vscode
+.env
 
-__pycache__/
-logs/
+# Test code + config
+tests/
+frontend-tests/
+pytest.ini
+requirements-test.txt
+test_folder/
+
+
+# Operator data and local conda env
+data/
 env/
-*.log
 config.yaml
-
-software_uses/
-spider_data
-software.csv
-container_data

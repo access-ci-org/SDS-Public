@@ -3,7 +3,6 @@ import re
 from typing import Optional
 import yaml
 import magic
-from pprint import pp
 from app.cli_loading import custom_halo
 from parsers.lmod.custom_parsers.custom_lmod_parser import custom_lmod_parser
 

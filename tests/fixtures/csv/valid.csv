@@ -1,0 +1,3 @@
+software,resource,software_versions,software_description
+pytorch,gpu_cluster,"2.0.1, 1.13.1",PyTorch ML framework
+numpy,cpu_cluster,1.24.0,NumPy

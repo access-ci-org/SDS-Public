@@ -3,13 +3,15 @@ from pathlib import Path
 from flask import render_template, request, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from app.logic.table import initialize_table_info, get_table, organize_table, combine_columns, TableInfo
-from app.routes.analytics_routes import ANALYTICS_FILE
+from app.models.banner import Banner
+from app.routes.analytics_routes import analytics_file
 from . import settings_bp
 
 
 @settings_bp.route("/settings")
 @login_required
 def settings():
+    all_banners = list(Banner.select().order_by(Banner.created_at.desc())) if current_user.is_admin else []
     return render_template(
         "settings.html",
         table_info=initialize_table_info(),
@@ -20,7 +22,8 @@ def settings():
         api_curated_columns=current_app.config["API_CURATED_COLUMNS"],
         api_ai_columns=current_app.config["API_AI_COLUMNS"],
         share_with_devs=current_app.config["SHARE_WITH_DEVS"],
-        share_with_others=current_app.config["SHARE_WITH_OTHERS"]
+        share_with_others=current_app.config["SHARE_WITH_OTHERS"],
+        all_banners=all_banners,
     )
 
 @settings_bp.route("/update_col_visibility/<path:column_name>", methods=["POST"])
@@ -118,11 +121,10 @@ def download_software_json():
 @login_required
 def download_analytics_json():
     try:
-        analytics_file = Path(ANALYTICS_FILE)
-        # ensure file and path exists
-        analytics_file.parent.mkdir(parents=True, exist_ok=True)
-        analytics_file.touch()
+        f = analytics_file()
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.touch()
 
-        return send_file(analytics_file.resolve(), download_name="analytics_data.json", as_attachment=True), 200
+        return send_file(f.resolve(), download_name="analytics_data.json", as_attachment=True), 200
     except Exception as e:
         return jsonify({"error": "Error fetching analytics file"}), 500

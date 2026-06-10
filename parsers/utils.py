@@ -10,8 +10,8 @@ from parsers.exceptions import DataProcessingError
 def clean_versions(version_string: str) -> str:
     logger.debug(f"Cleaning version string: {version_string}")
     versions = [v.strip() for v in str(version_string).split(",") if v.strip()]
-    unqiue_versions = sorted(set(versions))
-    return ", ".join(unqiue_versions)
+    unique_versions = sorted(set(versions))
+    return ", ".join(unique_versions)
 
 def process_software(
     name: str, blacklist: set[str], description: Optional[str] = None
@@ -62,7 +62,7 @@ def update_software_resource(
         f"Updating software resource. Software ID: {software_id}, Resource ID: {resource_id}"
     )
     try:
-        if type(versions) == dict:
+        if isinstance(versions, dict):
             sr_ids = []
             for version, command in versions.items():
                 sr_id, created = SoftwareResource.get_or_create(
@@ -105,4 +105,4 @@ def update_software_resource(
         return [sr_id]
     except Exception as e:
         logger.error(f"Error updating software resource: {e}", exc_info=True)
-        raise e
+        raise

@@ -44,7 +44,7 @@ def setup_argparse() -> argparse.Namespace:
 def find_container_files(start_dir: Path, max_depth: int, resource_name: str) -> Path:
     """Search for container definition files locally and save them with structure preserved."""
     # Create container_data directory structure
-    dest_dir = Path(f"./container_data/{resource_name}")
+    dest_dir = Path(f"./data/container_data/{resource_name}")
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     # Initialize CSV file
@@ -120,7 +120,7 @@ def find_container_files(start_dir: Path, max_depth: int, resource_name: str) ->
 def collect_module_spider_data(resource_name: str) -> Path:
     """Collect module spider data and save it."""
     # Create spider_data directory structure
-    dest_dir = Path(f"./spider_data/{resource_name}")
+    dest_dir = Path(f"./data/spider_data/{resource_name}")
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     spider_file = dest_dir / f"{resource_name}_spider.txt"
@@ -167,8 +167,8 @@ def sync_directory_to_remote(args, local_directory: Path, remote_subdir: str):
             ssh_args = " ".join(args.ssh_options)
             rsync_cmd.extend(["-e", f"ssh {ssh_args}"])
 
-        # Get just the directory name (e.g., "container_data" from "./container_data/resource")
-        dir_name = local_directory.parts[-2]  # Get the parent directory name
+        # Get the data-relative dir (e.g., "data/container_data" from "./data/container_data/resource")
+        dir_name = "/".join(local_directory.parts[-3:-1])
         resource_name = local_directory.parts[-1]  # Get the resource name
 
         # Create the subdirectory on the remote first
@@ -297,7 +297,7 @@ def run_on_remote_and_sync_back(args):
         if args.sync:
             # Check if container_data directory exists on remote
             if args.directory:  # Only check for container data if a directory was specified
-                container_remote_path = f"~/sds_collector/container_data/{args.resource}/"
+                container_remote_path = f"~/sds_collector/data/container_data/{args.resource}/"
                 check_cmd = ["ssh"]
                 if args.ssh_options:
                     check_cmd.extend(args.ssh_options)
@@ -311,7 +311,7 @@ def run_on_remote_and_sync_back(args):
                 if "exists" in result.stdout:
                     print(f"Syncing container_data from remote cluster...")
                     # Create local directories if they don't exist
-                    Path(f"./container_data/{args.resource}").mkdir(parents=True, exist_ok=True)
+                    Path(f"./data/container_data/{args.resource}").mkdir(parents=True, exist_ok=True)
 
                     rsync_cmd = ["rsync", "-avz"]
                     if args.ssh_options:
@@ -319,8 +319,8 @@ def run_on_remote_and_sync_back(args):
                         rsync_cmd.extend(["-e", f"ssh {ssh_args}"])
 
                     rsync_cmd.extend([
-                        f"{args.username}@{args.remote}:~/sds_collector/container_data/{args.resource}/",
-                        f"./container_data/{args.resource}/"
+                        f"{args.username}@{args.remote}:~/sds_collector/data/container_data/{args.resource}/",
+                        f"./data/container_data/{args.resource}/"
                     ])
 
                     # Execute rsync command
@@ -330,7 +330,7 @@ def run_on_remote_and_sync_back(args):
             # Check for spider_data
             if args.lmod:
                 # Sync spider_data if it exists on remote
-                spider_remote_path = f"~/sds_collector/spider_data/{args.resource}/"
+                spider_remote_path = f"~/sds_collector/data/spider_data/{args.resource}/"
                 check_cmd = ["ssh"]
                 if args.ssh_options:
                     check_cmd.extend(args.ssh_options)
@@ -343,7 +343,7 @@ def run_on_remote_and_sync_back(args):
                 result = subprocess.run(check_cmd, stdout=subprocess.PIPE, text=True, check=True)
                 if "exists" in result.stdout:
                     print(f"Syncing spider_data from remote cluster...")
-                    Path(f"./spider_data/{args.resource}").mkdir(parents=True, exist_ok=True)
+                    Path(f"./data/spider_data/{args.resource}").mkdir(parents=True, exist_ok=True)
 
                     rsync_spider_cmd = ["rsync", "-avz"]
                     if args.ssh_options:
@@ -351,8 +351,8 @@ def run_on_remote_and_sync_back(args):
                         rsync_spider_cmd.extend(["-e", f"ssh {ssh_args}"])
 
                     rsync_spider_cmd.extend([
-                        f"{args.username}@{args.remote}:~/sds_collector/spider_data/{args.resource}/",
-                        f"./spider_data/{args.resource}/"
+                        f"{args.username}@{args.remote}:~/sds_collector/data/spider_data/{args.resource}/",
+                        f"./data/spider_data/{args.resource}/"
                     ])
 
                     subprocess.run(rsync_spider_cmd, check=True)
