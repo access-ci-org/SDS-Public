@@ -61,6 +61,13 @@ To update the data just change files in `./data/` on the host — no need to tou
 
 **Upgrading from the multi-mount layout?** If your existing deployment mounts `software.csv`, `container_data/`, etc. separately, run `bash migrate_data_layout.sh` from your repo root on the host. It moves your existing files into `./data/`, refuses to clobber anything, and prints the new run command. After that, update your compose file (or docker run) to use the single `-v ./data:/sds/data` mount.
 
+#### File ownership
+
+The container runs as an unprivileged user (UID 1000) and takes ownership of `./data` at startup, so everything SDS writes is owned by UID 1000 rather than root — no sudo needed to read or back up your data. Two host-specific notes:
+
+- SELinux-enforcing hosts (RHEL/Rocky/Alma): add `:z` to the data volume (e.g. `-v ./data:/sds/data:z`) so the mount is labeled for container access.
+- NFS-backed `./data` with `root_squash`: the startup ownership fixup is skipped; make sure the export allows UID 1000 to write.
+
 #### Monitoring and Logs
 
 All SDS logs are written to `/sds/data/state/logs/` inside the container, which appears on your host at `./data/state/logs/`. Files:

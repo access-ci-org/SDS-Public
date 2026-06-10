@@ -1,4 +1,4 @@
-#!/bin/bash --login
+#!/bin/bash
 
 # Legacy mount layout guard. SDS now expects a single $SDS_DATA_DIR mount.
 # Operators on the old compose file would have files mounted at the repo
@@ -25,6 +25,7 @@ for legacy in software.csv container_data spider_data software_uses \
     fi
 done
 
+source /opt/miniconda3/etc/profile.d/conda.sh
 conda activate /sds/env/SDS_ENV
 
 DATA_DIR="${SDS_DATA_DIR:-.}"

@@ -18,3 +18,4 @@ test_folder/
 data/
 env/
 config.yaml
+logs/
