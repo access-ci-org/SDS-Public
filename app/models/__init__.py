@@ -36,11 +36,10 @@ def _existing_columns(database, table_name):
 
 
 def ensure_snapshot_columns(database):
-    """Add auto_values / auto_command columns to the snapshot tables if
-    they don't yet exist. Idempotent. Called on boot so existing
-    persistent DBs gain the new columns without losing data."""
+    """Add the auto_values column to softwareedit if it doesn't yet exist.
+    Idempotent. Called on boot so existing persistent DBs gain the column
+    without losing data."""
     from app.models.software_edit import SoftwareEdit
-    from app.models.command_edit import CommandEdit
 
     migrator = SqliteMigrator(database)
     ops = []
@@ -53,13 +52,18 @@ def ensure_snapshot_columns(database):
             )
         )
 
-    cmd_cols = _existing_columns(database, "commandedit")
-    if "auto_command" not in cmd_cols:
-        ops.append(
-            migrator.add_column(
-                "commandedit", "auto_command", CommandEdit.auto_command
-            )
-        )
-
     if ops:
         migrate(*ops)
+
+
+def ensure_command_edit_schema(database):
+    """Recreate the commandedit table when it predates the per-chain
+    schema (no target_command column). Old whole-list rows are dropped,
+    not migrated. Idempotent; also creates the table when absent."""
+    from app.models.command_edit import CommandEdit
+
+    cols = _existing_columns(database, "commandedit")
+    if cols and "target_command" not in cols:
+        database.execute_sql("DROP TABLE commandedit")
+    with database.bind_ctx([CommandEdit]):
+        database.create_tables([CommandEdit], safe=True)

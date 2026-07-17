@@ -16,10 +16,6 @@
 
 {% set TEXTAREA_FIELDS = ['description', 'ai_description', 'ai_core_features', 'ai_example_use'] %}
 {% set URL_FIELDS      = ['web_page', 'documentation', 'use_link'] %}
-{% set CORE_FIELDS     = ['description', 'web_page', 'documentation', 'use_link'] %}
-{% set AI_FIELDS       = ['ai_description', 'ai_software_type', 'ai_software_class',
-                           'ai_research_field', 'ai_research_area', 'ai_research_discipline',
-                           'ai_core_features', 'ai_general_tags', 'ai_example_use'] %}
 
 {% macro field_row(field_name) %}
   {% set fd = fields[field_name] %}
@@ -92,10 +88,8 @@
                   data-bs-toggle="tab" data-bs-target="#tab-core"
                   type="button" role="tab" aria-controls="tab-core" aria-selected="true">
             Core Metadata
-            {% set core_overrides = fields.values() | selectattr('is_overridden') | list | length %}
-            {# count only core fields #}
             {% set core_override_count = namespace(n=0) %}
-            {% for f in CORE_FIELDS %}{% if fields[f].is_overridden %}{% set core_override_count.n = core_override_count.n + 1 %}{% endif %}{% endfor %}
+            {% for f in core_fields %}{% if fields[f].is_overridden %}{% set core_override_count.n = core_override_count.n + 1 %}{% endif %}{% endfor %}
             {% if core_override_count.n > 0 %}
               <span class="tab-edit-count">{{ core_override_count.n }} edited</span>
             {% endif %}
@@ -107,7 +101,7 @@
                   type="button" role="tab" aria-controls="tab-ai" aria-selected="false">
             AI Fields
             {% set ai_override_count = namespace(n=0) %}
-            {% for f in AI_FIELDS %}{% if fields[f].is_overridden %}{% set ai_override_count.n = ai_override_count.n + 1 %}{% endif %}{% endfor %}
+            {% for f in ai_fields %}{% if fields[f].is_overridden %}{% set ai_override_count.n = ai_override_count.n + 1 %}{% endif %}{% endfor %}
             {% if ai_override_count.n > 0 %}
               <span class="tab-edit-count">{{ ai_override_count.n }} edited</span>
             {% endif %}
@@ -129,12 +123,12 @@
       <!-- Tab panes -->
       <div class="tab-content admin-tab-content">
         <div class="tab-pane fade show active" id="tab-core" role="tabpanel" aria-labelledby="tab-core-btn">
-          {% for field_name in CORE_FIELDS %}
+          {% for field_name in core_fields %}
             {{ field_row(field_name) }}
           {% endfor %}
         </div>
         <div class="tab-pane fade" id="tab-ai" role="tabpanel" aria-labelledby="tab-ai-btn">
-          {% for field_name in AI_FIELDS %}
+          {% for field_name in ai_fields %}
             {{ field_row(field_name) }}
           {% endfor %}
         </div>
@@ -143,6 +137,7 @@
             <p style="padding: 14px 0 6px; font-size: 13px; color: #aaa;">No resource commands found.</p>
           {% else %}
             {% for entry in command_data %}
+              {% set b = entry.index %}
               <div class="edit-field-row">
                 <div class="field-label">
                   {{ entry.resource_name }}
@@ -158,10 +153,64 @@
                   {% endif %}
                 </div>
                 <div class="field-control">
-                  <textarea name="cmd__{{ entry.resource_name }}__{{ entry.software_version }}"
-                            rows="3"
-                            placeholder="One command per line">{{ entry.display_value }}</textarea>
-                  <span style="font-size:11px;color:#aaa;">Each line is one full load command (e.g. <code>module load dep &amp;&amp; module load pkg</code>)</span>
+                  <input type="hidden" name="block__{{ b }}__resource" value="{{ entry.resource_name }}">
+                  <input type="hidden" name="block__{{ b }}__version" value="{{ entry.software_version }}">
+
+                  <label class="chain-auto-label">
+                    <input type="radio" name="block__{{ b }}__primary" value="auto"
+                           {% if entry.primary_value == 'auto' %}checked{% endif %}>
+                    Automatic order — the first command below is shown first
+                  </label>
+
+                  {% for chain in entry.chains %}
+                    <div class="chain-row">
+                      <label class="chain-first-label" title="Show this command first">
+                        <input type="radio" name="block__{{ b }}__primary"
+                               value="chain__{{ loop.index0 }}"
+                               {% if entry.primary_value == 'chain__' ~ loop.index0 %}checked{% endif %}>
+                        show first
+                      </label>
+                      <input type="hidden"
+                             name="block__{{ b }}__chain__{{ loop.index0 }}__target"
+                             value="{{ chain.target }}">
+                      <input type="text"
+                             name="block__{{ b }}__chain__{{ loop.index0 }}__text"
+                             value="{{ chain.text }}">
+                      <label class="chain-hide-label">
+                        <input type="checkbox"
+                               name="block__{{ b }}__chain__{{ loop.index0 }}__hide"
+                               {% if chain.is_hidden %}checked{% endif %}>
+                        hide
+                      </label>
+                      {% if chain.is_replaced %}
+                        <span class="field-source source-admin">edited</span>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+
+                  {% for added in entry.added %}
+                    <div class="chain-row">
+                      <label class="chain-first-label" title="Show this command first">
+                        <input type="radio" name="block__{{ b }}__primary"
+                               value="added__{{ loop.index0 }}"
+                               {% if entry.primary_value == 'added__' ~ loop.index0 %}checked{% endif %}>
+                        show first
+                      </label>
+                      <input type="text"
+                             name="block__{{ b }}__added__{{ loop.index0 }}"
+                             value="{{ added }}">
+                      <span class="field-source source-admin">added</span>
+                    </div>
+                  {% endfor %}
+
+                  <div class="chain-row">
+                    <input type="text" name="block__{{ b }}__new"
+                           placeholder="Add a command…">
+                  </div>
+                  <span class="chain-note">
+                    “hide” keeps the collected command but removes it from the site.
+                    Blank an added command to delete it.
+                  </span>
                 </div>
                 <div class="field-actions">
                   {% if entry.is_overridden %}
@@ -169,7 +218,7 @@
                        hx-delete="/admin/edit/software/{{ software_name }}/command/{{ entry.resource_name }}/{{ entry.software_version }}"
                        hx-target="#admin-edit-panel"
                        hx-swap="outerHTML"
-                       hx-confirm="Revert this command? The override will be removed and the auto-populated command restored."
+                       hx-confirm="Revert all command edits for this entry? The collected commands will display again."
                        role="button">
                       <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i> Revert
                     </a>
@@ -177,6 +226,36 @@
                 </div>
               </div>
             {% endfor %}
+          {% endif %}
+
+          {% if stale_edits %}
+            <div class="edit-field-row" id="stale-overrides">
+              <div class="field-label">
+                Stale overrides
+              </div>
+              <div class="field-control">
+                <p class="chain-note" style="margin:4px 0 8px;">
+                  These edits no longer match any collected command — the cluster data
+                  changed underneath them. They have no effect on the site.
+                </p>
+                {% for s in stale_edits %}
+                  <div class="stale-row">
+                    <span class="stale-desc">
+                      {{ s.resource_name }} / v{{ s.software_version }} — {{ s.description }}
+                    </span>
+                    <a class="revert-link"
+                       hx-delete="/admin/edit/software/{{ software_name }}/command_edit/{{ s.id }}"
+                       hx-target="#admin-edit-panel"
+                       hx-swap="outerHTML"
+                       hx-confirm="Delete this stale override?"
+                       role="button">
+                      <i class="bi bi-trash" aria-hidden="true"></i> Delete
+                    </a>
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="field-actions"></div>
+            </div>
           {% endif %}
         </div>
       </div>

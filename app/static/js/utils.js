@@ -33,3 +33,12 @@ export function splitCommands(raw) {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 }
+
+/**
+ * Parse a comma-separated classification string (tags, research disciplines,
+ * software types) into trimmed, de-duplicated, non-empty values — one chip per
+ * value, keeping first-seen order.
+ */
+export function parseChipValues(raw) {
+    return [...new Set(splitCommands(raw))];
+}

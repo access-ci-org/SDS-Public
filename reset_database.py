@@ -15,17 +15,17 @@ from halo import Halo
 
 
 from app import app
-from app.models import db, persistent_db, ensure_snapshot_columns
+from app.logic import chain_projection, overrides
+from app.models.fields import AI_FIELD_NAMES
+from app.models import db
 from app.models.resource import Resource
 from app.models.software import Software
 from app.models.softwareResource import SoftwareResource
+from app.models.softwareResourceCommand import SoftwareResourceCommand
 from app.models.aiSoftwareInfo import AISoftwareInfo
 from app.models.users import Users
 from app.models.containers import Container
 from app.models.softwareContainer import SoftwareContainer
-from app.models.software_edit import SoftwareEdit
-from app.models.command_edit import CommandEdit
-from app.models.banner import Banner
 from app.cli_loading import custom_halo
 from app.paths import data_dir, state_dir
 
@@ -48,8 +48,8 @@ def recreate_table() -> None:
         Resource,
         Software,
         SoftwareResource,
+        SoftwareResourceCommand,
         AISoftwareInfo,
-        Users,
         Container,
         SoftwareContainer,
     ]
@@ -203,41 +203,40 @@ def update_db_from_remote(remote_data: dict[str, any]) -> None:
 
         if app.config["USE_CURATED_INFO"]:
             # logger.info(f"Updating curated info for software: {s.software_name}")
+            # An empty remote value is "no data", not an instruction to blank
+            # a link that another source (e.g. lmod url) already filled.
             software_update_data = {
-                "software_web_page": remote_s_info["software_web_page"],
-                "software_documentation": remote_s_info["software_documentation"],
-                "software_use_link": remote_s_info["software_use_link"],
+                field: remote_s_info[field]
+                for field in (
+                    "software_web_page",
+                    "software_documentation",
+                    "software_use_link",
+                )
+                if remote_s_info[field]
             }
             if not s.software_description:
                 software_update_data["software_description"] = remote_s_info[
                     "software_description"
                 ]
-            with db.atomic() as transaction:
-                try:
-                    software_query = Software.update(**software_update_data).where(
-                        Software.id == s.id
-                    )
-                    software_query.execute()
-                except Exception as e:
-                    transaction.rollback()
-                    logger.error(
-                        f"Error updating software from remote info: {e}", exc_info=True
-                    )
-                    raise
+            if software_update_data:
+                with db.atomic() as transaction:
+                    try:
+                        software_query = Software.update(**software_update_data).where(
+                            Software.id == s.id
+                        )
+                        software_query.execute()
+                    except Exception as e:
+                        transaction.rollback()
+                        logger.error(
+                            f"Error updating software from remote info: {e}", exc_info=True
+                        )
+                        raise
 
         if app.config["USE_AI_INFO"]:
             # logger.info(f"Updating AI info for software: {s.software_name}")
             ai_software_info = {
                 "software_id": s.id,
-                "ai_description": remote_s_info["ai_description"] or "",
-                "ai_software_type": remote_s_info["ai_software_type"] or "",
-                "ai_software_class": remote_s_info["ai_software_class"] or "",
-                "ai_research_field": remote_s_info["ai_research_field"] or "",
-                "ai_research_area": remote_s_info["ai_research_area"] or "",
-                "ai_research_discipline": remote_s_info["ai_research_discipline"] or "",
-                "ai_core_features": remote_s_info["ai_core_features"] or "",
-                "ai_general_tags": remote_s_info["ai_general_tags"] or "",
-                "ai_example_use": remote_s_info["ai_example_use"] or "",
+                **{f: remote_s_info[f] or "" for f in AI_FIELD_NAMES},
             }
             with db.atomic() as transaction:
                 try:
@@ -355,133 +354,17 @@ def get_external_site_title(url, session):
         return ""
 
 @custom_halo(text="Updating example use data")
-def update_example_uses(example_use_dir: Path) -> None:
-    """
-    Updates example usage for software from user provided data
-    """
-    for file in example_use_dir.iterdir():
-        if not file.is_file():
-            print(f"Item {file} is not a file. Skipping")
-
-        try:
-            file_data = ''
-            with open(file, 'r', encoding='utf-8') as f:
-                file_data = f.read()
-
-            file_name = file.name
-            if file_name.endswith('.md'):
-                file_name = file_name[:-len('.md')]
-
-            software = Software.get_or_none(Software.software_name == file_name)
-            if software:
-                ai_software = AISoftwareInfo.get_or_none(AISoftwareInfo.software_id == software)
-                if ai_software:
-                    ai_software.ai_example_use = file_data
-                    updated = ai_software.save()
-
-        except Exception as e:
-            print(e)
+def update_example_use_data(example_use_dir: Path) -> None:
+    """Apply example-use files to the live AI rows (re-applied every rebuild)."""
+    overrides.apply_example_use_files(example_use_dir)
 
 
 @custom_halo(text="Applying admin overrides")
-def apply_overrides(software_uses_dir: Path) -> None:
-    """
-    Apply SoftwareEdit overrides to sds_db after a reset.
-    Also migrates legacy software_uses markdown files into SoftwareEdit on first run.
-
-    Snapshots auto_values / auto_command from the freshly derived sds_db row
-    BEFORE stomping with the override, so revert restores the current
-    pipeline value.
-    """
-    persistent_db.connect(reuse_if_open=True)
-    persistent_db.create_tables([SoftwareEdit, CommandEdit, Banner], safe=True)
-    ensure_snapshot_columns(persistent_db)
-
-    # One-time migration: import markdown files into SoftwareEdit if not already there
-    if software_uses_dir.exists() and software_uses_dir.is_dir():
-        for md_file in software_uses_dir.glob("*.md"):
-            sw_name = md_file.stem
-            try:
-                edit = SoftwareEdit.get(SoftwareEdit.software_name == sw_name)
-                if edit.ai_example_use is None:
-                    edit.ai_example_use = md_file.read_text(encoding="utf-8")
-                    edit.save()
-            except SoftwareEdit.DoesNotExist:
-                SoftwareEdit.create(
-                    software_name=sw_name,
-                    ai_example_use=md_file.read_text(encoding="utf-8"),
-                )
-
-    sw_field_map = [
-        ("description", "software_description"),
-        ("web_page", "software_web_page"),
-        ("documentation", "software_documentation"),
-        ("use_link", "software_use_link"),
-    ]
-    ai_fields = [
-        "ai_description", "ai_software_type", "ai_software_class",
-        "ai_research_field", "ai_research_area", "ai_research_discipline",
-        "ai_core_features", "ai_general_tags", "ai_example_use",
-    ]
-
-    for edit in SoftwareEdit.select():
-        sw = Software.get_or_none(Software.software_name == edit.software_name)
-        if sw is None:
-            continue
-
-        try:
-            snapshots = json.loads(edit.auto_values) if edit.auto_values else {}
-        except (json.JSONDecodeError, TypeError):
-            snapshots = {}
-        snapshots_changed = False
-
-        sw_changed = False
-        for edit_field, sw_field in sw_field_map:
-            val = getattr(edit, edit_field)
-            if val is not None:
-                snapshots[edit_field] = getattr(sw, sw_field, "") or ""
-                snapshots_changed = True
-                setattr(sw, sw_field, val)
-                sw_changed = True
-        if sw_changed:
-            sw.save()
-
-        ai = AISoftwareInfo.get_or_none(AISoftwareInfo.software_id == sw.id)
-        if ai is not None:
-            ai_changed = False
-            for field in ai_fields:
-                val = getattr(edit, field)
-                if val is not None:
-                    snapshots[field] = getattr(ai, field, "") or ""
-                    snapshots_changed = True
-                    setattr(ai, field, val)
-                    ai_changed = True
-            if ai_changed:
-                ai.save()
-
-        if snapshots_changed:
-            edit.auto_values = json.dumps(snapshots) if snapshots else None
-            edit.save()
-
-    for cmd_edit in CommandEdit.select():
-        if cmd_edit.command is None:
-            continue
-        sw = Software.get_or_none(Software.software_name == cmd_edit.software_name)
-        if sw is None:
-            continue
-        try:
-            resource = Resource.get(Resource.resource_name == cmd_edit.resource_name)
-            sr = SoftwareResource.get(
-                (SoftwareResource.software_id == sw.id) &
-                (SoftwareResource.resource_id == resource.id) &
-                (SoftwareResource.software_version == cmd_edit.software_version)
-            )
-            cmd_edit.auto_command = sr.command or ""
-            cmd_edit.save()
-            sr.command = cmd_edit.command
-            sr.save()
-        except (Resource.DoesNotExist, SoftwareResource.DoesNotExist):
-            continue
+def apply_admin_overrides() -> None:
+    """Project SoftwareEdit field overrides and per-chain CommandEdit edits
+    onto the rebuilt sds_db."""
+    overrides.project_all()
+    chain_projection.project_all()
 
 
 def setup_argparse() -> argparse.Namespace:
@@ -595,16 +478,19 @@ def main() -> None:
             software_use_path = data_dir() / "software_uses"
         if software_use_path.is_dir():
             logger.info("Found software uses directory. Attempting to parse")
-            update_example_uses(software_use_path)
+            update_example_use_data(software_use_path)
         elif args.software_use_dir:
             logger.warning(f"{software_use_path} is not a directory, skipping example use data")
 
-        apply_overrides(software_use_path)
+        apply_admin_overrides()
 
-        logger.info("Creating admin user")
+        logger.info("Ensuring admin user exists")
         hashed_password = app.config["DEFAULT_PASS"]
         username = app.config["DEFAULT_USER"]
-        Users.create(username=username, password=hashed_password, is_admin=True)
+        Users.get_or_create(
+            username=username,
+            defaults={"password": hashed_password, "is_admin": True},
+        )
         logger.info("Database processing completed successfully")
 
         # Save last updated time to file

@@ -135,7 +135,7 @@ class FlaskWatcher(FileSystemEventHandler):
     def start_flask(self):
         """Start Flask"""
         print("Starting Flask...")
-        self.flask_process = subprocess.Popen(["flask", "run", "--port", "8080"])
+        self.flask_process = subprocess.Popen([sys.executable, "-m", "flask", "run", "--port", "8080"])
         print("Flask started")
 
 def parse_args():

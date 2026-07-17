@@ -14,7 +14,10 @@ def clean_versions(version_string: str) -> str:
     return ", ".join(unique_versions)
 
 def process_software(
-    name: str, blacklist: set[str], description: Optional[str] = None
+    name: str,
+    blacklist: set[str],
+    description: Optional[str] = None,
+    web_page: Optional[str] = None,
 ) -> Model:
     logger.debug(f"Processing software: {name}")
     try:
@@ -35,6 +38,14 @@ def process_software(
                     .where(Software.id == existing_software)
                     .execute()
                 )
+            # Add web page if it doesn't exist
+            if web_page and not existing_software.software_web_page:
+                logger.info(f"Updating web page for software: {name}")
+                (
+                    Software.update({Software.software_web_page: web_page})
+                    .where(Software.id == existing_software)
+                    .execute()
+                )
             return existing_software
 
         logger.info(f"Create new software entry: {name}")
@@ -42,6 +53,7 @@ def process_software(
         software_data = {
             "software_name": name,
             "software_description": description or "",
+            "software_web_page": web_page or "",
         }
         software_id = Software.insert(software_data).execute()
         return Software.get_by_id(software_id)

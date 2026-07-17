@@ -8,6 +8,14 @@
   color: var(--secondary-color);
 }
 
+th.sortable::after {
+  content: " ⇅";
+  opacity: 0.3;
+  font-size: 0.8em;
+}
+th.sortable[data-sort="asc"]::after  { content: " ↑"; opacity: 1; }
+th.sortable[data-sort="desc"]::after { content: " ↓"; opacity: 1; }
+
 .form-switch .form-check-input:checked {
   background-color: var(--primary-color-1);
   border-color: var(--primary-color-1);

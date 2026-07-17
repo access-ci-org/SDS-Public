@@ -5,6 +5,14 @@ import yaml
 import magic
 from app.cli_loading import custom_halo
 from parsers.lmod.custom_parsers.custom_lmod_parser import custom_lmod_parser
+from parsers.lmod.name_version_rules import (
+    DEFAULT_NAME_PATTERN,
+    DEFAULT_VERSION_CLEANER,
+    DEFAULT_VERSION_CLEANER_MAX_SPLIT,
+    DEFAULT_VERSION_SEPARATOR,
+    apply_name_version_rules,
+)
+from parsers.lmod.parse_spider_json import get_software_info_json
 
 def is_text_file(file_path: Path) -> bool:
     """
@@ -43,10 +51,10 @@ def get_software_info(
     file_path: Path,
     section_separator: str = r"\n(?=\s{2}[/\w.+-]+(?:/[\w+\-])*:)",
     name_version_pattern: str = r"([/\w.+-]+(?:-[/\w+\-]+)?): (.+)",
-    name_pattern: str = r"([^/]+)(?=/.*)",
-    version_separator: str = r"[,]",
-    version_cleaner: str = r"/",
-    version_cleaner_max_split: str = "1",
+    name_pattern: str = DEFAULT_NAME_PATTERN,
+    version_separator: str = DEFAULT_VERSION_SEPARATOR,
+    version_cleaner: str = DEFAULT_VERSION_CLEANER,
+    version_cleaner_max_split: str = DEFAULT_VERSION_CLEANER_MAX_SPLIT,
     spider_description_separator: str = "----",
     custom_name_version_parser: Optional[callable] = None,
 ) -> list[dict[str, any]]:
@@ -114,26 +122,16 @@ def get_software_info(
                 else:
                     name, versions = name_version_match.groups()
 
-                if custom_name_version_parser:
-                    name, versions, software_info = custom_name_version_parser(
-                        name, versions, software_info
-                    )
-                name_match = re.match(name_pattern, name, re.VERBOSE)
-                if name_match:
-                    # return the first not-None group
-                    name = next(
-                        group for group in name_match.groups() if group is not None
-                    )
-
-                # versions = [
-                #     re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]
-                #     for v in re.split(version_separator, versions)
-                # ]
-
-                versions = {
-                    re.split(version_cleaner, v.strip(), int(version_cleaner_max_split))[-1]: v.strip()
-                    for v in re.split(version_separator, versions)
-                }
+                name, versions, software_info = apply_name_version_rules(
+                    name,
+                    versions,
+                    software_info,
+                    name_pattern=name_pattern,
+                    version_separator=version_separator,
+                    version_cleaner=version_cleaner,
+                    version_cleaner_max_split=version_cleaner_max_split,
+                    custom_name_version_parser=custom_name_version_parser,
+                )
 
                 # Join the remaining lines as the description
                 description = " ".join(line.strip() for line in lines[1:])
@@ -211,30 +209,59 @@ def parse_spider_output(spider_output_dir: Path) -> dict[str, list[dict[str, any
 
     lmod_parsing["custom_name_version_parser"] = custom_lmod_parser
 
+    # The JSON parser takes the shared name/version rules but none of the
+    # text-layout options (section_separator, name_version_pattern, ...).
+    json_rules = {
+        key: lmod_parsing[key]
+        for key in (
+            "name_pattern",
+            "version_separator",
+            "version_cleaner",
+            "version_cleaner_max_split",
+            "custom_name_version_parser",
+        )
+        if key in lmod_parsing
+    }
+
     for dir_path in spider_output_dir.iterdir():
         if not dir_path.is_dir():
             print(f"Item {dir_path} not inside a resource directory. Skipping")
             continue
 
-        for file_path in dir_path.iterdir():
-            if file_path.is_dir():
-                print(
-                    f"Item {file_path} inside {spider_output_dir} is not a file. Skipping"
-                )
-                continue
-            if not is_text_file(file_path):
-                print(
-                    f"Item {file_path} inside {spider_output_dir} is not a text file. Skipping"
-                )
-                continue
-            resource_name = dir_path.stem
-            if resource_name in resource_software_info:
-                resource_software_info[resource_name] += get_software_info(
-                    file_path, **lmod_parsing
-                )
-            else:
-                resource_software_info[resource_name] = get_software_info(
-                    file_path, **lmod_parsing
-                )
+        resource_name = dir_path.stem
+        software_info = []
+
+        # JSON spider output (spider -o jsonSoftwarePage) carries dependency
+        # chains the text output lacks, and both files describe the same
+        # modules — so when a resource has usable JSON, its text files are
+        # skipped to avoid double ingestion.
+        parsed_json = False
+        for file_path in sorted(dir_path.glob("*.json")):
+            try:
+                software_info += get_software_info_json(file_path, **json_rules)
+                parsed_json = True
+            except (ValueError, OSError) as e:
+                print(f"Could not parse {file_path} as spider JSON: {e}. Skipping")
+
+        if not parsed_json:
+            for file_path in dir_path.iterdir():
+                if file_path.is_dir():
+                    print(
+                        f"Item {file_path} inside {spider_output_dir} is not a file. Skipping"
+                    )
+                    continue
+                if file_path.suffix == ".json":
+                    continue
+                if not is_text_file(file_path):
+                    print(
+                        f"Item {file_path} inside {spider_output_dir} is not a text file. Skipping"
+                    )
+                    continue
+                software_info += get_software_info(file_path, **lmod_parsing)
+
+        if resource_name in resource_software_info:
+            resource_software_info[resource_name] += software_info
+        else:
+            resource_software_info[resource_name] = software_info
 
     return resource_software_info

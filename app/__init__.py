@@ -1,3 +1,4 @@
+import os
 import secrets
 import sys
 from pathlib import Path
@@ -6,10 +7,12 @@ from flask_login import LoginManager, current_user
 import yaml
 from peewee import DoesNotExist
 from app.models.users import Users
-from app.models import persistent_db, ensure_snapshot_columns
+from app.models import persistent_db, ensure_command_edit_schema, ensure_snapshot_columns
 from app.models.software_edit import SoftwareEdit
-from app.models.command_edit import CommandEdit
 from app.models.banner import Banner
+from app.models.api_key import APIKey
+from app.models.api_key_log import APIKeyLog
+from app.models.fields import AI_FIELD_NAMES
 from app.logic.table import initialize_table_info
 
 app = Flask(__name__)
@@ -39,6 +42,7 @@ try:
     api_conf = config["api"]
     styles_conf = config.get("styles", {})
     general_conf = config.get("general", {})
+    rest_api_conf = config.get("rest_api", {})
 except FileNotFoundError as e:
     print(f"Unable to find config file config.yaml: {e}")
     sys.exit(1)
@@ -49,11 +53,22 @@ except Exception as e:
     print(f"Error while trying to read config file: {e}")
     sys.exit(1)
 
-# api config
+# rest_api config
+REST_API_REQUIRE_AUTH = rest_api_conf.get("require_auth", True)
+
+def _env_flag(name, default):
+    """Boolean override from the environment; unset falls back to default."""
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return val.strip().lower() in ("1", "true", "yes", "on")
+
+
+# api config — the SDS_USE_* environment variables override config.yaml
 API_KEY = api_conf.get("api_key")
-USE_API = api_conf.get("use_api") or False
-USE_CURATED_INFO = api_conf.get("use_curated_info") or False
-USE_AI_INFO = api_conf.get("use_ai_info") or False
+USE_API = _env_flag("SDS_USE_API", api_conf.get("use_api") or False)
+USE_CURATED_INFO = _env_flag("SDS_USE_CURATED_INFO", api_conf.get("use_curated_info") or False)
+USE_AI_INFO = _env_flag("SDS_USE_AI_INFO", api_conf.get("use_ai_info") or False)
 
 # styles config
 PRIMARY_COLOR = styles_conf.get("primary_color") or "#1b365d"
@@ -72,7 +87,7 @@ IFRAME = general_conf.get("iframe",False)
 EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 
 # Current SDS Version
-SDS_VERSION = "1.4.0"
+SDS_VERSION = "1.4.1"
 
 # API URL
 SDS_API_URL = "https://sds-api.ccs.uky.edu/"
@@ -82,24 +97,19 @@ if not USE_AI_INFO and not USE_CURATED_INFO and USE_API:
     USE_API = False
 
 
-API_AI_COLUMNS = [
-    "ai_description",
-    "ai_software_type",
-    "ai_software_class",
-    "ai_research_field",
-    "ai_research_area",
-    "ai_research_discipline",
-    "ai_core_features",
-    "ai_general_tags",
-    "ai_example_use",
-]
+# Columns sourced from the remote SDS API, hidden when the corresponding
+# use_* flag is off.
+API_AI_COLUMNS = list(AI_FIELD_NAMES)
 
+# software_description is deliberately absent: it is also populated by the
+# lmod pipeline, so it stays visible when curated info is off.
 API_CURATED_COLUMNS = [
     "software_web_page",
     "software_documentation",
     "software_use_link",
 ]
 app.config.update(
+    REST_API_REQUIRE_AUTH=REST_API_REQUIRE_AUTH,
     API_KEY=API_KEY,
     USE_API=USE_API,
     USE_CURATED_INFO=USE_CURATED_INFO,
@@ -124,10 +134,11 @@ app.config.update(
 )
 
 
-# Ensure SoftwareEdit table exists in persistent db
+# Ensure all persistent tables exist
 persistent_db.connect(reuse_if_open=True)
-persistent_db.create_tables([SoftwareEdit, CommandEdit, Banner], safe=True)
+persistent_db.create_tables([SoftwareEdit, Banner, Users, APIKey, APIKeyLog], safe=True)
 ensure_snapshot_columns(persistent_db)
+ensure_command_edit_schema(persistent_db)
 persistent_db.close()
 
 

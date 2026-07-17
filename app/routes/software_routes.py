@@ -3,7 +3,11 @@ from flask import current_app
 from flask import render_template, jsonify, flash, redirect, url_for, request
 from peewee import DoesNotExist
 from app.models.aiSoftwareInfo import AISoftwareInfo
+from app.models.command_edit import CommandEdit
+from app.models.resource import Resource
 from app.models.software import Software
+from app.models.softwareResource import SoftwareResource
+from app.logic.chain_projection import resolved_command_texts
 from app.logic.table import get_table, organize_table, combine_columns
 from app.logic.lastUpdated import get_last_updated
 from app.logic.convertMarkdown import convert_markdown_to_html
@@ -72,17 +76,16 @@ def get_example_use(software_name):
 
     if 'AI Example Use' in current_app.config['HIDE_DATA']:
         return jsonify({"error": "Example use is hidden by admin"}), 204
-    example_use = None
-    try:
-        software_id = Software.get(Software.software_name == software_name)
-        software_ai_info = AISoftwareInfo.get(AISoftwareInfo.software_id == software_id)
-        example_use = software_ai_info.ai_example_use
-    except DoesNotExist as dne:
-        print(dne)
+
+    software = Software.get_or_none(Software.software_name == software_name)
+    ai_info = (
+        AISoftwareInfo.get_or_none(AISoftwareInfo.software_id == software.id)
+        if software else None
+    )
+    example_use = ai_info.ai_example_use if ai_info else None
 
     if example_use:
-        example_use_html = convert_markdown_to_html(software_ai_info.ai_example_use)
-        return jsonify({"use": example_use_html})
+        return jsonify({"use": convert_markdown_to_html(example_use)})
 
     error_text = "**Unable to find use case record**"
     return jsonify({"use": convert_markdown_to_html(error_text)}), 204
@@ -102,6 +105,35 @@ def get_software_container(software_name):
         flash(f"Unable to retrieve containers for {software_name}", "danger")
         return redirect(url_for("software.software_search"))
 
+def _load_commands_by_version(software_name):
+    """{resource_name: {version: [command, ...]}} — every load command an
+    entry of this software displays, resolved through any admin edits."""
+    sw = Software.get_or_none(Software.software_name == software_name)
+    if sw is None:
+        return {}
+    edited = {
+        (e.resource_name, e.software_version)
+        for e in CommandEdit.select().where(
+            CommandEdit.software_name == software_name
+        )
+    }
+    commands = {}
+    entries = (
+        SoftwareResource
+        .select(SoftwareResource, Resource)
+        .join(Resource)
+        .where(SoftwareResource.software_id == sw.id)
+    )
+    for sr in entries:
+        resource_name = sr.resource_id.resource_name
+        texts = resolved_command_texts(
+            sr, (resource_name, sr.software_version) in edited
+        )
+        if texts:
+            commands.setdefault(resource_name, {})[sr.software_version] = texts
+    return commands
+
+
 @software_bp.route("/software_info/<path:software_name>")
 def software_info(software_name):
 
@@ -116,8 +148,30 @@ def software_info(software_name):
             ('Description', 'AI Description'),
         ])
         table = combine_columns(table, [
-            ('AI Research Discipline', 'AI Research Field')
+            ('AI Research Discipline', 'AI Research Field'),
+            ('AI Research Discipline', 'AI Research Area'),
+            ('AI Software Type', 'AI Software Class'),
         ], combine_data= True)
+        # AI Research Field/Area fold into AI Research Discipline and AI Software
+        # Class into AI Software Type above; drop the raw columns so they aren't
+        # also sent on their own.
+        table = table.drop(
+            columns=['AI Research Field', 'AI Research Area', 'AI Software Class'],
+            errors='ignore',
+        )
+        # Each version entry gains its full resolved command list; the
+        # single `command` key stays as-is for anything reading it.
+        version_col = table_info.column_names["software_version"]
+        if version_col in table.columns:
+            commands = _load_commands_by_version(software_name)
+            for cell in table[version_col]:
+                if not isinstance(cell, dict):
+                    continue
+                for resource, entries in cell.items():
+                    for entry in entries:
+                        texts = commands.get(resource, {}).get(entry.get("version"))
+                        if texts:
+                            entry["load_commands"] = texts
         table = table.to_json(
                 index=False,
                 orient='records'

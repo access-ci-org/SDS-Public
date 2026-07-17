@@ -34,6 +34,11 @@ RUN chmod +x setup.sh && ./setup.sh
 # app/static/last_updated.txt, and app/data/api_response.json at runtime)
 COPY --chown=sds:sds . /sds/
 
+# install the self-contained MCP server into the env. pyproject already
+# declares `mcp>=1.0.0` (env.yaml omits it), so this pulls the SDK and exposes
+# the `sds-mcp` console script that supervisord launches.
+RUN /sds/env/SDS_ENV/bin/python -m pip install -e /sds/mcp
+
 # copy nginx config
 COPY nginx.conf /etc/nginx/sites-available/default
 

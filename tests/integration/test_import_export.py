@@ -16,6 +16,7 @@ import pytest
 from app.models.aiSoftwareInfo import AISoftwareInfo
 from app.models.command_edit import CommandEdit
 from app.models.software import Software
+from app.models.softwareResource import SoftwareResource
 from app.models.software_edit import SoftwareEdit
 
 
@@ -56,17 +57,35 @@ def test_export_includes_software_edit_rows(
 def test_export_includes_command_edit_rows(
     admin_client, seeded_db, make_command_edit
 ):
-    make_command_edit("testpkg", "test_cluster", "1.0.0", command="overridden")
+    make_command_edit(
+        "testpkg", "test_cluster", "1.0.0",
+        target_command="module load testpkg/1.0.0",
+        replacement="overridden",
+    )
     resp = admin_client.get("/admin/software/export")
     payload = json.loads(resp.get_data(as_text=True))
     assert len(payload["command_edits"]) == 1
-    assert payload["command_edits"][0]["command"] == "overridden"
+    record = payload["command_edits"][0]
+    assert record["target_command"] == "module load testpkg/1.0.0"
+    assert record["replacement"] == "overridden"
 
 
 def test_export_attaches_download_filename(admin_client, databases):
     resp = admin_client.get("/admin/software/export")
     disposition = resp.headers.get("Content-Disposition", "")
     assert "sds_overrides.json" in disposition
+
+
+def test_export_record_keys_match_registry(admin_client, seeded_db, make_edit):
+    # Export derives its field list from the override registry; a field added
+    # there must show up in exports without further wiring.
+    from app.models.fields import ALL_FIELDS
+
+    make_edit("testpkg", description="x")
+    resp = admin_client.get("/admin/software/export")
+    payload = json.loads(resp.get_data(as_text=True))
+    record = payload["software_edits"][0]
+    assert set(record) == {"software_name", "edited_at", "edited_by", *ALL_FIELDS}
 
 
 # ---- Import ----
@@ -120,7 +139,23 @@ def test_import_writes_through_to_ai(admin_client, seeded_db):
     assert ai.ai_description == "imported ai"
 
 
-def test_import_command_edits_persist(admin_client, seeded_db):
+def test_import_value_equal_to_auto_still_creates_override(
+    admin_client, seeded_db
+):
+    # Unlike an interactive save, import applies every provided field even
+    # when it matches the auto value: a restored backup must reproduce the
+    # source instance's override rows.
+    _post_overrides(admin_client, {
+        "software_edits": [
+            {"software_name": "testpkg", "description": "A test package"}
+        ],
+        "command_edits": [],
+    })
+    edit = SoftwareEdit.get(SoftwareEdit.software_name == "testpkg")
+    assert edit.description == "A test package"
+
+
+def test_import_command_edits_persist_and_project(admin_client, seeded_db):
     _post_overrides(admin_client, {
         "software_edits": [],
         "command_edits": [
@@ -128,7 +163,8 @@ def test_import_command_edits_persist(admin_client, seeded_db):
                 "software_name": "testpkg",
                 "resource_name": "test_cluster",
                 "software_version": "1.0.0",
-                "command": "imported cmd",
+                "target_command": "module load testpkg/1.0.0",
+                "replacement": "imported cmd",
             }
         ],
     })
@@ -137,14 +173,43 @@ def test_import_command_edits_persist(admin_client, seeded_db):
         & (CommandEdit.resource_name == "test_cluster")
         & (CommandEdit.software_version == "1.0.0")
     )
-    assert edit.command == "imported cmd"
+    assert edit.target_command == "module load testpkg/1.0.0"
+    assert edit.replacement == "imported cmd"
+    # import projects the edit onto the displayed command
+    sr = SoftwareResource.get(
+        SoftwareResource.software_id == seeded_db["software"].id
+    )
+    assert sr.command == "imported cmd"
+
+
+def test_import_added_command_is_idempotent(admin_client, seeded_db):
+    record = {
+        "software_name": "testpkg",
+        "resource_name": "test_cluster",
+        "software_version": "1.0.0",
+        "target_command": None,
+        "replacement": "added cmd",
+    }
+    _post_overrides(admin_client, {"software_edits": [], "command_edits": [record]})
+    _post_overrides(admin_client, {"software_edits": [], "command_edits": [record]})
+
+    added = CommandEdit.select().where(CommandEdit.target_command.is_null())
+    assert added.count() == 1
 
 
 def test_round_trip_preserves_overrides(
     admin_client, seeded_db, make_edit, make_command_edit
 ):
     make_edit("testpkg", description="rt desc", web_page="http://rt.example")
-    make_command_edit("testpkg", "test_cluster", "1.0.0", command="rt cmd")
+    make_command_edit(
+        "testpkg", "test_cluster", "1.0.0",
+        target_command="module load testpkg/1.0.0",
+        suppressed=True,
+    )
+    make_command_edit(
+        "testpkg", "test_cluster", "1.0.0",
+        replacement="rt cmd", is_primary=True,
+    )
 
     export_resp = admin_client.get("/admin/software/export")
     payload = json.loads(export_resp.get_data(as_text=True))
@@ -158,12 +223,17 @@ def test_round_trip_preserves_overrides(
     assert edit.description == "rt desc"
     assert edit.web_page == "http://rt.example"
 
-    cmd_edit = CommandEdit.get(
-        (CommandEdit.software_name == "testpkg")
-        & (CommandEdit.resource_name == "test_cluster")
-        & (CommandEdit.software_version == "1.0.0")
+    suppress = CommandEdit.get(
+        CommandEdit.target_command == "module load testpkg/1.0.0"
     )
-    assert cmd_edit.command == "rt cmd"
+    assert suppress.suppressed is True
+    added = CommandEdit.get(CommandEdit.target_command.is_null())
+    assert added.replacement == "rt cmd"
+    assert added.is_primary is True
+    sr = SoftwareResource.get(
+        SoftwareResource.software_id == seeded_db["software"].id
+    )
+    assert sr.command == "rt cmd"
 
 
 def test_import_without_file_returns_400(admin_client, databases):

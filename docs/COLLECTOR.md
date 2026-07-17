@@ -11,6 +11,7 @@ The collector serves as a key component of the broader Software Documentation Se
 - Recursively searches directory trees for container definition files with configurable depth
 - Preserves full path structure when copying files to ensure context is maintained
 - Collects comprehensive module system data using `module spider` with optimized terminal settings to prevent truncation
+- Collects dependency-aware module data as JSON using Lmod's bundled spider tool, capturing the parent modules that must be loaded first (requires Lmod 5.0+; skipped gracefully when unavailable)
 - Works in both local and remote execution modes to support various operational scenarios
 - Supports secure SSH connections with customizable options for security compliance
 - Creates organized directory structure for collected data to simplify subsequent analysis
@@ -82,6 +83,8 @@ python3 collector.py --directory /path/to/search --resource cluster_name --lmod
 
 Add the `--lmod` flag. This will collect container definitions and also run module spider to gather information about available software modules, saving the output to ./data/spider_data/cluster_name/.
 
+The `--lmod` flag also runs Lmod's bundled spider tool (`$LMOD_DIR/spider -o jsonSoftwarePage`) and saves its JSON output to ./data/spider_data/cluster_name/cluster_name_spider.json. The JSON output includes the parent modules (such as compilers or MPI libraries) that must be loaded before each module, which SDS uses to generate complete `module load` commands on clusters with hierarchical module trees. If the spider tool is missing or fails, the JSON step is skipped with a warning and the text output is still collected.
+
 ### Using with Python Version Issues
 
 If your remote system has an older Python version with compatibility issues and you need to load a new one:
@@ -92,6 +95,8 @@ python3 collector.py --directory /path/to/search --resource cluster_name --remot
 
 Change the `--pre_command` to the command you need to switch your environment to python3.7+
 This loads a newer Python version before executing the script on the remote system.
+
+`--pre_command` also works in cluster (local) mode: it runs in a login shell first, and the environment it produces (PATH, MODULEPATH, etc.) is applied to the collection commands that follow.
 
 ## Command Line Arguments
 
@@ -104,7 +109,7 @@ This loads a newer Python version before executing the script on the remote syst
 - `--remote_path`: Path on remote machine to store files (default: current directory)
 - `--ssh_options`: SSH options as a list for custom SSH configurations
 - `--run_mode`: Explicitly set where the script is running ("server" or "cluster")
-- `--pre_command`: Command to run on the remote machine before executing the script
+- `--pre_command`: Command to run before collection. In server mode it runs on the remote machine before the script; in cluster mode its environment changes are applied to the collection commands
 - `--lmod`: Collect module system data using module spider
 
 ## Output Structure
@@ -121,7 +126,8 @@ The script creates an organized directory structure:
   |
   └── spider_data/
        └── {resource_name}/
-           └── {resource_name}_spider.txt  # Complete output from module spider
+           ├── {resource_name}_spider.txt   # Complete output from module spider
+           └── {resource_name}_spider.json  # JSON spider output with dependency data (when available)
 ```
 
 This layout mirrors SDS's expected `data/` directory. If you run the collector from your SDS deployment root (`~/sds/`), the output lands directly where SDS expects — no manual move needed.

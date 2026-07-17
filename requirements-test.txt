@@ -8,8 +8,6 @@
 #     without the system libmagic, which CI doesn't have)
 #   - python-dotenv (not imported anywhere — env.yaml entry is dead)
 #
-# Keep this in sync with env.yaml. When adding or bumping a runtime
-# dependency, update both files.
 
 Flask==3.1.3
 flask-login==0.6.3
@@ -27,3 +25,9 @@ pytz
 # Test-only
 pytest
 pytest-cov
+
+# The sds_mcp package (mcp/) plus its MCP SDK dependency, so
+# tests/unit/test_mcp_client.py can import `sds_mcp`. Installed as an editable
+# local package, mirroring the Dockerfile's `pip install -e ./mcp`. It is not in
+# env.yaml (the container installs it as a separate step, not via conda).
+-e ./mcp

@@ -1,6 +1,7 @@
 # Table of Contents
 
 - [Parsing `module spider`](#parsing-module-spider)
+  - [Spider JSON output (preferred)](#spider-json-output-preferred)
   - [Spack specific parsing](#spack-specific-parsing)
   - [Custom parsing function](#custom-lmod-parsing-function)
   - [Detailed explanation of regex](#detailed-explanation-of-regex)
@@ -13,6 +14,22 @@
 
 This application parses the output of the `module spider` command. The `module spider` command is from the [lmod package](https://lmod.readthedocs.io/en/latest/index.html). The parser expects a text file.
 So, technically, any text file with the same format will work.
+
+### Spider JSON output (preferred)
+
+If a resource's spider_data directory contains a `.json` file produced by
+`$LMOD_DIR/spider -o jsonSoftwarePage`, the parser uses it and skips the
+text files for that resource, since both describe the same modules.
+
+The JSON output includes each module's parent chains — the modules that
+must be loaded first on hierarchical module systems. Every chain is stored
+as a runnable load command, for example:
+
+    module load gcc/11.2.0 proj/8.1.1
+
+Hidden modules (dot-prefixed versions such as `tool/.1.0`) are not
+ingested, and commands that pass through hidden parent modules are only
+preferred when no visible route exists.
 
 The existing parsing script is for data in the following format: `  software: software/version` or `  software-name: software-name/version` or `  software_name: software_name/version` (note the leading two spaces).
 

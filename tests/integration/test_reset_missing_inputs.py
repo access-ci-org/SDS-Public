@@ -12,8 +12,8 @@ import sys
 import pytest
 
 import reset_database
+from app.models.aiSoftwareInfo import AISoftwareInfo
 from app.models.software import Software
-from app.models.software_edit import SoftwareEdit
 
 CSV_CONTENT = (
     "software,resource,software_versions,software_description\n"
@@ -83,8 +83,9 @@ def test_software_uses_defaults_to_data_dir(run_reset, csv_file, tmp_path):
 
     run_reset("-csv_f", str(csv_file))
 
-    edit = SoftwareEdit.get(SoftwareEdit.software_name == "pytorch")
-    assert "use pytorch like this" in edit.ai_example_use
+    sw = Software.get(Software.software_name == "pytorch")
+    ai = AISoftwareInfo.get(AISoftwareInfo.software_id == sw.id)
+    assert "use pytorch like this" in ai.ai_example_use
 
 
 def test_explicit_missing_software_uses_dir_is_skipped(run_reset, csv_file, tmp_path):

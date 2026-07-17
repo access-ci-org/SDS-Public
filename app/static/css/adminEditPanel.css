@@ -95,6 +95,60 @@
   min-width: 60px;
 }
 
+/* Per-chain command rows (Resource Commands tab) */
+.field-control input[type="radio"],
+.field-control input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.chain-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.chain-row input[type="text"] { flex: 1; }
+
+.chain-auto-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #888;
+  margin: 4px 0 6px;
+  cursor: pointer;
+}
+
+.chain-hide-label,
+.chain-first-label {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #888;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.chain-note {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.stale-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.stale-row .stale-desc {
+  flex: 1;
+  font-size: 12px;
+  color: #999;
+}
+
 .revert-link {
   font-size: 12px;
   color: #888;

@@ -8,20 +8,27 @@ The seed endpoint:
 - Ensures all required tables exist in both databases
 - Truncates every table
 - Inserts rows from the JSON payload
+- Projects seeded overrides onto the live tables, so the seeded world
+  matches what real saves and rebuilds produce
 - Resets the in-memory TABLE_INFO singleton
 """
 import os
 
 from flask import abort, jsonify, request
 
+from app.logic import chain_projection, overrides
+from app.models.fields import SOFTWARE_FIELD_MAP
 from app.models import db, persistent_db
 from app.models.aiSoftwareInfo import AISoftwareInfo
+from app.models.api_key import APIKey
+from app.models.api_key_log import APIKeyLog
 from app.models.command_edit import CommandEdit
 from app.models.containers import Container
 from app.models.resource import Resource
 from app.models.software import Software
 from app.models.softwareContainer import SoftwareContainer
 from app.models.softwareResource import SoftwareResource
+from app.models.softwareResourceCommand import SoftwareResourceCommand
 from app.models.banner import Banner
 from app.models.software_edit import SoftwareEdit
 from app.models.users import Users
@@ -33,16 +40,17 @@ TRANSIENT_MODELS = [
     Resource,
     Software,
     SoftwareResource,
+    SoftwareResourceCommand,
     AISoftwareInfo,
     Container,
     SoftwareContainer,
-    Users,
 ]
 
-PERSISTENT_MODELS = [SoftwareEdit, CommandEdit, Banner]
+PERSISTENT_MODELS = [SoftwareEdit, CommandEdit, Banner, Users, APIKey, APIKeyLog]
 
 # FK-safe delete order: children before parents
 DELETE_ORDER = [
+    SoftwareResourceCommand,
     SoftwareContainer,
     SoftwareResource,
     CommandEdit,
@@ -53,6 +61,8 @@ DELETE_ORDER = [
     Software,
     Resource,
     Users,
+    APIKey,
+    APIKeyLog,
 ]
 
 
@@ -98,10 +108,11 @@ def test_seed():
     for sw in payload.get("software", []):
         soft = Software.create(
             software_name=sw["name"],
-            software_description=sw.get("description", ""),
-            software_web_page=sw.get("web_page", ""),
-            software_documentation=sw.get("documentation", ""),
-            software_use_link=sw.get("use_link", ""),
+            # Seed payloads use the edit-field names (description, web_page, ...)
+            **{
+                sw_col: sw.get(edit_field, "")
+                for edit_field, sw_col in SOFTWARE_FIELD_MAP.items()
+            },
         )
         software_lookup[sw["name"]] = soft
 
@@ -110,12 +121,30 @@ def test_seed():
             if res is None:
                 res = Resource.create(resource_name=sr["resource"])
                 resource_lookup[sr["resource"]] = res
-            SoftwareResource.create(
+            sr_row = SoftwareResource.create(
                 software_id=soft,
                 resource_id=res,
                 software_version=sr.get("version", ""),
                 command=sr.get("command", ""),
             )
+            # Mirror ingestion: each command gets a collected command row.
+            # An explicit load_commands list wins; otherwise comma-separated
+            # command values become one row per command, the same shape the
+            # panel, modal payload, and projection work against.
+            load_cmds = sr.get("load_commands")
+            if load_cmds is None:
+                load_cmds = [
+                    part.strip()
+                    for part in (sr.get("command", "") or "").split(",")
+                    if part.strip()
+                ]
+            for cmd in load_cmds:
+                SoftwareResourceCommand.create(
+                    software_resource_id=sr_row,
+                    command=cmd,
+                    module_name="",
+                    parent_chain="",
+                )
 
         ai_data = sw.get("ai")
         if ai_data:
@@ -157,6 +186,9 @@ def test_seed():
 
     for ce in payload.get("command_edits", []):
         CommandEdit.create(**ce)
+
+    overrides.project_all()
+    chain_projection.project_all()
 
     for b in payload.get("banners", []):
         Banner.create(

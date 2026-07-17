@@ -10,6 +10,10 @@ Once fixed, this test locks in the correct behavior:
 - duplicates → first row wins
 - a warning is logged
 - the Software row is updated with scalar values, not Series reprs
+
+Also locks the empty-value rule for the curated link fields: an empty
+remote web_page / documentation / use_link means "no data" and leaves the
+stored value untouched; a non-empty remote value still overwrites.
 """
 import pytest
 
@@ -71,3 +75,44 @@ def test_duplicate_remote_rows_do_not_corrupt_software(seeded_db, flask_app):
         "http://first.example",
         "http://second.example",
     ), f"unexpected stored value: {sw.software_web_page!r}"
+
+
+def test_empty_remote_links_leave_existing_values(seeded_db, flask_app):
+    flask_app.config["USE_API"] = True
+    flask_app.config["USE_CURATED_INFO"] = True
+    flask_app.config["USE_AI_INFO"] = False
+
+    Software.update(
+        software_web_page="https://example.org/tool",
+        software_documentation="https://example.org/tool/docs",
+    ).where(Software.software_name == "testpkg").execute()
+
+    remote = _remote_rows({"software_name": "testpkg"})
+
+    update_db_from_remote(remote)
+
+    sw = Software.get(Software.software_name == "testpkg")
+    assert sw.software_web_page == "https://example.org/tool"
+    assert sw.software_documentation == "https://example.org/tool/docs"
+
+
+def test_non_empty_remote_links_overwrite(seeded_db, flask_app):
+    flask_app.config["USE_API"] = True
+    flask_app.config["USE_CURATED_INFO"] = True
+    flask_app.config["USE_AI_INFO"] = False
+
+    Software.update(
+        software_web_page="https://example.org/tool"
+    ).where(Software.software_name == "testpkg").execute()
+
+    remote = _remote_rows(
+        {
+            "software_name": "testpkg",
+            "software_web_page": "https://curated.example/tool",
+        }
+    )
+
+    update_db_from_remote(remote)
+
+    sw = Software.get(Software.software_name == "testpkg")
+    assert sw.software_web_page == "https://curated.example/tool"

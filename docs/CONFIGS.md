@@ -87,6 +87,17 @@ general:
 
 - `external_analytics`: Set `external_analytics` to be some html used for tracking the website and user interactions. For example the script/noscript code blocks provided by Microsoft's Clarity, Google Tag Manager, Google Analytics, etc. Basic, anonymous, analytics to track  user searches and clicks are already provided as a base part of the SDS so this `external_analytics` is meant for those who want more or better information. Any code provided here will be placed in the `<head>` section of the website.
 
+## REST API Configs
+
+Controls the local REST API (`/api/v1/...`) used by MCP servers and external integrations.
+
+```yaml
+rest_api:
+  require_auth: True
+```
+
+- `require_auth`: Set to `False` to allow unauthenticated access to the REST API (useful for development). Default is `True`. When `True`, all endpoints require a valid `X-API-Key` header. Keys are managed at `/settings/api-keys`.
+
 ## Parser Configs
 
 This set of configs can be used to control how the sds parser parsers your data.

@@ -1,4 +1,5 @@
 import argparse
+import json
 import subprocess
 import sys
 import os
@@ -37,9 +38,86 @@ def setup_argparse() -> argparse.Namespace:
                         help="SSH options as a list (e.g., '--ssh_options -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null')")
     parser.add_argument("--run_mode", choices=["server", "cluster"],
                         help="Explicitly set where the script is running: 'server' (connect to cluster) or 'cluster' (run locally)")
-    parser.add_argument("--pre_command", help="Command to run on the remote machine before executing the script (e.g., 'module load python/3.8')")
+    parser.add_argument("--pre_command", help="Command to run before collection (e.g., 'module load python/3.8'). \
+            In server mode it runs on the remote machine before the script; in cluster mode its environment is applied to the collection commands")
     parser.add_argument("--lmod", action="store_true", help="Also collect lmod data from the system (gets output of 'module spider')")
     return parser.parse_args()
+
+MIN_PYTHON = (3, 7)
+
+
+def _env_python_version():
+    """Return (major, minor) of the python3 on PATH in the current
+    environment — the one collection subprocesses will see — or None when
+    python3 is missing or unqueryable."""
+    try:
+        result = subprocess.run(
+            ["python3", "-c",
+             "import sys; sys.stdout.write('.'.join(map(str, sys.version_info[:2])))"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        return tuple(int(part) for part in result.stdout.decode().strip().split("."))
+    except ValueError:
+        return None
+
+
+def check_python_version() -> None:
+    """Ensure collection runs under Python 3.7+ (needed e.g. for subprocess
+    text mode). A script started under an older interpreter cannot be
+    upgraded in place, so when a suitable python3 is on PATH (typically
+    loaded by --pre_command) the script re-executes itself with it;
+    otherwise it exits with a clear message instead of a mid-run TypeError."""
+    if sys.version_info >= MIN_PYTHON:
+        return
+
+    env_version = _env_python_version()
+    if env_version and env_version >= MIN_PYTHON:
+        version_str = ".".join(map(str, env_version))
+        print(f"Re-executing the collector with Python {version_str} from the environment")
+        os.execvp("python3", ["python3"] + sys.argv)
+
+    env_note = (
+        " and no python3 was found on PATH"
+        if env_version is None
+        else f" and the python3 on PATH is {'.'.join(map(str, env_version))}"
+    )
+    print(
+        f"Python {MIN_PYTHON[0]}.{MIN_PYTHON[1]}+ is required, but this script is "
+        f"running under {sys.version_info[0]}.{sys.version_info[1]}{env_note}. "
+        "Use --pre_command to load a newer Python (e.g. 'module load python/3.8')."
+    )
+    sys.exit(1)
+
+
+def apply_pre_command(pre_command: str) -> None:
+    """Run the pre_command in a login shell and adopt the environment it
+    produces, so the collection commands that follow (find, module spider,
+    rsync) see its effects such as PATH or MODULEPATH changes.
+
+    Bytes mode (no text=True) because this must still run under pre-3.7
+    interpreters, where --pre_command is the way to obtain a newer python."""
+    result = subprocess.run(
+        ["bash", "-l", "-c", f"{pre_command} && env -0"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode != 0:
+        print(f"Error running pre_command '{pre_command}': {result.stderr.decode(errors='replace')}")
+        sys.exit(1)
+
+    for entry in result.stdout.decode(errors="replace").split("\0"):
+        if not entry:
+            continue
+        key, sep, value = entry.partition("=")
+        if sep:
+            os.environ[key] = value
+
 
 def find_container_files(start_dir: Path, max_depth: int, resource_name: str) -> Path:
     """Search for container definition files locally and save them with structure preserved."""
@@ -138,6 +216,38 @@ def collect_module_spider_data(resource_name: str) -> Path:
             print(f"Error running module spider command: {result.stderr}")
 
         print(f"Module spider data saved to {spider_file}")
+
+        # Also collect the JSON spider output, which includes the parent
+        # modules that must be loaded before each module (dependency chains).
+        # The spider tool ships with Lmod but is not on PATH; resolve it from
+        # the login-shell environment. Failure is non-fatal: the text output
+        # above still gets collected on systems without the tool.
+        json_file = dest_dir / f"{resource_name}_spider.json"
+        spider_json_cmd = (
+            'spider_bin="${LMOD_DIR:-$(dirname "$(readlink -f "$LMOD_CMD")")}/spider"; '
+            f'"$spider_bin" -o jsonSoftwarePage "$MODULEPATH" > {json_file}'
+        )
+        json_result = subprocess.run(["bash", "-l", "-c", spider_json_cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+
+        if json_result.returncode != 0:
+            print(f"Could not collect spider JSON output (non-fatal): {json_result.stderr.strip()}")
+
+        # A failed or toolless run leaves an empty file behind the redirect;
+        # remove it so the parser doesn't try to read it.
+        if json_file.exists() and json_file.stat().st_size == 0:
+            json_file.unlink()
+        elif json_file.exists():
+            # The spider tool emits everything on one line; rewrite it
+            # pretty-printed so the stored file is human-readable.
+            try:
+                with open(json_file, "r", encoding="utf-8") as jf:
+                    spider_json = json.load(jf)
+                with open(json_file, "w", encoding="utf-8") as jf:
+                    json.dump(spider_json, jf, indent=2)
+            except (ValueError, OSError) as e:
+                print(f"Could not format spider JSON output: {e}")
+            print(f"Module spider JSON data saved to {json_file}")
+
         return dest_dir
 
     except subprocess.CalledProcessError as e:
@@ -398,6 +508,7 @@ def main() -> None:
     if run_mode == "server":
         # We're on the server - run on cluster and sync back
         print(f"Running in SERVER mode. Will connect to cluster {args.remote} and run commands there.")
+        check_python_version()
         success = run_on_remote_and_sync_back(args)
         if not success:
             print("Remote cluster execution failed.")
@@ -405,6 +516,11 @@ def main() -> None:
     else:
         # We're on the cluster - run locally
         print("Running in CLUSTER mode (local execution)...")
+
+        if args.pre_command:
+            apply_pre_command(args.pre_command)
+
+        check_python_version()
 
         if args.directory:
             # Process container files

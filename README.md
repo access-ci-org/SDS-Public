@@ -14,7 +14,7 @@ All they need to do is provide the names of the software and which cluster they 
 
 The following explains how to setup and run SDS on a Linux system using Docker.
 If you would like to discuss implementing the SDS at you institution or would like a walk through of the sds and its setup, please contact Sandesh at <sla302@uky.edu>.
-You can find a more detailed set of instructions with information on different features in the `SDS_SETUP.md` file.
+You can find a more detailed set of instructions with information on different features in the `docs/SDS_SETUP.md` file.
 
 ---
 
@@ -92,7 +92,7 @@ mkdir -p data/spider_data/<resource_name>
 Transfer your `module spider` output for each cluster into the matching `data/spider_data/<resource_name>/` directory (any method — scp, rsync, cp from a mounted filesystem).
 
 It is also possible to display container information and other data on SDS. View the
-`SDS_SETUP.md` file on how. Or contact Sandesh <sla302@uky.edu> for help.
+`docs/SDS_SETUP.md` file on how. Or contact Sandesh <sla302@uky.edu> for help.
 
 ### Step 4 - Build and Start Docker Container
 
@@ -114,7 +114,7 @@ docker ps -a
 
 SDS stores its state (database, logs, cached analytics, etc.) under `./data/state/` on the host. As long as you keep that directory, container replacement is non-destructive.
 
-See `SDS_SETUP.md` for more detailed instructions on additional data types, SSL, log locations, and tuning.
+See `docs/SDS_SETUP.md` for more detailed instructions on additional data types, SSL, log locations, and tuning.
 
 ---
 
@@ -122,7 +122,7 @@ See `SDS_SETUP.md` for more detailed instructions on additional data types, SSL,
 
 The website will be running and accessible on port **8080** (e.g. <your_ip_address>:8080)
 
-If you would like to enable ssl for your service, view the `SDS_SETUP.md` file or contact Sandesh.
+If you would like to enable ssl for your service, view the `docs/SDS_SETUP.md` file or contact Sandesh.
 
 If you run into any trouble, have questions, or would like to request new features email Sandesh (<sla302@uky.edu>). We would be happy to help!
 

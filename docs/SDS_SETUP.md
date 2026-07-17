@@ -73,6 +73,7 @@ The container runs as an unprivileged user (UID 1000) and takes ownership of `./
 All SDS logs are written to `/sds/data/state/logs/` inside the container, which appears on your host at `./data/state/logs/`. Files:
 
 - `sds.log` — structured SDS application logs (rotates monthly)
+- `api/api-requests.log` — one line per authenticated REST API request (timestamp, key prefix, key label, endpoint); rotates weekly, rotated files are kept indefinitely
 - `sds-stdout.log` — raw stdout/stderr from the SDS process (startup output, crashes, anything that didn't go through the application logger)
 - `nginx-access.log` / `nginx-error.log` — nginx request and error logs
 - `nginx.log` — nginx process stdout captured by supervisord (usually empty)

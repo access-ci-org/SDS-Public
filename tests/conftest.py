@@ -7,9 +7,6 @@ The SDS app is module-level Flask (no factory pattern). Fixtures work by:
 - Using `flask_app.test_client()` for requests
 - Resetting the `TABLE_INFO` singleton between tests (order-dependency hazard)
 - Mocking external network calls so no test hits the network unintentionally
-
-When `Users` later moves from the transient DB to the persistent DB, only
-the model list below needs updating.
 """
 from __future__ import annotations
 
@@ -49,12 +46,15 @@ from app import app as _flask_app  # noqa: E402
 from app.logic import table as _table_module  # noqa: E402
 from app.models import db, persistent_db  # noqa: E402
 from app.models.aiSoftwareInfo import AISoftwareInfo  # noqa: E402
+from app.models.api_key import APIKey  # noqa: E402
+from app.models.api_key_log import APIKeyLog  # noqa: E402
 from app.models.command_edit import CommandEdit  # noqa: E402
 from app.models.containers import Container  # noqa: E402
 from app.models.resource import Resource  # noqa: E402
 from app.models.software import Software  # noqa: E402
 from app.models.softwareContainer import SoftwareContainer  # noqa: E402
 from app.models.softwareResource import SoftwareResource  # noqa: E402
+from app.models.softwareResourceCommand import SoftwareResourceCommand  # noqa: E402
 from app.models.software_edit import SoftwareEdit  # noqa: E402
 from app.models.banner import Banner  # noqa: E402
 from app.models.users import Users  # noqa: E402
@@ -64,16 +64,19 @@ TRANSIENT_MODELS = [
     Resource,
     Software,
     SoftwareResource,
+    SoftwareResourceCommand,
     AISoftwareInfo,
     Container,
     SoftwareContainer,
-    Users,  # planned to move to persistent DB later
 ]
 
 PERSISTENT_MODELS = [
     SoftwareEdit,
     CommandEdit,
     Banner,
+    Users,
+    APIKey,
+    APIKeyLog,
 ]
 
 
@@ -129,6 +132,7 @@ def reset_app_config():
         EXTERNAL_ANALYTICS="",
         SHARE_WITH_DEVS=False,
         SHARE_WITH_OTHERS=False,
+        REST_API_REQUIRE_AUTH=False,
     )
     yield
     _flask_app.config.clear()
@@ -223,6 +227,16 @@ def admin_account(make_user):
     return make_user(username="admin1", password="adminpass", is_admin=True)
 
 
+# --- API keys ---
+
+@pytest.fixture
+def api_key(databases):
+    """A valid persisted API key; returns the raw secret for the X-API-Key header."""
+    raw, key = APIKey.generate(label="test-key")
+    key.save()
+    return raw
+
+
 # --- Data builders ---
 
 @pytest.fixture
@@ -305,16 +319,34 @@ def make_edit(databases):
 
 @pytest.fixture
 def make_command_edit(databases):
-    def _make(software_name, resource_name, software_version, command=None,
-              auto_command=None, edited_by=None, edited_at=None):
+    def _make(software_name, resource_name, software_version,
+              target_command=None, suppressed=False, replacement=None,
+              is_primary=False, edited_by=None, edited_at=None):
         return CommandEdit.create(
             software_name=software_name,
             resource_name=resource_name,
             software_version=software_version,
-            command=command,
-            auto_command=auto_command,
+            target_command=target_command,
+            suppressed=suppressed,
+            replacement=replacement,
+            is_primary=is_primary,
             edited_by=edited_by,
             edited_at=edited_at,
+        )
+
+    return _make
+
+
+@pytest.fixture
+def make_src_command(databases):
+    def _make(software_resource, command, module_name="", parent_chain="",
+              hidden=False):
+        return SoftwareResourceCommand.create(
+            software_resource_id=software_resource,
+            command=command,
+            module_name=module_name,
+            parent_chain=parent_chain,
+            hidden=hidden,
         )
 
     return _make
@@ -337,7 +369,8 @@ def make_container(databases):
 # --- Seeded scenarios ---
 
 @pytest.fixture
-def seeded_db(make_resource, make_software, make_software_resource, make_ai):
+def seeded_db(make_resource, make_software, make_software_resource, make_ai,
+              make_src_command):
     """Minimal known data: one resource, one software with version + command + AI info."""
     resource = make_resource(name="test_cluster")
     software = make_software(name="testpkg", description="A test package")
@@ -345,6 +378,10 @@ def seeded_db(make_resource, make_software, make_software_resource, make_ai):
         software, resource,
         version="1.0.0",
         command="module load testpkg/1.0.0",
+    )
+    # the collected command row behind sr.command, as ingestion would leave it
+    src = make_src_command(
+        sr, "module load testpkg/1.0.0", module_name="testpkg/1.0.0"
     )
     ai = make_ai(
         software,
@@ -357,6 +394,7 @@ def seeded_db(make_resource, make_software, make_software_resource, make_ai):
         "resource": resource,
         "software": software,
         "software_resource": sr,
+        "src_command": src,
         "ai": ai,
     }
 

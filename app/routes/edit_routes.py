@@ -1,11 +1,15 @@
 import datetime
 import json
+import re
 
 from flask import abort, redirect, render_template, request, Response, url_for
 from flask_login import current_user
 from peewee import DoesNotExist
 
+from app.logic.chain_projection import canonical_order, project_entry
+from app.logic.overrides import revert_override, set_overrides
 from app.models import db, persistent_db
+from app.models.fields import AI_FIELD_NAMES, ALL_FIELDS, SOFTWARE_FIELD_MAP
 from app.models.aiSoftwareInfo import AISoftwareInfo
 from app.models.command_edit import CommandEdit
 from app.models.resource import Resource
@@ -15,28 +19,17 @@ from app.models.softwareResource import SoftwareResource
 from app.routes._decorators import admin_required
 from . import edit_bp
 
-SOFTWARE_FIELDS = {
-    "description": "software_description",
-    "web_page": "software_web_page",
-    "documentation": "software_documentation",
-    "use_link": "software_use_link",
-}
+# Command-tab form fields: block__{b}__resource / __version (hidden),
+# block__{b}__chain__{i}__target / __text / __hide, block__{b}__added__{j},
+# block__{b}__new, block__{b}__primary. Resource and version travel in
+# VALUES, never in field names, so their content can't break parsing.
+_BLOCK_FIELD_RE = re.compile(r"^block__(\d+)__(.+)$")
+_CHAIN_TARGET_RE = re.compile(r"^chain__(\d+)__target$")
+_ADDED_RE = re.compile(r"^added__(\d+)$")
 
-AI_FIELDS = [
-    "ai_description",
-    "ai_software_type",
-    "ai_software_class",
-    "ai_research_field",
-    "ai_research_area",
-    "ai_research_discipline",
-    "ai_core_features",
-    "ai_general_tags",
-    "ai_example_use",
-]
 
-ALL_EDIT_FIELDS = list(SOFTWARE_FIELDS.keys()) + AI_FIELDS
-
-CMD_PREFIX = "cmd__"
+def _now_stamp():
+    return datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def _load_software(name):
@@ -60,28 +53,15 @@ def _load_edit(name):
         return None
 
 
-def _load_auto_values(edit):
-    if not edit or not edit.auto_values:
-        return {}
-    try:
-        return json.loads(edit.auto_values)
-    except (json.JSONDecodeError, TypeError):
-        return {}
-
-
-def _store_auto_values(edit, mapping):
-    edit.auto_values = json.dumps(mapping) if mapping else None
-
-
 def _build_fields(sw, ai, edit):
     fields = {}
-    for edit_field, sw_field in SOFTWARE_FIELDS.items():
+    for edit_field, sw_field in SOFTWARE_FIELD_MAP.items():
         override = getattr(edit, edit_field, None) if edit else None
         fields[edit_field] = {
             "value": override if override is not None else (getattr(sw, sw_field, "") or ""),
             "is_overridden": override is not None,
         }
-    for edit_field in AI_FIELDS:
+    for edit_field in AI_FIELD_NAMES:
         override = getattr(edit, edit_field, None) if edit else None
         fields[edit_field] = {
             "value": override if override is not None else ((getattr(ai, edit_field, "") or "") if ai else ""),
@@ -90,23 +70,26 @@ def _build_fields(sw, ai, edit):
     return fields
 
 
-def _commands_to_display(command_str):
-    """Convert comma-separated storage format to newline-separated display format."""
-    if not command_str:
-        return ""
-    return "\n".join(c.strip() for c in command_str.split(",") if c.strip())
+def _command_edit_key(software_name, resource_name, version):
+    return (
+        (CommandEdit.software_name == software_name)
+        & (CommandEdit.resource_name == resource_name)
+        & (CommandEdit.software_version == version)
+    )
 
 
-def _display_to_commands(textarea_val):
-    """Convert newline-separated textarea input to comma-separated storage format."""
-    if not textarea_val:
-        return ""
-    return ", ".join(c.strip() for c in textarea_val.splitlines() if c.strip())
+def _added_edits_in_order(edits):
+    return sorted(
+        (e for e in edits if e.target_command is None),
+        key=lambda e: (e.edited_at or "", e.id),
+    )
 
 
 def _build_command_data(sw):
-    """Build resource/version/command data for the Resources tab."""
-    rows = (
+    """Per-entry chain data for the Resource Commands tab: each visible
+    collected command with its edit state, the admin-added commands, and
+    which one (if any) is pinned primary."""
+    entries = (
         SoftwareResource
         .select(SoftwareResource, Resource)
         .join(Resource)
@@ -115,29 +98,97 @@ def _build_command_data(sw):
     )
 
     result = []
-    for sr in rows:
+    for index, sr in enumerate(entries):
         resource_name = sr.resource_id.resource_name
         version = sr.software_version
-        try:
-            cmd_edit = CommandEdit.get(
-                (CommandEdit.software_name == sw.software_name) &
-                (CommandEdit.resource_name == resource_name) &
-                (CommandEdit.software_version == version)
-            )
-            is_overridden = cmd_edit.command is not None
-            display_val = _commands_to_display(cmd_edit.command if is_overridden else sr.command)
-        except CommandEdit.DoesNotExist:
-            is_overridden = False
-            display_val = _commands_to_display(sr.command)
+        edits = list(CommandEdit.select().where(
+            _command_edit_key(sw.software_name, resource_name, version)
+        ))
+        by_target = {
+            e.target_command: e for e in edits if e.target_command is not None
+        }
+
+        chains = []
+        primary_value = "auto"
+        visible = canonical_order(
+            [r for r in sr.load_commands if not r.admin_added and not r.hidden]
+        )
+        for i, row in enumerate(visible):
+            e = by_target.get(row.command)
+            replaced = bool(e and e.replacement is not None)
+            if e and e.is_primary:
+                primary_value = f"chain__{i}"
+            chains.append({
+                "target": row.command,
+                "text": e.replacement if replaced else row.command,
+                "is_replaced": replaced,
+                "is_hidden": bool(e and e.suppressed),
+            })
+
+        added = []
+        for j, e in enumerate(_added_edits_in_order(edits)):
+            if e.is_primary:
+                primary_value = f"added__{j}"
+            added.append(e.replacement or "")
 
         result.append({
+            "index": index,
             "resource_name": resource_name,
             "software_version": version,
-            "display_value": display_val,
-            "is_overridden": is_overridden,
+            "chains": chains,
+            "added": added,
+            "primary_value": primary_value,
+            "is_overridden": bool(edits),
         })
 
     return result
+
+
+def _stale_command_edits(sw):
+    """Edits that no longer match anything collected: the entry vanished,
+    or the targeted command did. They have no display effect; the panel
+    lists them for deletion."""
+    collected = {}
+    entries = (
+        SoftwareResource
+        .select(SoftwareResource, Resource)
+        .join(Resource)
+        .where(SoftwareResource.software_id == sw.id)
+    )
+    for sr in entries:
+        key = (sr.resource_id.resource_name, sr.software_version)
+        collected[key] = {
+            r.command for r in sr.load_commands if not r.admin_added
+        }
+
+    stale = []
+    for e in CommandEdit.select().where(
+        CommandEdit.software_name == sw.software_name
+    ):
+        key = (e.resource_name, e.software_version)
+        entry_gone = key not in collected
+        target_gone = (
+            e.target_command is not None
+            and not entry_gone
+            and e.target_command not in collected[key]
+        )
+        if not (entry_gone or target_gone):
+            continue
+        if e.target_command is None:
+            what = f'added command "{e.replacement}"'
+        elif e.replacement is not None:
+            what = f'"{e.target_command}" replaced with "{e.replacement}"'
+        elif e.suppressed:
+            what = f'"{e.target_command}" hidden'
+        else:
+            what = f'"{e.target_command}" pinned primary'
+        stale.append({
+            "id": e.id,
+            "resource_name": e.resource_name,
+            "software_version": e.software_version,
+            "description": what,
+        })
+    return stale
 
 
 def _render_panel(name, sw, ai, edit):
@@ -146,7 +197,10 @@ def _render_panel(name, sw, ai, edit):
         software_name=name,
         fields=_build_fields(sw, ai, edit),
         command_data=_build_command_data(sw),
+        stale_edits=_stale_command_edits(sw),
         edit=edit,
+        core_fields=list(SOFTWARE_FIELD_MAP),
+        ai_fields=AI_FIELD_NAMES,
     )
 
 
@@ -161,85 +215,32 @@ def get_software_edit(name):
 @admin_required
 def put_software_edit(name):
     sw = _load_software(name)
-    ai = _load_ai(sw)
-    edit = _load_edit(name)
 
     data = request.form
-    now = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S")
-
-    is_new_edit = edit is None
-    if is_new_edit:
-        edit = SoftwareEdit(software_name=name)
-
-    edit.edited_at = now
-    edit.edited_by = current_user.username
-
-    sw_changed = False
-    ai_changed = False
-    ai_pending = {}  # AI field values to write when ai row doesn't exist yet
-    auto_values = _load_auto_values(edit)
-    auto_values_changed = False
-
-    for edit_field, sw_field in SOFTWARE_FIELDS.items():
-        if edit_field not in data:
-            continue
-        new_val = data[edit_field]
-        existing_override = getattr(edit, edit_field)
-        auto_val = getattr(sw, sw_field, "") or ""
-        if existing_override is not None or new_val != auto_val:
-            if edit_field not in auto_values:
-                auto_values[edit_field] = auto_val
-                auto_values_changed = True
-            setattr(edit, edit_field, new_val)
-            setattr(sw, sw_field, new_val)
-            sw_changed = True
-
-    for edit_field in AI_FIELDS:
-        if edit_field not in data:
-            continue
-        new_val = data[edit_field]
-        existing_override = getattr(edit, edit_field)
-        auto_val = (getattr(ai, edit_field, "") or "") if ai else ""
-        if existing_override is not None or new_val != auto_val:
-            if edit_field not in auto_values:
-                auto_values[edit_field] = auto_val
-                auto_values_changed = True
-            setattr(edit, edit_field, new_val)
-            if ai:
-                setattr(ai, edit_field, new_val)
-                ai_changed = True
-            else:
-                ai_pending[edit_field] = new_val
-
-    if auto_values_changed:
-        _store_auto_values(edit, auto_values)
-
-    any_changed = sw_changed or ai_changed or bool(ai_pending)
+    now = _now_stamp()
+    values = {f: data[f] for f in ALL_FIELDS if f in data}
 
     with db.atomic(), persistent_db.atomic():
-        if not (is_new_edit and not any_changed):
-            edit.save(force_insert=is_new_edit)
-            if sw_changed:
-                sw.save()
-            if ai_changed:
-                ai.save()
-            if ai is None and ai_pending:
-                ai = AISoftwareInfo.create(software_id=sw.id, **ai_pending)
+        set_overrides(name, values, actor=current_user.username, timestamp=now)
 
-        # Handle command overrides — keyed cmd__{resource}__{version}
-        for key, textarea_val in data.items():
-            if not key.startswith(CMD_PREFIX):
+        # Handle per-chain command edits, grouped by block__{b}__ fields.
+        # Each block is one (resource, version): hide flags and text
+        # replacements per collected command, added commands (blank =
+        # removed), and the primary pick. The desired edit set is compared
+        # against the stored one and replaced only when it differs, so an
+        # untouched form leaves rows and audit stamps alone.
+        blocks = {}
+        for key, value in data.items():
+            m = _BLOCK_FIELD_RE.match(key)
+            if m:
+                blocks.setdefault(int(m.group(1)), {})[m.group(2)] = value
+
+        for fields_ in blocks.values():
+            resource_name = fields_.get("resource")
+            version = fields_.get("version")
+            if not resource_name or version is None:
                 continue
-            rest = key[len(CMD_PREFIX):]
-            # split on first __ only so version can theoretically contain __
-            parts = rest.split("__", 1)
-            if len(parts) != 2:
-                continue
-            resource_name, version = parts
 
-            new_command = _display_to_commands(textarea_val)
-
-            # Look up current SoftwareResource command to compare
             try:
                 resource = Resource.get(Resource.resource_name == resource_name)
                 sr = SoftwareResource.get(
@@ -250,128 +251,132 @@ def put_software_edit(name):
             except DoesNotExist:
                 continue
 
-            # Check existing override
-            try:
-                existing = CommandEdit.get(
-                    (CommandEdit.software_name == name) &
-                    (CommandEdit.resource_name == resource_name) &
-                    (CommandEdit.software_version == version)
-                )
-                existing_override = existing.command
-                existing_snapshot = existing.auto_command
-            except CommandEdit.DoesNotExist:
-                existing_override = None
-                existing_snapshot = None
+            primary_sel = fields_.get("primary", "auto")
 
-            auto_val = sr.command or ""
-            if existing_override is None and new_command == auto_val:
-                continue  # no change from auto, don't create a row
+            chain_targets = {}
+            for k, v in fields_.items():
+                m = _CHAIN_TARGET_RE.match(k)
+                if m:
+                    chain_targets[int(m.group(1))] = v
 
-            # Capture snapshot on first override only
-            snapshot_value = (
-                existing_snapshot if existing_snapshot is not None else auto_val
+            # ordered: chain edits, then added commands in form order —
+            # creation order fixes the ids the projection sorts added
+            # rows by
+            desired = []
+            targets = set(chain_targets.values())
+            for i in sorted(chain_targets):
+                target = chain_targets[i]
+                text = (fields_.get(f"chain__{i}__text") or "").strip()
+                suppressed = f"chain__{i}__hide" in fields_
+                replacement = text if text and text != target else None
+                is_primary = primary_sel == f"chain__{i}"
+                if suppressed or replacement is not None or is_primary:
+                    desired.append((target, suppressed, replacement, is_primary))
+
+            added_fields = sorted(
+                (int(m.group(1)), v)
+                for k, v in fields_.items()
+                if (m := _ADDED_RE.match(k))
             )
+            seen_added = set()
+            for j, value in added_fields:
+                text = (value or "").strip()
+                if not text or text in targets or text in seen_added:
+                    continue
+                seen_added.add(text)
+                desired.append((None, False, text, primary_sel == f"added__{j}"))
+            new_text = (fields_.get("new") or "").strip()
+            if new_text and new_text not in targets and new_text not in seen_added:
+                desired.append((None, False, new_text, False))
 
-            # Upsert CommandEdit
-            CommandEdit.insert(
-                software_name=name,
-                resource_name=resource_name,
-                software_version=version,
-                command=new_command,
-                auto_command=snapshot_value,
-                edited_at=now,
-                edited_by=current_user.username,
-            ).on_conflict(
-                conflict_target=[
-                    CommandEdit.software_name,
-                    CommandEdit.resource_name,
-                    CommandEdit.software_version,
-                ],
-                update={
-                    CommandEdit.command: new_command,
-                    CommandEdit.edited_at: now,
-                    CommandEdit.edited_by: current_user.username,
-                },
-            ).execute()
+            key_filter = _command_edit_key(name, resource_name, version)
+            existing = {
+                (e.target_command, e.suppressed, e.replacement, e.is_primary)
+                for e in CommandEdit.select().where(key_filter)
+            }
+            if set(desired) == existing:
+                continue
 
-            # Write through to sds_db immediately
-            sr.command = new_command
-            sr.save()
+            CommandEdit.delete().where(key_filter).execute()
+            for target, suppressed, replacement, is_primary in desired:
+                CommandEdit.create(
+                    software_name=name,
+                    resource_name=resource_name,
+                    software_version=version,
+                    target_command=target,
+                    suppressed=suppressed,
+                    replacement=replacement,
+                    is_primary=is_primary,
+                    edited_at=now,
+                    edited_by=current_user.username,
+                )
 
-    return _render_panel(name, sw, ai, _load_edit(name))
+            project_entry(sr, list(CommandEdit.select().where(key_filter)))
+
+    sw = _load_software(name)
+    return _render_panel(name, sw, _load_ai(sw), _load_edit(name))
 
 
 @edit_bp.route("/admin/edit/software/<path:name>/<field>", methods=["DELETE"])
 @admin_required
 def delete_field_override(name, field):
-    if field not in ALL_EDIT_FIELDS:
+    if field not in ALL_FIELDS:
         abort(400)
 
+    _load_software(name)
+    revert_override(
+        name, field, actor=current_user.username, timestamp=_now_stamp()
+    )
+
     sw = _load_software(name)
-    ai = _load_ai(sw)
-    edit = _load_edit(name)
-
-    if edit is not None:
-        auto_values = _load_auto_values(edit)
-        snapshot = auto_values.pop(field, None)
-
-        with db.atomic(), persistent_db.atomic():
-            if snapshot is not None:
-                if field in SOFTWARE_FIELDS:
-                    setattr(sw, SOFTWARE_FIELDS[field], snapshot)
-                    sw.save()
-                elif field in AI_FIELDS and ai is not None:
-                    setattr(ai, field, snapshot)
-                    ai.save()
-
-            setattr(edit, field, None)
-            _store_auto_values(edit, auto_values)
-            edit.edited_at = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S")
-            edit.edited_by = current_user.username
-            edit.save()
-
-    return _render_panel(name, sw, ai, _load_edit(name))
+    return _render_panel(name, sw, _load_ai(sw), _load_edit(name))
 
 
 @edit_bp.route("/admin/edit/software/<path:name>/command/<resource_name>/<software_version>", methods=["DELETE"])
 @admin_required
 def delete_command_override(name, resource_name, software_version):
+    """Revert an entry to its collected commands by deleting all of its
+    edits and re-projecting — the collected rows were never mutated, so
+    no snapshot is involved."""
     sw = _load_software(name)
 
-    try:
-        cmd_edit = CommandEdit.get(
-            (CommandEdit.software_name == name) &
-            (CommandEdit.resource_name == resource_name) &
-            (CommandEdit.software_version == software_version)
-        )
-    except CommandEdit.DoesNotExist:
-        cmd_edit = None
-
     with db.atomic(), persistent_db.atomic():
-        if cmd_edit is not None and cmd_edit.auto_command is not None:
-            try:
-                resource = Resource.get(Resource.resource_name == resource_name)
-                sr = SoftwareResource.get(
-                    (SoftwareResource.software_id == sw.id) &
-                    (SoftwareResource.resource_id == resource.id) &
-                    (SoftwareResource.software_version == software_version)
-                )
-                sr.command = cmd_edit.auto_command
-                sr.save()
-            except DoesNotExist:
-                pass
-
         CommandEdit.delete().where(
-            (CommandEdit.software_name == name) &
-            (CommandEdit.resource_name == resource_name) &
-            (CommandEdit.software_version == software_version)
+            _command_edit_key(name, resource_name, software_version)
+        ).execute()
+
+        try:
+            resource = Resource.get(Resource.resource_name == resource_name)
+            sr = SoftwareResource.get(
+                (SoftwareResource.software_id == sw.id) &
+                (SoftwareResource.resource_id == resource.id) &
+                (SoftwareResource.software_version == software_version)
+            )
+        except DoesNotExist:
+            sr = None
+        if sr is not None:
+            project_entry(sr, [])
+
+    return _render_panel(name, sw, _load_ai(sw), _load_edit(name))
+
+
+@edit_bp.route("/admin/edit/software/<path:name>/command_edit/<int:edit_id>", methods=["DELETE"])
+@admin_required
+def delete_stale_command_edit(name, edit_id):
+    """Delete one stale command edit by id. Stale edits have no display
+    effect, so no re-projection is needed."""
+    sw = _load_software(name)
+
+    with persistent_db.atomic():
+        CommandEdit.delete().where(
+            (CommandEdit.id == edit_id)
+            & (CommandEdit.software_name == name)
         ).execute()
 
     return _render_panel(name, sw, _load_ai(sw), _load_edit(name))
 
 
 _PER_PAGE = 25
-_ALL_OVERRIDE_FIELDS = list(SOFTWARE_FIELDS.keys()) + AI_FIELDS
 
 
 @edit_bp.route("/admin/software")
@@ -408,7 +413,7 @@ def admin_software_overview():
     rows = []
     for sw in query.paginate(page, _PER_PAGE):
         edit = edits_by_name.get(sw.software_name)
-        n_overrides = sum(1 for f in _ALL_OVERRIDE_FIELDS if edit and getattr(edit, f) is not None) if edit else 0
+        n_overrides = sum(1 for f in ALL_FIELDS if edit and getattr(edit, f) is not None) if edit else 0
         rows.append({
             "name": sw.software_name,
             "description": sw.software_description or "",
@@ -443,8 +448,12 @@ def admin_software_overview():
 @edit_bp.route("/admin/software/export")
 @admin_required
 def export_overrides():
-    sw_fields = ["software_name"] + _ALL_OVERRIDE_FIELDS + ["edited_at", "edited_by"]
-    cmd_fields = ["software_name", "resource_name", "software_version", "command", "edited_at", "edited_by"]
+    sw_fields = ["software_name"] + list(ALL_FIELDS) + ["edited_at", "edited_by"]
+    cmd_fields = [
+        "software_name", "resource_name", "software_version",
+        "target_command", "suppressed", "replacement", "is_primary",
+        "edited_at", "edited_by",
+    ]
 
     payload = json.dumps({
         "software_edits": [{f: getattr(e, f) for f in sw_fields} for e in SoftwareEdit.select()],
@@ -469,8 +478,8 @@ def import_overrides():
     except Exception:
         abort(400)
 
-    now = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%S")
-    valid_sw_fields = set(_ALL_OVERRIDE_FIELDS)
+    now = _now_stamp()
+    valid_sw_fields = set(ALL_FIELDS)
 
     with db.atomic(), persistent_db.atomic():
         for record in data.get("software_edits", []):
@@ -478,111 +487,97 @@ def import_overrides():
             if not name:
                 continue
             # Never accept snapshots from the import file — they're
-            # local-to-this-instance and recaptured below.
+            # local-to-this-instance and recaptured from the live values.
             fields = {k: v for k, v in record.items() if k in valid_sw_fields}
             if not fields:
                 continue
+            set_overrides(
+                name, fields,
+                actor=current_user.username, timestamp=now,
+                skip_unchanged=False,
+            )
 
-            sw = Software.get_or_none(Software.software_name == name)
-            ai = AISoftwareInfo.get_or_none(AISoftwareInfo.software_id == sw.id) if sw else None
-
-            # Snapshot current sds_db values for every overridden field before
-            # we stomp them. Merges with any existing auto_values on the row.
-            existing_edit = SoftwareEdit.get_or_none(SoftwareEdit.software_name == name)
-            auto_values = _load_auto_values(existing_edit)
-            for edit_field, sw_field in SOFTWARE_FIELDS.items():
-                if fields.get(edit_field) is not None and edit_field not in auto_values:
-                    auto_values[edit_field] = (getattr(sw, sw_field, "") or "") if sw else ""
-            for edit_field in AI_FIELDS:
-                if fields.get(edit_field) is not None and edit_field not in auto_values:
-                    auto_values[edit_field] = (getattr(ai, edit_field, "") or "") if ai else ""
-
-            if existing_edit is not None:
-                for k, v in fields.items():
-                    setattr(existing_edit, k, v)
-                existing_edit.auto_values = json.dumps(auto_values) if auto_values else None
-                existing_edit.edited_at = now
-                existing_edit.edited_by = current_user.username
-                existing_edit.save()
-            else:
-                SoftwareEdit.create(
-                    software_name=name,
-                    auto_values=json.dumps(auto_values) if auto_values else None,
-                    edited_at=now,
-                    edited_by=current_user.username,
-                    **fields,
-                )
-
-            if sw is None:
-                continue
-
-            sw_changed = False
-            for edit_field, sw_field in SOFTWARE_FIELDS.items():
-                if fields.get(edit_field) is not None:
-                    setattr(sw, sw_field, fields[edit_field])
-                    sw_changed = True
-            if sw_changed:
-                sw.save()
-
-            ai_updates = {f: fields[f] for f in AI_FIELDS if fields.get(f) is not None}
-            if ai_updates:
-                if ai is not None:
-                    for k, v in ai_updates.items():
-                        setattr(ai, k, v)
-                    ai.save()
-                else:
-                    AISoftwareInfo.create(software_id=sw.id, **ai_updates)
-
+        touched_keys = set()
         for record in data.get("command_edits", []):
+            if "command" in record or "auto_command" in record:
+                # whole-list export from before the per-chain model; the
+                # shapes are not translatable, so the import is refused
+                abort(400)
             sw_name = record.get("software_name")
             res_name = record.get("resource_name")
             version = record.get("software_version")
-            command = record.get("command")
             if not (sw_name and res_name and version):
                 continue
 
-            # Capture local snapshot from current SoftwareResource, not from
-            # the import file.
-            snapshot = None
-            sr = None
-            if command is not None:
-                try:
-                    sw = Software.get(Software.software_name == sw_name)
-                    resource = Resource.get(Resource.resource_name == res_name)
-                    sr = SoftwareResource.get(
-                        (SoftwareResource.software_id == sw.id) &
-                        (SoftwareResource.resource_id == resource.id) &
-                        (SoftwareResource.software_version == version)
-                    )
-                except DoesNotExist:
-                    sr = None
-                if sr is not None:
-                    existing = CommandEdit.get_or_none(
-                        (CommandEdit.software_name == sw_name) &
-                        (CommandEdit.resource_name == res_name) &
-                        (CommandEdit.software_version == version)
-                    )
-                    if existing is not None and existing.auto_command is not None:
-                        snapshot = existing.auto_command
-                    else:
-                        snapshot = sr.command or ""
+            target = record.get("target_command")
+            suppressed = bool(record.get("suppressed"))
+            replacement = record.get("replacement")
+            is_primary = bool(record.get("is_primary"))
+            if target is None and not (replacement or "").strip():
+                continue
 
-            CommandEdit.insert(
-                software_name=sw_name, resource_name=res_name, software_version=version,
-                command=command, auto_command=snapshot,
-                edited_at=now, edited_by=current_user.username,
-            ).on_conflict(
-                conflict_target=[CommandEdit.software_name, CommandEdit.resource_name, CommandEdit.software_version],
-                update={
-                    CommandEdit.command: command,
-                    CommandEdit.auto_command: snapshot,
-                    CommandEdit.edited_at: now,
-                    CommandEdit.edited_by: current_user.username,
-                },
-            ).execute()
+            if target is None:
+                # admin-added command; keyed by its text since NULL
+                # targets are distinct under the unique index
+                edit = CommandEdit.get_or_none(
+                    _command_edit_key(sw_name, res_name, version)
+                    & CommandEdit.target_command.is_null()
+                    & (CommandEdit.replacement == replacement)
+                )
+                if edit is None:
+                    CommandEdit.create(
+                        software_name=sw_name, resource_name=res_name,
+                        software_version=version, replacement=replacement,
+                        suppressed=suppressed, is_primary=is_primary,
+                        edited_at=now, edited_by=current_user.username,
+                    )
+                else:
+                    edit.suppressed = suppressed
+                    edit.is_primary = is_primary
+                    edit.edited_at = now
+                    edit.edited_by = current_user.username
+                    edit.save()
+            else:
+                CommandEdit.insert(
+                    software_name=sw_name, resource_name=res_name,
+                    software_version=version, target_command=target,
+                    suppressed=suppressed, replacement=replacement,
+                    is_primary=is_primary,
+                    edited_at=now, edited_by=current_user.username,
+                ).on_conflict(
+                    conflict_target=[
+                        CommandEdit.software_name,
+                        CommandEdit.resource_name,
+                        CommandEdit.software_version,
+                        CommandEdit.target_command,
+                    ],
+                    update={
+                        CommandEdit.suppressed: suppressed,
+                        CommandEdit.replacement: replacement,
+                        CommandEdit.is_primary: is_primary,
+                        CommandEdit.edited_at: now,
+                        CommandEdit.edited_by: current_user.username,
+                    },
+                ).execute()
 
-            if command is not None and sr is not None:
-                sr.command = command
-                sr.save()
+            touched_keys.add((sw_name, res_name, version))
+
+        for sw_name, res_name, version in touched_keys:
+            try:
+                sw = Software.get(Software.software_name == sw_name)
+                resource = Resource.get(Resource.resource_name == res_name)
+                sr = SoftwareResource.get(
+                    (SoftwareResource.software_id == sw.id) &
+                    (SoftwareResource.resource_id == resource.id) &
+                    (SoftwareResource.software_version == version)
+                )
+            except DoesNotExist:
+                continue
+            project_entry(
+                sr,
+                list(CommandEdit.select().where(
+                    _command_edit_key(sw_name, res_name, version)
+                )),
+            )
 
     return redirect(url_for("edit.admin_software_overview"))

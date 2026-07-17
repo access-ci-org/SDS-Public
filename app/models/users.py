@@ -1,10 +1,10 @@
 from peewee import AutoField, CharField, BooleanField
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import BaseModel
+from . import PersistentBaseModel
 
 
-class Users(BaseModel, UserMixin):
+class Users(PersistentBaseModel, UserMixin):
     id = AutoField()
     username = CharField(unique=True)
     password = CharField()

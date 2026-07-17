@@ -29,6 +29,10 @@ export default defineConfig({
             TESTING: "1",
             SDS_DATA_DIR: "/tmp/sds_e2e_db",
             FLASK_DEBUG: "0",
+            // The AI display surface is under test; force the flags on
+            // regardless of the local config.yaml.
+            SDS_USE_API: "1",
+            SDS_USE_AI_INFO: "1",
         },
     },
 });

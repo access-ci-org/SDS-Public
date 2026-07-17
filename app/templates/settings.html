@@ -33,6 +33,11 @@
     </li>
     {% if is_admin %}
     <li class="nav-item" role="presentation">
+      <button class="nav-link" id="apikeys-tab" data-bs-toggle="tab" data-bs-target="#apikeys-tab-pane" type="button" role="tab" aria-controls="apikeys-tab-pane" aria-selected="false">
+        API Keys
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
       <button class="nav-link" id="banners-tab" data-bs-toggle="tab" data-bs-target="#banners-tab-pane" type="button" role="tab" aria-controls="banners-tab-pane" aria-selected="false">
         Banners
       </button>
@@ -119,13 +124,19 @@
           </div>
         </div>
       </div>
-    </div>
+    </div><!-- /download-tab-pane -->
+
     {% if is_admin %}
+    <!-- API Keys Tab -->
+    <div class="tab-pane" id="apikeys-tab-pane" role="tabpanel" aria-labelledby="apikeys-tab" tabindex="0">
+      {% include 'admin/api_keys_tab.html' %}
+    </div><!-- /apikeys-tab-pane -->
+
     <!-- Banners Tab -->
     <div class="tab-pane" id="banners-tab-pane" role="tabpanel" aria-labelledby="banners-tab" tabindex="0">
       {% include 'admin/banners_tab.html' %}
     </div>
     {% endif %}
-  </div>
-</div>
+  </div><!-- /tab-content -->
+</div><!-- /admin-page -->
 {% endblock %}

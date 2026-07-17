@@ -1,0 +1,218 @@
+[
+  {
+    "package": "proj",
+    "url": "https://example.org/proj",
+    "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates.",
+    "categories": "development",
+    "defaultVersionName": "9.5.0",
+    "versions": [
+      {
+        "parent": [["intel/2022.1.2"]],
+        "path": "/opt/sw/modules/cdep/intel/2022.1.2/proj/6.0.0.lua",
+        "versionName": "6.0.0",
+        "full": "proj/6.0.0",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000000006.*zfinal",
+        "canonicalVersionString": "000000006.*zfinal",
+        "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates."
+      },
+      {
+        "parent": [["gcc/11.2.0"]],
+        "path": "/opt/sw/modules/cdep/gcc/11.2.0/proj/8.1.1.lua",
+        "versionName": "8.1.1",
+        "full": "proj/8.1.1",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000000008.000000001.000000001.*zfinal",
+        "canonicalVersionString": "000000008.000000001.000000001.*zfinal",
+        "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates."
+      },
+      {
+        "parent": [["gcc/10.3.0"]],
+        "path": "/opt/sw/modules/cdep/gcc/10.3.0/proj/8.1.1.lua",
+        "versionName": "8.1.1",
+        "full": "proj/8.1.1",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000000008.000000001.000000001.*zfinal",
+        "canonicalVersionString": "000000008.000000001.000000001.*zfinal",
+        "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates."
+      },
+      {
+        "parent": [["intel/.2021.4.0"]],
+        "path": "/opt/sw/modules/cdep/intel/2021.4.0/proj/8.1.1.lua",
+        "versionName": "8.1.1",
+        "full": "proj/8.1.1",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000000008.000000001.000000001.*zfinal",
+        "canonicalVersionString": "000000008.000000001.000000001.*zfinal",
+        "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates."
+      },
+      {
+        "parent": [["aocc/3.1.0"]],
+        "path": "/opt/sw/modules/cdep/aocc/3.1.0/proj/8.1.1.lua",
+        "versionName": "8.1.1",
+        "full": "proj/8.1.1",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000000008.000000001.000000001.*zfinal",
+        "canonicalVersionString": "000000008.000000001.000000001.*zfinal",
+        "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates."
+      },
+      {
+        "parent": [["gcc/14.2.0"]],
+        "path": "/opt/sw/modules/cdep/gcc/14.2.0/proj/9.5.0.lua",
+        "versionName": "9.5.0",
+        "full": "proj/9.5.0",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000000009.000000005.*zfinal",
+        "canonicalVersionString": "000000009.000000005.*zfinal",
+        "description": "PROJ converts geographic longitude and latitude coordinates into Cartesian coordinates."
+      }
+    ]
+  },
+  {
+    "package": "slurmtools",
+    "defaultVersionName": false,
+    "versions": [
+      {
+        "wV": "000000000.000000000.000000001.*zfinal",
+        "markedDefault": false,
+        "description": "slurmtools is a collection of helper utilities for SLURM-based HPC environments.",
+        "canonicalVersionString": "000000000.000000000.000000001.*zfinal",
+        "help": "",
+        "path": "/opt/sw/modules/idep/slurmtools/0.0.1.lua",
+        "versionName": "0.0.1",
+        "full": "slurmtools/0.0.1"
+      },
+      {
+        "wV": "M.*zfinal",
+        "markedDefault": false,
+        "path": "/opt/sw/modules-site/slurm/slurmtools.lua",
+        "canonicalVersionString": "",
+        "full": "slurmtools"
+      }
+    ]
+  },
+  {
+    "package": "antlr",
+    "url": "https://example.org/antlr",
+    "description": "ANTLR is a parser generator for reading, processing, executing, or translating structured text or binary files.",
+    "categories": "tools",
+    "defaultVersionName": "4.13.1",
+    "versions": [
+      {
+        "wV": "000000004.000000013.000000001.*zfinal",
+        "markedDefault": false,
+        "description": "ANTLR is a parser generator for reading, processing, executing, or translating structured text or binary files.",
+        "canonicalVersionString": "000000004.000000013.000000001.*zfinal",
+        "help": "ANTLR is a parser generator.\n",
+        "path": "/opt/sw/modules/idep/antlr/4.13.1.lua",
+        "versionName": "4.13.1",
+        "full": "antlr/4.13.1"
+      }
+    ]
+  },
+  {
+    "package": "bcftools",
+    "defaultVersionName": "1.16",
+    "versions": [
+      {
+        "wV": "000000001.000000016.*zfinal",
+        "help": "BCFtools is a set of utilities that manipulate variant calls in VCF and BCF formats.",
+        "markedDefault": false,
+        "canonicalVersionString": "000000001.000000016.*zfinal",
+        "path": "/opt/sw/modules/udep/bio/bcftools/1.16.lua",
+        "versionName": "1.16",
+        "full": "bcftools/1.16"
+      }
+    ]
+  },
+  {
+    "package": "parmetis",
+    "description": "ParMETIS computes fill-reducing orderings of sparse matrices in parallel.",
+    "defaultVersionName": "4.0.3",
+    "versions": [
+      {
+        "parent": [["gcc/12.3.0", "openmpi/4.1.6"], ["gcc/12.3.0", "mpich/4.1.2"]],
+        "path": "/opt/sw/modules/mdep/gcc/12.3.0/openmpi/4.1.6/parmetis/4.0.3.lua",
+        "versionName": "4.0.3",
+        "full": "parmetis/4.0.3",
+        "markedDefault": false,
+        "wV": "000000004.000000000.000000003.*zfinal",
+        "canonicalVersionString": "000000004.000000000.000000003.*zfinal"
+      }
+    ]
+  },
+  {
+    "package": "mytool",
+    "description": "MyTool is a placeholder analysis toolkit.",
+    "defaultVersionName": "2024.1_standard",
+    "versions": [
+      {
+        "path": "/opt/sw/modules/idep/mytool/2022.4.lua",
+        "versionName": "MyTool 2022.4 & Python 3.10",
+        "full": "mytool/2022.4",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000002022.000000004.*zfinal",
+        "canonicalVersionString": "000002022.000000004.*zfinal"
+      },
+      {
+        "path": "/opt/sw/modules/idep/mytool/2024.1_standard.lua",
+        "versionName": "2024.1 Standard",
+        "full": "mytool/2024.1_standard",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000002024.000000001.*zfinal",
+        "canonicalVersionString": "000002024.000000001.*zfinal"
+      },
+      {
+        "path": "/opt/sw/modules/idep/mytool/2024.1_standard_ext.lua",
+        "versionName": "2024.1 Standard",
+        "full": "mytool/2024.1_standard_ext",
+        "help": "",
+        "markedDefault": false,
+        "wV": "000002024.000000001.*zfinal",
+        "canonicalVersionString": "000002024.000000001.*zfinal"
+      }
+    ]
+  },
+  {
+    "package": "secrettool",
+    "description": "Internal diagnostics tool.",
+    "defaultVersionName": "2.0",
+    "versions": [
+      {
+        "hidden": true,
+        "path": "/opt/sw/modules/idep/secrettool/.1.0.lua",
+        "versionName": ".1.0",
+        "full": "secrettool/.1.0",
+        "markedDefault": false
+      },
+      {
+        "path": "/opt/sw/modules/idep/secrettool/2.0.lua",
+        "versionName": "2.0",
+        "full": "secrettool/2.0",
+        "markedDefault": false
+      }
+    ]
+  },
+  {
+    "package": "ghostpkg",
+    "description": "Entirely hidden package.",
+    "defaultVersionName": ".0.9",
+    "versions": [
+      {
+        "hidden": true,
+        "path": "/opt/sw/modules/idep/ghostpkg/.0.9.lua",
+        "versionName": ".0.9",
+        "full": "ghostpkg/.0.9",
+        "markedDefault": false
+      }
+    ]
+  }
+]

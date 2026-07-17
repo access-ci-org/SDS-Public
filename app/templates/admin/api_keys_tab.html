@@ -1,0 +1,94 @@
+{# API Keys tab — admin only. Included from settings.html. Create / revoke /
+   delete / sort / search behavior is wired up in static/js/settings.js (loaded
+   by settings.html), so this partial is markup only. #}
+
+<!-- Generate new key -->
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header">
+        <h5 class="mb-0">Generate New Key</h5>
+      </div>
+      <div class="card-body">
+        <label class="form-label">
+          Label
+          <span class="text-muted fw-normal small">— helps identify what this key is used for</span>
+        </label>
+        <div class="d-flex gap-2 mb-3">
+          <input type="text" id="key-label" class="form-control"
+                 placeholder="e.g. MCP server, CI pipeline">
+          <button class="primary-button" id="create-key-btn" style="white-space: nowrap;">
+            Generate Key
+          </button>
+        </div>
+        <div id="new-key-alert" class="d-none p-3 rounded"
+             style="background: var(--primary-color-4); border: 1.5px solid var(--primary-color-1);">
+          <p class="mb-2 fw-semibold small" style="color: var(--primary-color-1);">
+            <i class="bi bi-key-fill me-1"></i>Copy this key now — it will not be shown again.
+          </p>
+          <div class="d-flex align-items-center gap-2 bg-white p-2 rounded border">
+            <code id="new-key-value" class="flex-grow-1 text-break small"></code>
+            <button class="btn btn-sm btn-outline-secondary flex-shrink-0" id="copy-key-btn">
+              <i class="bi bi-clipboard"></i> Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Keys table -->
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center gap-3">
+    <h5 class="mb-0 flex-shrink-0">API Keys</h5>
+    <input type="search" id="keys-search" class="form-control form-control-sm w-auto"
+           placeholder="Search keys…">
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0" id="keys-table">
+      <thead class="table-light">
+        <tr>
+          <th data-col="0" class="sortable">Prefix</th>
+          <th data-col="1" class="sortable">Label</th>
+          <th data-col="2" class="sortable">Created</th>
+          <th data-col="3" class="sortable">Last Used</th>
+          <th data-col="4" class="sortable">Requests</th>
+          <th data-col="5" class="sortable">Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key in keys %}
+        <tr id="key-row-{{ key.id }}" {% if not key.is_active %}class="text-muted"{% endif %}>
+          <td class="font-monospace small">{{ key.key_prefix }}…</td>
+          <td>{{ key.label or "—" }}</td>
+          <td class="small">{{ key.created_at[:10] if key.created_at else "—" }}</td>
+          <td class="small">{{ key.last_used_at[:16] if key.last_used_at else "Never" }}</td>
+          <td>{{ key.request_count }}</td>
+          <td>
+            {% if key.is_active %}
+              <span class="badge bg-success">Active</span>
+            {% else %}
+              <span class="badge bg-secondary">Revoked</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if key.is_active %}
+            <button class="btn btn-sm btn-outline-danger revoke-btn"
+                    data-id="{{ key.id }}">Revoke</button>
+            {% else %}
+            <button class="btn btn-sm btn-outline-secondary delete-btn"
+                    data-id="{{ key.id }}">Delete</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr id="keys-empty-row">
+          <td colspan="7" class="text-center text-muted py-3">No API keys yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

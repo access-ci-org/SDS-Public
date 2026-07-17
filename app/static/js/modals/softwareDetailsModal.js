@@ -1,4 +1,4 @@
-import { escapeHtml } from "../utils.js";
+import { escapeHtml, parseChipValues } from "../utils.js";
 import { showAlert } from "../alerts.js";
 import { attachTabPreservation } from "../adminEditPanel.js";
 
@@ -98,12 +98,11 @@ function formatSoftwareInfo(softwareInfo) {
     const resourceLink = ""
     // const resourceDocumentation = softwareInfo["RP Software Documentation" || ""].split("\n").filter(x => x.trim())
     const tutorialLinks = (softwareInfo["Tutorials and Usage"]|| "").split(/[\n,\s]+/).map(x => x.trim()).filter(x => x)
-    const researchDiscipline = [... new Set(
-            (softwareInfo["AI Research Field"]||"").split(",")
-            .concat((softwareInfo["AI Research Discipline"]||"").split(","))
-            .filter(x => x.trim())
-        )]
-    const softwareType = (softwareInfo["AI Software Type"]||"").split(",").filter(x => x.trim())
+    // AI Research Discipline already includes AI Research Field (merged
+    // server-side), so this column alone holds the full set; split it into one
+    // trimmed, de-duplicated chip per value.
+    const researchDiscipline = parseChipValues(softwareInfo["AI Research Discipline"])
+    const softwareType = parseChipValues(softwareInfo["AI Software Type"])
     softwareData["installedOn"] = Object.fromEntries(
         Object.entries(versions).map(([resource, versionList]) => [
             resource,
@@ -128,7 +127,7 @@ function formatSoftwareInfo(softwareInfo) {
     }
 
     softwareData["similarSoftware"] = {
-        "tags": (softwareInfo["AI Tags"] || "").split(",").filter(x => x.trim()),
+        "tags": parseChipValues(softwareInfo["AI Tags"]),
         "researchDiscipline": researchDiscipline,
         "softwareType": softwareType
     }
@@ -210,7 +209,7 @@ function createLinkElements(links) {
                 return `<a target="_blank" href="${escapeHtml(link)}">${escapeHtml(link)}</a>`;
             }
         })
-    ).then(linkElements => linkElements.join(''));
+    ).then(linkElements => linkElements.join(' '));
 }
 
 function renderLoadingSpinner() {
@@ -326,8 +325,12 @@ function populateInstalledOn(installedOn){
             `)
             resource_info.resourceVersion.forEach(version_command => {
                 const version = version_command.version
-                const raw = version_command.command ? version_command.command : ''
-                const commands = raw ? raw.split(',').map(s => s.trim()).filter(s => s) : []
+                // load_commands carries the full resolved list, one entry
+                // per way to load the module; command is the single
+                // canonical fallback
+                const commands = Array.isArray(version_command.load_commands)
+                    ? version_command.load_commands.filter(c => c)
+                    : (version_command.command ? [version_command.command] : [])
                 const firstCmd = commands[0] || ''
                 const extraCmds = commands.slice(1)
 
