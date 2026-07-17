@@ -1,7 +1,9 @@
 # SDS REST API
 
 The SDS REST API lets external tools and scripts query the software catalog
-programmatically. All endpoints live under `/api/v1`.
+programmatically. All endpoints live under `/api/v1`. Admins can also browse
+this reference in-app on the **API** page (`/admin/api`), rendered from the
+same schema the `/schema` endpoint serves.
 
 > The example values below are placeholders. Real responses reflect your
 > instance's catalog.
@@ -22,8 +24,8 @@ header:
 X-API-Key: sds_xxx...
 ```
 
-Keys are created by an SDS admin under **Settings → API Keys**
-(`/settings/api-keys`) in the web UI. The full key is shown once at creation.
+Keys are created by an SDS admin on the **API** page (`/admin/api`) in the
+web UI. The full key is shown once at creation.
 Only a hash is stored, so a lost key can't be recovered; generate a new one
 instead.
 
@@ -41,7 +43,7 @@ rest_api:
 With auth disabled the `X-API-Key` header is ignored and every endpoint is open.
 
 There is no rate limiting. Each key does record a last-used timestamp and a
-cumulative request count, shown in the admin API Keys view. Every
+cumulative request count, shown on the admin API page. Every
 authenticated request is also logged with the key prefix, key label,
 endpoint, and timestamp: the newest 10,000 entries are kept in the
 database, and complete history is appended to a weekly-rotated file log

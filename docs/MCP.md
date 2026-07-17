@@ -10,9 +10,9 @@ nothing to install. You just point your AI client at it with an API key.
 
 ## Get an API key
 
-Ask your SDS administrator for a key. They create it under **Settings → API
-Keys** in the SDS web UI. It looks like `sds_xxxxxxxx`. Keep it secret; the full
-key is shown only once.
+Ask your SDS administrator for a key. They create it on the **API** page
+(`/admin/api`) in the SDS web UI. It looks like `sds_xxxxxxxx`. Keep it secret;
+the full key is shown only once.
 
 ---
 

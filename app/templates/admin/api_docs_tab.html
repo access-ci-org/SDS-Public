@@ -1,0 +1,58 @@
+{# Docs tab — the bundled docs/API.md guide renders first (host placeholders
+   substituted with this instance's URL), followed by the endpoint reference
+   generated from the same _SCHEMA object that /api/v1/schema serves. The
+   reference always matches the served contract; there is no hand-written
+   endpoint list here. Endpoint entries render generically: the params /
+   body / response sections appear when the entry carries them. #}
+
+<div class="row">
+  <div class="col-lg-8">
+    {{ api_guide_html | safe }}
+  </div>
+</div>
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header"><h5 class="mb-0">Authentication</h5></div>
+  <div class="card-body">
+    <p class="mb-2">{{ schema.auth.note }} Keys are minted on the Keys tab.</p>
+    <pre class="bg-light p-2 rounded small mb-0"><code>curl -H "{{ schema.auth.header }}: sds_xxxxxxxx" {{ public_base_url }}{{ schema.base_url }}/resources</code></pre>
+  </div>
+</div>
+
+{% for ep in schema.endpoints %}
+<div class="card shadow-sm mb-3">
+  <div class="card-header d-flex align-items-center gap-2 flex-wrap">
+    <span class="badge {{ 'bg-success' if ep.method == 'GET' else 'bg-warning text-dark' }}">{{ ep.method }}</span>
+    <code class="fw-semibold">{{ schema.base_url }}{{ ep.path }}</code>
+    {% if not ep.auth_required %}
+    <span class="badge bg-secondary ms-auto">no key required</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    <p class="mb-3">{{ ep.description }}</p>
+    {% if ep.params %}
+    <h6 class="text-uppercase text-muted small fw-bold">Query parameters</h6>
+    <table class="table table-sm w-auto mb-3">
+      <tbody>
+        {% for name, type in ep.params.items() %}
+        <tr><td><code>{{ name }}</code></td><td class="small text-muted">{{ type }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    {% if ep.body %}
+    <h6 class="text-uppercase text-muted small fw-bold">Request body</h6>
+    <table class="table table-sm w-auto mb-3">
+      <tbody>
+        {% for name, type in ep.body.items() %}
+        <tr><td><code>{{ name }}</code></td><td class="small text-muted">{{ type }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+    <h6 class="text-uppercase text-muted small fw-bold">Response</h6>
+    <pre class="bg-light p-2 rounded small mb-0"><code>{{ ep.response | tojson(indent=2) }}</code></pre>
+  </div>
+</div>
+{% endfor %}

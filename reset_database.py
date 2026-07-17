@@ -115,9 +115,11 @@ def get_remote_data(
     software: list[str],
     share_with_devs:bool,
     share_with_others: bool,
-    api_data_save_file: str = "app/data/api_response.json"
+    api_data_save_file: str | Path | None = None
     ) -> list[dict[str, any]]:
     logger.info(f"Retrieving api data")
+    if api_data_save_file is None:
+        api_data_save_file = state_dir() / "api_response.json"
 
     BATCH_SIZE = 75
     all_data = []
@@ -167,6 +169,7 @@ def get_remote_data(
         f"Successfully retrieved data from api call. Length of data is {len(all_data)}."
     )
     if all_data:
+        Path(api_data_save_file).parent.mkdir(parents=True, exist_ok=True)
         with open(api_data_save_file, "w") as ar:
             json.dump(all_data, ar, indent=4)
         logger.info(f"Successfully updated local copy of api data")

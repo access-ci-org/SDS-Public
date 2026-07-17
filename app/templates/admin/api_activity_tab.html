@@ -1,0 +1,53 @@
+{# Activity tab — per-request detail from APIKeyLog (persistent DB), newest
+   first. Per-key aggregates (request count, last used) live on the Keys tab.
+   Only the newest rows render here; the complete history is the weekly-
+   rotated file log. #}
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center gap-3">
+    <h5 class="mb-0 flex-shrink-0">API Requests</h5>
+    {% if log_key_filter %}
+    <span class="small text-muted">
+      Filtered to key <code>{{ log_key_filter }}</code> —
+      <a href="{{ url_for('api_admin.api_page', tab='activity') }}">show all</a>
+    </span>
+    {% endif %}
+  </div>
+  <div class="card-body p-0">
+    <table class="table table-hover mb-0" id="activity-table">
+      <thead class="table-light">
+        <tr>
+          <th>Time (UTC)</th>
+          <th>Key</th>
+          <th>Endpoint</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in log_entries %}
+        <tr>
+          <td class="small">{{ entry.timestamp[:16] if entry.timestamp else "—" }}</td>
+          <td>
+            <span class="font-monospace small">{{ entry.key_prefix }}…</span>
+            {% if entry.key_prefix in key_labels %}
+            <span class="small">{{ key_labels[entry.key_prefix] or "—" }}</span>
+            {% else %}
+            <span class="small text-muted">(deleted)</span>
+            {% endif %}
+          </td>
+          <td class="font-monospace small">{{ entry.endpoint }}</td>
+        </tr>
+        {% else %}
+        <tr id="activity-empty-row">
+          <td colspan="3" class="text-center text-muted py-3">
+            {% if log_key_filter %}No requests logged for this key.{% else %}No API requests logged yet.{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer small text-muted" id="activity-count">
+    Showing latest {{ log_entries | length }} of {{ log_total }} request{{ "s" if log_total != 1 }}.
+    Complete history is in the file log under <code>data/state/logs/api/</code>.
+  </div>
+</div>

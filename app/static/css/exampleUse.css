@@ -20,8 +20,17 @@
     padding: 2px 4px; 
     border-radius: 4px; 
 }
-.markdown-content h1 { 
-    font-size: 1.5em; 
+.markdown-content table {
+    border-collapse: collapse;
+    margin: 10px 0;
+}
+.markdown-content th,
+.markdown-content td {
+    border: 1px solid #dee2e6;
+    padding: 4px 10px;
+}
+.markdown-content h1 {
+    font-size: 1.5em;
 }
 .markdown-content h2 { 
     font-size: 1.3em; 

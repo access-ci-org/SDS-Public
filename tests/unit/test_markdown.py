@@ -26,6 +26,12 @@ def test_renders_fenced_code_block():
     assert "<pre>" in out or "<code>" in out
 
 
+def test_renders_pipe_table():
+    out = convert_markdown_to_html("| a | b |\n|---|---|\n| 1 | 2 |\n")
+    assert "<table>" in out
+    assert "<td>1</td>" in out
+
+
 def test_wraps_output_in_markdown_content_div():
     out = convert_markdown_to_html("plain text")
     assert 'class="markdown-content"' in out

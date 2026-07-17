@@ -1,0 +1,32 @@
+{# MCP tab — connection info only. The MCP server is part of the deployment
+   stack (nginx proxies /mcp to the sds-mcp process), so there is nothing to
+   manage here. Clients authenticate with the same API keys as the REST API.
+   The per-client walk-throughs come from the bundled docs/MCP.md, rendered
+   below the summary card with this instance's URL substituted in. #}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-header"><h5 class="mb-0">MCP Endpoint</h5></div>
+      <div class="card-body">
+        <p class="mb-2">
+          AI assistants that speak the
+          <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Model Context Protocol</a>
+          can answer natural-language questions about this catalog through a
+          streamable-HTTP server at:
+        </p>
+        <p><code id="mcp-url">{{ public_base_url }}/mcp</code></p>
+        <p class="mb-2">
+          Clients authenticate with an API key from the Keys tab, sent as a
+          bearer token:
+        </p>
+        <pre class="bg-light p-2 rounded small"><code>Authorization: Bearer sds_xxxxxxxx</code></pre>
+        <p class="small text-muted mb-0">
+          The MCP server runs as its own process next to the web app; the
+          SDS container starts both and routes <code>/mcp</code> to it.
+        </p>
+      </div>
+    </div>
+    {{ mcp_guide_html | safe }}
+  </div>
+</div>

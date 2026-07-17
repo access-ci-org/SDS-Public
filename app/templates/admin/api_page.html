@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block scripts %}
+    {{super()}}
+    <script type="module" src="{{url_for('static', filename='js/apiAdmin.js')}}"></script>
+{% endblock %}
+
+{% block styles %}
+    {{super()}}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/settings.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/exampleUse.css')}}">
+{% endblock %}
+
+{% block page_title %}
+<div class="admin-page-header">
+    <h1 class="admin-page-header__title">API</h1>
+    <span class="admin-page-version">v{{ sds_version }}</span>
+</div>
+{% endblock %}
+
+{% block app_content %}
+<div class="admin-page">
+  <!-- Nav tabs. A ?key= filter or ?tab=activity opens the page on the
+       Activity tab. -->
+  <ul class="nav nav-tabs mb-4" id="apiTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link{{ ' active' if active_tab == 'keys' }}" id="keys-tab" data-bs-toggle="tab" data-bs-target="#keys-tab-pane" type="button" role="tab" aria-controls="keys-tab-pane" aria-selected="{{ 'true' if active_tab == 'keys' else 'false' }}">
+        Keys
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link{{ ' active' if active_tab == 'activity' }}" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity-tab-pane" type="button" role="tab" aria-controls="activity-tab-pane" aria-selected="{{ 'true' if active_tab == 'activity' else 'false' }}">
+        Activity
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs-tab-pane" type="button" role="tab" aria-controls="docs-tab-pane" aria-selected="false">
+        Docs
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="mcp-tab" data-bs-toggle="tab" data-bs-target="#mcp-tab-pane" type="button" role="tab" aria-controls="mcp-tab-pane" aria-selected="false">
+        MCP
+      </button>
+    </li>
+  </ul>
+  <!-- Tab content -->
+  <div class="tab-content" id="apiTabContent">
+    <div class="tab-pane{{ ' show active' if active_tab == 'keys' }}" id="keys-tab-pane" role="tabpanel" aria-labelledby="keys-tab" tabindex="0">
+      {% include 'admin/api_keys_tab.html' %}
+    </div>
+    <div class="tab-pane{{ ' show active' if active_tab == 'activity' }}" id="activity-tab-pane" role="tabpanel" aria-labelledby="activity-tab" tabindex="0">
+      {% include 'admin/api_activity_tab.html' %}
+    </div>
+    <div class="tab-pane" id="docs-tab-pane" role="tabpanel" aria-labelledby="docs-tab" tabindex="0">
+      {% include 'admin/api_docs_tab.html' %}
+    </div>
+    <div class="tab-pane" id="mcp-tab-pane" role="tabpanel" aria-labelledby="mcp-tab" tabindex="0">
+      {% include 'admin/api_mcp_tab.html' %}
+    </div>
+  </div>
+</div><!-- /admin-page -->
+{% endblock %}

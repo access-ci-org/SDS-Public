@@ -58,6 +58,7 @@ general:
   hide_data: []
   iframe: False
   external_analytics: ""
+  external_url: ""
 ```
 
 - `username`: Set `user_name` to be the default admin user for your website
@@ -85,6 +86,8 @@ general:
 
 - `iframe`: Set `iframe` to be `True` if you are showing this page using an iframe. This will just remove the header and title of the page. Default is `False`
 
+- `external_url`: Set `external_url` to the public base URL of your SDS instance (e.g. `https://sds.example.edu:8080`). It is used for the connection URLs shown on the admin API page. When unset, those URLs are derived from the incoming request, which behind the bundled reverse proxy loses the public port and scheme — set this if the displayed URLs don't match how users reach your instance. Default is `""`.
+
 - `external_analytics`: Set `external_analytics` to be some html used for tracking the website and user interactions. For example the script/noscript code blocks provided by Microsoft's Clarity, Google Tag Manager, Google Analytics, etc. Basic, anonymous, analytics to track  user searches and clicks are already provided as a base part of the SDS so this `external_analytics` is meant for those who want more or better information. Any code provided here will be placed in the `<head>` section of the website.
 
 ## REST API Configs
@@ -96,7 +99,7 @@ rest_api:
   require_auth: True
 ```
 
-- `require_auth`: Set to `False` to allow unauthenticated access to the REST API (useful for development). Default is `True`. When `True`, all endpoints require a valid `X-API-Key` header. Keys are managed at `/settings/api-keys`.
+- `require_auth`: Set to `False` to allow unauthenticated access to the REST API (useful for development). Default is `True`. When `True`, all endpoints require a valid `X-API-Key` header. Keys are managed by an SDS admin on the **API** page (`/admin/api`).
 
 ## Parser Configs
 

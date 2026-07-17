@@ -5,7 +5,9 @@ These tests verify the interface contract: routes exist with the right methods,
 auth is enforced correctly, and every response has the keys the schema promises.
 They do not test business logic.
 """
+import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 import pytest
 
@@ -56,6 +58,31 @@ class TestSchemaEndpoint:
         data = client.get("/api/v1/schema").get_json()
         paths = {ep["path"] for ep in data["endpoints"]}
         assert paths == _EXPECTED_PATHS
+
+    def test_schema_covers_every_served_route(self, client, flask_app):
+        # Set equality against the live url_map: a route or method added
+        # without a schema entry (or a schema entry gone stale) fails here.
+        # Werkzeug auto-adds HEAD/OPTIONS to every rule, so they are not
+        # part of the documented contract.
+        served = set()
+        for rule in flask_app.url_map.iter_rules():
+            if not rule.rule.startswith("/api/v1"):
+                continue
+            path = re.sub(r"<(?:[^:>]+:)?([^>]+)>", r"{\1}", rule.rule[len("/api/v1"):])
+            for method in rule.methods - {"HEAD", "OPTIONS"}:
+                served.add((path, method))
+        data = client.get("/api/v1/schema").get_json()
+        assert served == {(ep["path"], ep["method"]) for ep in data["endpoints"]}
+
+    def test_api_doc_covers_every_schema_endpoint(self, client):
+        # docs/API.md is the guide rendered on the admin API page; an
+        # endpoint added or renamed in the schema must show up there too.
+        # The doc writes path params as <name>, the schema as {name}.
+        doc = Path("docs/API.md").read_text(encoding="utf-8")
+        data = client.get("/api/v1/schema").get_json()
+        for ep in data["endpoints"]:
+            documented = ep["path"].replace("{", "<").replace("}", ">")
+            assert documented in doc, f"{ep['path']} missing from docs/API.md"
 
     def test_schema_endpoint_marked_no_auth(self, client):
         data = client.get("/api/v1/schema").get_json()
@@ -203,6 +230,44 @@ class TestMatchResourcesEndpoint:
         )
         data = r.get_json()
         assert "definitely_not_real_xyz_123" in data["unmatched"]
+
+    def test_short_catalog_names_not_swallowed_by_long_queries(self, client):
+        # Substring containment inside a single token is not a match:
+        # "r" appears in "gromacs" and "tar" in "notarealpkg", but neither
+        # catalog entry is what the caller asked about.
+        Software.create(software_name="r")
+        Software.create(software_name="tar")
+        r = client.post(
+            "/api/v1/software/match-resources",
+            json={"packages": ["gromacs", "notarealpkg"]},
+        )
+        data = r.get_json()
+        assert data["matched"] == []
+        assert set(data["unmatched"]) == {"gromacs", "notarealpkg"}
+
+    def test_catalog_name_extending_the_query_matches(self, client):
+        Software.create(software_name="py2-numpy")
+        r = client.post(
+            "/api/v1/software/match-resources", json={"packages": ["numpy"]}
+        )
+        names = [m["software_name"] for m in r.get_json()["matched"][0]["matches"]]
+        assert "py2-numpy" in names
+
+    def test_query_extending_a_catalog_name_matches_on_token_boundary(self, client):
+        Software.create(software_name="numpy")
+        r = client.post(
+            "/api/v1/software/match-resources", json={"packages": ["py2-numpy"]}
+        )
+        names = [m["software_name"] for m in r.get_json()["matched"][0]["matches"]]
+        assert "numpy" in names
+
+    def test_single_character_typo_still_matches(self, client):
+        Software.create(software_name="gromacs")
+        r = client.post(
+            "/api/v1/software/match-resources", json={"packages": ["gromcs"]}
+        )
+        names = [m["software_name"] for m in r.get_json()["matched"][0]["matches"]]
+        assert "gromacs" in names
 
     def test_known_package_lands_in_matched(self, client, seeded_db):
         r = client.post(

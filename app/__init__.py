@@ -85,6 +85,10 @@ SHOW_CONTAINER_PAGE = general_conf.get("show_container_page", "True")
 HIDE_DATA = general_conf.get('hide_data',[])
 IFRAME = general_conf.get("iframe",False)
 EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
+# Public base URL of this instance. Behind the deployment proxy the request
+# host loses the public port and scheme, so connection info shown in the UI
+# prefers this value when set.
+EXTERNAL_URL = general_conf.get("external_url", "")
 
 # Current SDS Version
 SDS_VERSION = "1.4.1"
@@ -128,6 +132,7 @@ app.config.update(
     SHOW_CONTAINER_PAGE=SHOW_CONTAINER_PAGE,
     IFRAME=IFRAME,
     EXTERNAL_ANALYTICS=EXTERNAL_ANALYTICS,
+    EXTERNAL_URL=EXTERNAL_URL,
 
     SDS_VERSION=SDS_VERSION,
     SDS_API_URL=SDS_API_URL

@@ -1,23 +1,19 @@
 import csv
 from pathlib import Path
-from flask import render_template, request, jsonify, current_app, send_file, redirect, url_for
+from flask import render_template, request, jsonify, current_app, send_file
 from flask_login import login_required, current_user
 from app.logic.table import initialize_table_info, get_table, organize_table, combine_columns, TableInfo
-from app.models.api_key import APIKey
 from app.models.banner import Banner
 from app.routes.analytics_routes import analytics_file
-from ._decorators import admin_required
 from . import settings_bp
 
 
 @settings_bp.route("/settings")
 @login_required
 def settings():
-    keys = APIKey.select().order_by(APIKey.created_at.desc()) if current_user.is_admin else []
     all_banners = list(Banner.select().order_by(Banner.created_at.desc())) if current_user.is_admin else []
     return render_template(
         "settings.html",
-        keys=keys,
         table_info=initialize_table_info(),
         hide_data=current_app.config["HIDE_DATA"],
         use_curated_info=current_app.config["USE_CURATED_INFO"],
@@ -120,47 +116,6 @@ def download_software_json():
         return send_file(json_file_path.resolve(), download_name="software_data.json", as_attachment=True), 200
     except Exception as e:
         return jsonify({"error": "Error creating csv file"}), 500
-
-@settings_bp.route("/settings/api-keys")
-@admin_required
-def api_keys():
-    return redirect(url_for("settings.settings"))
-
-
-@settings_bp.route("/settings/api-keys/create", methods=["POST"])
-@admin_required
-def create_api_key():
-    label = request.form.get("label", "").strip()
-    raw, instance = APIKey.generate(label=label)
-    instance.save()
-    return jsonify({
-        "key": raw,
-        "id": instance.id,
-        "prefix": instance.key_prefix,
-        "label": instance.label,
-    })
-
-
-@settings_bp.route("/settings/api-keys/<int:key_id>/revoke", methods=["POST"])
-@admin_required
-def revoke_api_key(key_id):
-    updated = APIKey.update(is_active=False).where(APIKey.id == key_id).execute()
-    if updated:
-        return jsonify({"success": True})
-    return jsonify({"error": "Key not found"}), 404
-
-
-@settings_bp.route("/settings/api-keys/<int:key_id>/delete", methods=["POST"])
-@admin_required
-def delete_api_key(key_id):
-    key = APIKey.get_or_none(APIKey.id == key_id)
-    if key is None:
-        return jsonify({"error": "Key not found"}), 404
-    if key.is_active:
-        return jsonify({"error": "Revoke the key before deleting it"}), 400
-    key.delete_instance()
-    return jsonify({"success": True})
-
 
 @settings_bp.route("/download_analytics_json")
 @login_required

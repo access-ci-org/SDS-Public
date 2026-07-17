@@ -2,11 +2,10 @@
 # Mirror of env.yaml's pip section + the conda-installed pip-resolvable
 # entries (pandas, Pygments). Excluded on purpose:
 #   - pyuwsgi (production WSGI server, not needed at test time)
-#   - ipython, pylint, black (dev tooling)
+#   - ipython, pylint (dev tooling)
 #   - watchdog (used only by run.py dev server)
 #   - python-magic (stubbed in tests/conftest.py — also fails to install
 #     without the system libmagic, which CI doesn't have)
-#   - python-dotenv (not imported anywhere — env.yaml entry is dead)
 #
 
 Flask==3.1.3
@@ -19,6 +18,7 @@ markdown2>=2.4.8
 pyyaml==6.0.3
 halo==0.0.31
 requests
+rapidfuzz==3.10.1
 packaging==25.0
 pytz
 

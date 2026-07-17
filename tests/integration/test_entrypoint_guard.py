@@ -79,3 +79,35 @@ def test_guard_does_not_touch_legacy_files(tmp_path):
 
     assert (tmp_path / "software.csv").read_text() == "legacy contents\n"
     assert (tmp_path / "container_data" / "x.def").exists()
+
+
+def test_state_dir_created_on_clean_layout(tmp_path):
+    """A clean layout gets $SDS_DATA_DIR/state created right after the
+    guard, before any container-only setup (the conda activate that follows
+    fails under test, which is fine — the mkdir has already run)."""
+    env = os.environ.copy()
+    env["SDS_DATA_DIR"] = str(tmp_path / "data")
+    subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=str(tmp_path),
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert (tmp_path / "data" / "state").is_dir()
+
+
+def test_state_dir_not_created_when_guard_fires(tmp_path):
+    """The guard exits before the mkdir, so a legacy layout is left as-is."""
+    (tmp_path / "software.csv").write_text("legacy\n")
+    env = os.environ.copy()
+    env["SDS_DATA_DIR"] = str(tmp_path / "data")
+    result = subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=str(tmp_path),
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    assert not (tmp_path / "data").exists()

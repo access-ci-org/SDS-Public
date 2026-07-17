@@ -6,9 +6,8 @@ test.beforeEach(async ({ request }) => {
     await seed(request);
 });
 
-async function openApiKeysTab(page) {
-    await page.goto("/settings");
-    await page.click("#apikeys-tab");
+async function openApiPage(page) {
+    await page.goto("/admin/api");
     await expect(page.locator("#keys-table")).toBeVisible();
 }
 
@@ -23,7 +22,7 @@ async function createKey(page, label) {
 
 test("created key authenticates /api/v1 requests", async ({ page }) => {
     await login(page, DEFAULT_ADMIN);
-    await openApiKeysTab(page);
+    await openApiPage(page);
 
     const raw = await createKey(page, "e2e round-trip");
     expect(raw).toMatch(/^sds_/);
@@ -43,7 +42,7 @@ test("created key authenticates /api/v1 requests", async ({ page }) => {
 
 test("revoked key stops authenticating", async ({ page }) => {
     await login(page, DEFAULT_ADMIN);
-    await openApiKeysTab(page);
+    await openApiPage(page);
 
     const raw = await createKey(page, "e2e revoke");
     const before = await page.request.get("/api/v1/resources", {
@@ -66,11 +65,73 @@ test("revoked key stops authenticating", async ({ page }) => {
     expect(after.status()).toBe(403);
 });
 
-test("non-admin user does not see the API keys or banners tabs", async ({ page }) => {
-    await login(page, DEFAULT_USER);
+test("navbar API link opens the page for admins", async ({ page }) => {
+    await login(page, DEFAULT_ADMIN);
     await page.goto("/settings");
+    await page.click('nav a[href="/admin/api"]');
+    await expect(page.locator("#keys-table")).toBeVisible();
+});
 
-    await expect(page.locator("#user-tab")).toBeVisible();
+test("activity tab lists authenticated requests", async ({ page }) => {
+    await login(page, DEFAULT_ADMIN);
+    await openApiPage(page);
+
+    const raw = await createKey(page, "e2e activity");
+    // The row built after create links the prefix to the filtered view.
+    const newRow = page.locator("#keys-table tbody tr", { hasText: "e2e activity" });
+    await expect(newRow.locator('a[href^="/admin/api?key="]')).toBeVisible();
+
+    const authed = await page.request.get("/api/v1/resources", {
+        headers: { "X-API-Key": raw },
+    });
+    expect(authed.status()).toBe(200);
+
+    // The activity table is server-rendered, so reload to pick up the
+    // request that was just logged, then follow the prefix link — it opens
+    // the Activity tab filtered to this key.
+    await page.goto("/admin/api");
+    await page.locator("#keys-table tbody tr", { hasText: "e2e activity" })
+        .locator('a[href^="/admin/api?key="]').click();
+    await expect(page.locator("#activity-tab-pane")).toBeVisible();
+    const table = page.locator("#activity-table");
+    await expect(table).toContainText("/api/v1/resources");
+    await expect(table).toContainText("e2e activity");
+
+    // "show all" drops the filter but stays on the Activity tab.
+    await page.click('a[href="/admin/api?tab=activity"]');
+    await expect(page.locator("#activity-tab-pane")).toBeVisible();
+    await expect(page.locator("#activity-table")).toContainText("/api/v1/resources");
+});
+
+test("docs and MCP tabs render the contract", async ({ page }) => {
+    await login(page, DEFAULT_ADMIN);
+    await openApiPage(page);
+
+    // toContainText reads textContent even on hidden panes, so the
+    // visibility checks are what actually verify the tab switch happened.
+    await page.click("#docs-tab");
+    await expect(page.locator("#docs-tab-pane")).toBeVisible();
+    await expect(page.locator("#keys-tab-pane")).toBeHidden();
+    await expect(page.locator("#docs-tab-pane")).toContainText("/software/search");
+    await expect(page.locator("#docs-tab-pane")).toContainText("SDS REST API");
+
+    await page.click("#mcp-tab");
+    await expect(page.locator("#mcp-tab-pane")).toBeVisible();
+    await expect(page.locator("#mcp-url")).toContainText("/mcp");
+    await expect(page.locator("#mcp-tab-pane")).toContainText("Authorization: Bearer");
+    await expect(page.locator("#mcp-tab-pane")).toContainText("Claude Desktop");
+});
+
+test("non-admin cannot reach the API admin page", async ({ page }) => {
+    await login(page, DEFAULT_USER);
+
+    const resp = await page.goto("/admin/api");
+    expect(resp.status()).toBe(403);
+
+    // Non-admins get no navbar API link, and the settings page has no
+    // key-management UI.
+    await page.goto("/settings");
+    await expect(page.locator('nav a[href="/admin/api"]')).toHaveCount(0);
     await expect(page.locator("#apikeys-tab")).toHaveCount(0);
     await expect(page.locator("#banners-tab")).toHaveCount(0);
 });

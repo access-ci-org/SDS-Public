@@ -25,10 +25,17 @@ for legacy in software.csv container_data spider_data software_uses \
     fi
 done
 
+DATA_DIR="${SDS_DATA_DIR:-.}"
+
+# SDS-owned state lives under $DATA_DIR/state. Created up front so a first
+# boot or a wiped mount doesn't depend on any individual writer's mkdir.
+# User-input paths (container_data, spider_data, software.csv) are
+# deliberately not created: their absence selects run.py arguments below
+# and warns about a missing mount.
+mkdir -p "$DATA_DIR/state"
+
 source /opt/miniconda3/etc/profile.d/conda.sh
 conda activate /sds/env/SDS_ENV
-
-DATA_DIR="${SDS_DATA_DIR:-.}"
 
 # Initialize the command with the base script
 command="python run.py"

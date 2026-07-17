@@ -353,23 +353,48 @@ def match_resources():
 
         if fuzzy:
             try:
-                from rapidfuzz import process, fuzz
-                # Pre-filter: only score candidates whose length is within 2.5x
-                # of the query. WRatio uses partial_ratio internally, which gives
-                # a score of 100 any time the query is a verbatim substring —
-                # filtering by length ratio stops short queries from reaching
-                # unrelated long names before scoring even begins.
-                candidates = [n for n in software_names if n and len(pkg) / len(n) >= 0.4]
-                results = process.extract(pkg, candidates, scorer=fuzz.WRatio, limit=10)
-                for name, score, _ in results:
+                from rapidfuzz import fuzz, utils
+
+                # WRatio falls back to partial_ratio (scaled by 0.9) on
+                # length-mismatched strings, scoring 90 whenever the shorter
+                # string appears verbatim inside the longer. That containment
+                # is only meaningful when the candidate extends the query
+                # (numpy -> py2-numpy), so candidates at least query-length
+                # keep WRatio — behind a length guard that stops short
+                # queries reaching unrelated long names. Shorter candidates
+                # would otherwise be swallowed by the query (r in gromacs,
+                # tar in notarealpkg); they score as whole strings instead,
+                # where token_set_ratio still allows whole-token containment
+                # (py2-numpy -> numpy) but intra-token substrings fall below
+                # the cutoff.
+                scored = []
+                for name in software_names:
+                    if not name:
+                        continue
+                    if len(name) >= len(pkg):
+                        if len(pkg) / len(name) < 0.4:
+                            continue
+                        score = fuzz.WRatio(pkg, name)
+                    else:
+                        # default_process turns separators into spaces so
+                        # token_set_ratio sees py2-numpy as {py2, numpy}.
+                        score = max(
+                            fuzz.ratio(pkg, name),
+                            fuzz.token_set_ratio(
+                                pkg, name, processor=utils.default_process
+                            ),
+                        )
                     if score >= 85:
-                        sw = name_to_sw[name]
-                        pkg_matches.append({
-                            "software_name": name,
-                            "score": score,
-                            "description": get_description(sw),
-                            "resources": get_resources(sw),
-                        })
+                        scored.append((name, score))
+                scored.sort(key=lambda item: item[1], reverse=True)
+                for name, score in scored[:10]:
+                    sw = name_to_sw[name]
+                    pkg_matches.append({
+                        "software_name": name,
+                        "score": score,
+                        "description": get_description(sw),
+                        "resources": get_resources(sw),
+                    })
             except ImportError:
                 fuzzy = False
 

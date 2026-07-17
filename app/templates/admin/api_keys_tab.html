@@ -1,6 +1,14 @@
-{# API Keys tab — admin only. Included from settings.html. Create / revoke /
-   delete / sort / search behavior is wired up in static/js/settings.js (loaded
-   by settings.html), so this partial is markup only. #}
+{# API Keys tab — admin only. Included from admin/api_page.html. Create /
+   revoke / delete / sort / search behavior is wired up in static/js/apiAdmin.js
+   (loaded by api_page.html), so this partial is markup only. #}
+
+{% if not config.get("REST_API_REQUIRE_AUTH", True) %}
+<div class="alert alert-info" id="auth-disabled-banner">
+  <i class="bi bi-info-circle me-1"></i>
+  API authentication is disabled (<code>rest_api.require_auth</code> in
+  <code>config.yaml</code>), so keys are not checked on requests.
+</div>
+{% endif %}
 
 <!-- Generate new key -->
 <div class="row">
@@ -61,7 +69,9 @@
       <tbody>
         {% for key in keys %}
         <tr id="key-row-{{ key.id }}" {% if not key.is_active %}class="text-muted"{% endif %}>
-          <td class="font-monospace small">{{ key.key_prefix }}…</td>
+          <td class="font-monospace small">
+            <a href="{{ url_for('api_admin.api_page', key=key.key_prefix) }}" title="View this key's requests">{{ key.key_prefix }}…</a>
+          </td>
           <td>{{ key.label or "—" }}</td>
           <td class="small">{{ key.created_at[:10] if key.created_at else "—" }}</td>
           <td class="small">{{ key.last_used_at[:16] if key.last_used_at else "Never" }}</td>

@@ -21,6 +21,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('settings.settings') }}">Settings</a></li>
                     {% if is_admin %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('edit.admin_software_overview') }}">Software Edits</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('api_admin.api_page') }}">API</a></li>
                     {% endif %}
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Log Out</a></li>
                {% else %}
