@@ -26,6 +26,32 @@ test("created banner appears on the software page", async ({ page, request }) =>
     await expect(page.locator("#banner-area")).toContainText("E2E created banner");
 });
 
+test("specific-page checkboxes fire no column-settings requests", async ({ page, request }) => {
+    await seed(request);
+    await login(page, DEFAULT_ADMIN);
+    await openBannersTab(page);
+
+    const strayRequests = [];
+    page.on("request", (req) => {
+        if (req.url().includes("/update_col_visibility")) strayRequests.push(req.url());
+    });
+
+    await page.fill("#banner-new-message", "Specific pages banner");
+    await page.check("#banner-new-page-software");
+    await page.check("#banner-new-page-container");
+    await page.click('#banner-new button[type="submit"]');
+
+    // The success notice arrives after a server round-trip, by which point
+    // any change-triggered request would already have been sent.
+    await expect(
+        page.locator(".alert-success", { hasText: "Banner created." })
+    ).toBeVisible();
+    expect(strayRequests).toEqual([]);
+    await expect(
+        page.locator(".alert", { hasText: "Error updating column" })
+    ).toHaveCount(0);
+});
+
 test("deactivated banner disappears from the software page", async ({ page, request }) => {
     await seed(request, {
         banners: [{ message: "Seeded active banner", pages: "all-user-facing" }],
