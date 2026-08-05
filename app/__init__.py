@@ -91,7 +91,7 @@ EXTERNAL_ANALYTICS = general_conf.get("external_analytics", '')
 EXTERNAL_URL = general_conf.get("external_url", "")
 
 # Current SDS Version
-SDS_VERSION = "1.4.1"
+SDS_VERSION = "1.5.1"
 
 # API URL
 SDS_API_URL = "https://sds-api.ccs.uky.edu/"

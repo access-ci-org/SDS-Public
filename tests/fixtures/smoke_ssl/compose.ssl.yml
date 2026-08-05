@@ -1,0 +1,10 @@
+# Overlay for the compose-smoke SSL leg: publishes the SSL vhost and mounts a
+# legacy-shaped 443-only nginx config plus operator-owned certs. Relative
+# paths resolve against the first -f file's directory (the repo root).
+services:
+  sds:
+    ports:
+      - "8443:443"
+    volumes:
+      - ./tests/fixtures/smoke_ssl/nginx-legacy-ssl.conf:/etc/nginx/sites-available/default:ro
+      - ./ssl:/etc/nginx/ssl:ro

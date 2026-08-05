@@ -85,10 +85,24 @@ If you want to enable ssl certificates for your website, make the following chan
 
 First, make sure you have the SSL certificate and key stored in an appropriate location (a `./ssl` directory is fine)
 
+The container runs all of its processes as an unprivileged user (UID 1000),
+so the mounted certificate and key must be readable by UID 1000 — otherwise
+nginx refuses to start and the container exits at boot with the permission
+error (and the fix) in its logs. On the host (the commands below use `./ssl`
+as a placeholder — substitute wherever your certificate and key actually
+live):
+
+```bash
+chown -R 1000:1000 ./ssl
+chmod 400 ./ssl/key.pem
+```
+
 Second, create `nginx.conf` file locally with the appropriate settings:
 
 ```bash
 cat << 'EOF' > nginx.conf
+error_log /sds/data/state/logs/nginx-error.log warn;
+
 server {
     listen 443 ssl;
     server_name localhost;
@@ -103,6 +117,21 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+
+    # MCP endpoint; the upstream validates Host, so forward the proxy host
+    location /mcp {
+        proxy_pass http://127.0.0.1:9000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_buffering off;
+        proxy_read_timeout 3600s;
+        proxy_set_header Connection "";
+    }
+
     access_log /sds/data/state/logs/nginx-access.log;
 
     client_max_body_size 100M;
