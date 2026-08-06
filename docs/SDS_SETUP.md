@@ -7,14 +7,23 @@ If you would like a simpler "quick start" guide, view the `README.md` file.
 ## Table of Contents
 
 - [Setting up the Application](#setting-up-the-application)
-  - [Running the Application](#running-the-application)
-    - [Using Docker](#using-docker)
-    - [Running Locally](#running-locally)
+- [Running the Application](#running-the-application)
+  - [Using Docker](#using-docker)
+    - [Adding Data](#adding-data)
+    - [Excluding Software (Blacklist)](#excluding-software-blacklist)
+    - [File ownership](#file-ownership)
+    - [Monitoring and Logs](#monitoring-and-logs)
+    - [SSL Certificates](#ssl-certificates)
+    - [Analytics and Website Titles](#analytics-and-website-titles)
+  - [Running Locally](#running-locally)
+- [Config Variables](#config-variables)
 - [Data Preparation](#data-preparation)
-  - [Curated](#curated)
   - [Raw Output](#raw-output)
     - [Collector Script](#collector-script)
     - [Manual](#manual)
+  - [Curated](#curated)
+  - [Example Use Files](#example-use-files)
+  - [Directory Layout](#directory-layout)
   - [Parser](#parser)
 
 ## Setting up the Application
@@ -61,6 +70,35 @@ To update the data just change files in `./data/` on the host — no need to tou
 
 **Upgrading from the multi-mount layout?** If your existing deployment mounts `software.csv`, `container_data/`, etc. separately, run `bash migrate_data_layout.sh` from your repo root on the host. It moves your existing files into `./data/`, refuses to clobber anything, and prints the new run command. After that, update your compose file (or docker run) to use the single `-v ./data:/sds/data` mount.
 
+#### Excluding Software (Blacklist)
+
+To keep specific software out of SDS entirely, list its names in
+`software_blacklist.txt`, one name per line. Blacklisted names are dropped
+during ingestion: they never enter the database and never appear on the
+website. Matching is case-insensitive but exact, so blacklisting `python`
+does not affect `python3`.
+
+The image ships with a default list that filters common junk entries from
+module dumps (`all`, `activate`, `config`, ...). To customize it, start from
+the shipped list so you keep the default filtering, add your names, and mount
+the file over the built-in one:
+
+```bash
+# fetch the default list, then add your own names (one per line)
+wget https://raw.githubusercontent.com/access-ci-org/SDS-Public/stand-alone/software_blacklist.txt
+
+# re-run the container with the blacklist mount added
+sudo docker run --name sds -d -p 8080:80 \
+  --mount type=bind,source="./software_blacklist.txt",target="/sds/software_blacklist.txt" \
+  --mount type=bind,source="./config.yaml",target="/sds/config.yaml" \
+  -v ./data:/sds/data \
+  public.ecr.aws/access-ci-org-public-containers/support/standalone-sds:latest
+```
+
+Unlike files under `./data/`, blacklist edits are not picked up automatically.
+Restart the container after changing the file, or trigger a rebuild by
+updating any input file under `./data/`.
+
 #### File ownership
 
 The container runs as an unprivileged user (UID 1000) and takes ownership of `./data` at startup, so everything SDS writes is owned by UID 1000 rather than root — no sudo needed to read or back up your data. Two host-specific notes:
@@ -96,6 +134,11 @@ live):
 chown -R 1000:1000 ./ssl
 chmod 400 ./ssl/key.pem
 ```
+
+Certificate renewals can silently reset these permissions (a renewed key is
+typically written back as `root:root` mode 600). Re-run the two commands above
+after each renewal — if the permissions are wrong, the container stops at boot
+with the fix printed in its logs.
 
 Second, create `nginx.conf` file locally with the appropriate settings:
 
@@ -169,7 +212,7 @@ Both of these live under `./data/state/` and survive container replacement:
 3. Run `python reset_database.py` to create and load your database
    - You can pass in three different arguments to `reset_database.py`. Type `python reset_database.py -h` for more info. Read the entire help message before continuing.
 
-4. To exclude some softwares from being displayed on the website, add them to the `software_blacklist.txt` file in the project directory. A basic list of blacklisted names is already provided
+4. To exclude specific software from SDS, add its names to `software_blacklist.txt` in the project directory (one per line). See [Excluding Software (Blacklist)](#excluding-software-blacklist) for matching rules. A default list of junk names is already provided. Rerun `reset_database.py` after editing.
 
 5. Run the application with `flask run`
    - If you want to run the application with a watcher (which will automatically update the db and app when the data is updated). Run `python run.py` see `python run.py --help` for more information
@@ -203,27 +246,11 @@ To use a custom logo, place the image in your `./data/` directory and set `logo:
 
 ## Data Preparation
 
-The SDS tool requires the names of the software available on each system. You can provide this information in two different ways: curated and/or raw output.
-
-### Curated
-
-How it works: you provide sds the data it needs in the specific format it needs them
-
-- Curated data should be in the form of a CSV with the following requirements
-  - If you are using docker, then the file must be named `software.csv`
-  - The first line must have column names and the following columns are necessary
- (only the software column needs any data): software, resource, software_description, software_versions.
-  - `resource` in this case refers to a specific cluster
-  - Here is an example of a CSV file:
-
-```csv
-software,software_description,software_versions,resource
-ACTC,ACTC converts independent triangles into triangle strips or fans.,1.1,cluster1
-ACTC,ACTC converts independent triangles into triangle strips or fans., 1.3,cluster1
-ANTLR,,"2.7.7-Java-11,2.6",cluster2
-```
-
-A `software.csv`file with just the columns is already provided.
+The SDS tool requires the names of the software available on each system. The
+recommended way to provide this is raw output: run the `collector.py` script
+and it gathers everything for you, or collect the same command output manually
+if you prefer. For software that cannot be discovered through lmod or
+container files, you can additionally provide a curated CSV.
 
 ### Raw Output
 
@@ -243,8 +270,17 @@ All files for this section must be within subdirectories. The name of each subdi
 should be the name of a resource to which the files belong. `resource` refers to a specific cluster.
 
 - `module spider` output (lmod)
-  - If you use lmod for managing packages/environments then run `module spider` on your
- system and save the output to a text file
+  - If you use lmod for managing packages/environments then run
+ `module --redirect --width=1000 spider` on your system and save the output to a
+ text file. `--redirect` sends the output to stdout so it can be saved with `>`,
+ and `--width=1000` prevents long version lists from being truncated to `...`.
+  - If your Lmod provides the bundled spider tool (Lmod 5.0+), additionally run
+ `$LMOD_DIR/spider -o jsonSoftwarePage $MODULEPATH` and save the output to a file
+ with a `.json` extension in the same resource directory. The JSON output includes
+ the parent modules that must be loaded before each module, which SDS uses to
+ generate complete `module load` commands on clusters with hierarchical module
+ trees. When a resource directory has usable JSON, its text files are skipped, so
+ provide the text file as well as a fallback in case the JSON cannot be parsed.
   - If you are using docker to run the SDS, then the parent directory must be named `spider_data`
 
 - Container definition (`.def`) file
@@ -267,16 +303,43 @@ should be the name of a resource to which the files belong. `resource` refers to
   afterqc,0.9.7,,/share/singularity/afterqc,/share/singularity/afterqc.sinf,singularity run --app afterqc097 /share/singularity/share/singularity/afterqc.sinf python /usr/local/Miniconda3/envs/afterqc-0.9.7/bin/after.py -1 R1.fq.gz
 ```
 
-- Custom defined example use
-  - You can define custom example usage for each of your software. This is a good
-    location to add any recommend slurm scripts or other instructions on how you want users to use
-    your software.
-  - Place the directory at `./data/software_uses/`.
-  - All files within the `software_uses` directory should be the name of a software. If a software
-    matching the provided file isn't found then the data is ignored. So if you have some example use
-    for the software `python` your file with that information must be named `python` or `python.md`
-  - All files are treated and formatted as Markdown files when being displayed on the website,
-    regardless of whether it has the `.md` suffix.
+### Curated
+
+Use this as a last resort, for software that cannot be discovered from lmod
+or container files. You provide SDS the data it needs, in the specific format
+it needs.
+
+- Curated data should be in the form of a CSV with the following requirements
+  - If you are using docker, then the file must be named `software.csv`
+  - The first line must have column names and the following columns are necessary
+ (only the software column needs any data): software, resource, software_description, software_versions.
+  - `resource` in this case refers to a specific cluster
+  - Here is an example of a CSV file:
+
+```csv
+software,software_description,software_versions,resource
+ACTC,ACTC converts independent triangles into triangle strips or fans.,1.1,cluster1
+ACTC,ACTC converts independent triangles into triangle strips or fans., 1.3,cluster1
+ANTLR,,"2.7.7-Java-11,2.6",cluster2
+```
+
+A `software.csv` file with just the columns is already provided.
+
+### Example Use Files
+
+You can define custom example usage for each of your software. This is a good
+location to add any recommended slurm scripts or other instructions on how you
+want users to use your software.
+
+- Place the files in a `./data/software_uses/` directory.
+- Each file within `software_uses` should be named after a software. If no
+  software matching the file name is found then the data is ignored. So if you
+  have example use information for the software `python`, the file must be
+  named `python` or `python.md`.
+- All files are treated and formatted as Markdown files when being displayed
+  on the website, regardless of whether they have the `.md` suffix.
+
+### Directory Layout
 
 Here is an example of a proper directory structure for the data:
 
@@ -291,7 +354,8 @@ SDS
        |
        ├── spider_data/
        |    └── {resource_name}/
-       |        └── {resource_name}_spider  # Complete output from module spider
+       |        ├── {resource_name}_spider.txt   # Complete output from module spider
+       |        └── {resource_name}_spider.json  # JSON spider output with dependency data (optional)
        |
        ├── software.csv
        |
@@ -303,7 +367,7 @@ SDS
 
 *Note for container files: If you are defining your container file/definition file location by using the  SDS comment block (see PARSER.md file), you do not need to have a preserved directory structure. So your container_data directory structure would be like this,`container_data/{resource_name}/{definition_files}`*
 
-## Parser
+### Parser
 
 The built in parser will attempt to gather software information based on the data provided, but it may not always be successful depending on your naming scheme.
 You can define how the built in parser parses your information. View the **`PARSER.md`** file for more details on standard formats and how to modify the parsers.
