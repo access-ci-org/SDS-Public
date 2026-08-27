@@ -1,0 +1,188 @@
+name: Release
+
+# On a v* tag push this builds both release arches, boot-checks amd64, then
+# publishes to ECR Public: the per-arch manifests and the stitched version index
+# always, plus the moving arch tags and the latest index for full releases only.
+# A tag containing a hyphen (e.g. v1.5.2-rc1) is treated as a prerelease and
+# publishes the versioned tags only, leaving latest and the moving tags in place.
+#
+# Publishing is gated to the public release repo (access-ci-org/SDS-Public): on
+# any other repo the publish steps are skipped, so the same file can be carried
+# to the internal repo by the sync and only ever builds there.
+#
+# On the release branch's own PR (and via workflow_dispatch once this file is on
+# the default branch) it builds and boot-checks only, with no push, so the build
+# legs can be validated before cutting a real tag. The pull_request trigger is
+# temporary scaffolding for that validation.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+  pull_request:
+    branches: [stand-alone]
+
+# One release publishes at a time: never let two tag pushes interleave their
+# arch pushes and index stitching, and never cancel a run mid-publish.
+concurrency:
+  group: release-publish
+  cancel-in-progress: false
+
+jobs:
+  release-image:
+    # Tag pushes always run; the temporary PR trigger is kept to this branch's
+    # own PR so other PRs into stand-alone do not pay for a full release build.
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      github.event_name == 'workflow_dispatch' ||
+      github.head_ref == 'release-ci'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      ECR_REPO: public.ecr.aws/access-ci-org-public-containers/support/standalone-sds
+      AMD64_TAG: sds-image:candidate-amd64
+      ARM64_TAG: sds-image:candidate-arm64
+      # Publish only on a v* tag AND only on the public release repo, so the
+      # identical file carried to the internal repo by the sync never publishes.
+      PUBLISH: ${{ startsWith(github.ref, 'refs/tags/v') && github.repository == 'access-ci-org/SDS-Public' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # binfmt registration so the amd64 runner can build linux/arm64.
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Release builds run cold on purpose: the type=gha cache only restores on
+      # the same ref or the default branch, so a real tag build can never reuse
+      # it. Caching here would mask cold-build breakage (e.g. the unpinned conda
+      # base) that would only surface at release time.
+      - name: Build amd64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          tags: ${{ env.AMD64_TAG }}
+          load: true
+          push: false
+          provenance: false
+
+      # Boot-check amd64 first, before paying for the slow arm64 build: the
+      # image ships no config.yaml (.dockerignore), so a bare `docker run`
+      # crash-loops under supervisord and never goes healthy. Boot it the
+      # documented way instead: the two-mount compose stack on a seeded host
+      # layout, waiting on the image healthcheck.
+      - name: Seed host data layout
+        run: |
+          docker tag "$AMD64_TAG" sds-image:latest
+          cp tests/fixtures/config_test.yaml config.yaml
+          mkdir -p data/state
+          cp tests/fixtures/csv/valid.csv data/software.csv
+
+      - name: Boot-check the amd64 image
+        run: docker compose up --wait --wait-timeout 180 --no-build
+
+      - name: Boot-checked image serves seeded data through nginx
+        run: curl -fsS http://localhost:8080/ | grep -qi pytorch
+
+      # arm64 builds under QEMU (slow, but only at release cadence) and runs
+      # only after the amd64 leg is fully validated. It is built to prove it
+      # compiles, not booted: emulation is not a trustworthy stand-in for the
+      # real runtime, so runtime coverage stays on the native amd64 leg.
+      - name: Build arm64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          tags: ${{ env.ARM64_TAG }}
+          load: true
+          push: false
+          provenance: false
+
+      - name: arm64 image is actually arm64
+        run: test "$(docker image inspect "$ARM64_TAG" --format '{{.Architecture}}')" = arm64
+
+      # Everything below runs only on a v* tag push to the public repo. On
+      # PR/dispatch builds, or on the internal repo, the job stops after the
+      # arm64 check with nothing published.
+      - name: Derive the release version
+        if: env.PUBLISH == 'true'
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          case "$version" in
+            *-*) echo "PRERELEASE=true"  >> "$GITHUB_ENV" ;;
+            *)   echo "PRERELEASE=false" >> "$GITHUB_ENV" ;;
+          esac
+
+      # The single auth step. Switching to OIDC later changes only these inputs
+      # (role-to-assume in place of the keys); nothing else in the workflow moves.
+      - name: Configure AWS credentials
+        if: env.PUBLISH == 'true'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # ECR Public always authenticates through us-east-1.
+      - name: Log in to ECR Public
+        if: env.PUBLISH == 'true'
+        run: |
+          aws ecr-public get-login-password --region us-east-1 \
+            | docker login --username AWS --password-stdin public.ecr.aws
+
+      # Immutable per-arch manifests first. --provenance false at build time
+      # keeps each a plain manifest, so the index stitches exactly two entries.
+      - name: Push the versioned per-arch manifests
+        if: env.PUBLISH == 'true'
+        run: |
+          docker tag "$AMD64_TAG" "$ECR_REPO:$VERSION-amd64"
+          docker tag "$ARM64_TAG" "$ECR_REPO:$VERSION-arm64"
+          docker push "$ECR_REPO:$VERSION-amd64"
+          docker push "$ECR_REPO:$VERSION-arm64"
+
+      # Stitch the version index from the immutable versioned arch tags (not the
+      # moving ones), so the result never depends on registry state at run time.
+      - name: Stitch the version index
+        if: env.PUBLISH == 'true'
+        run: |
+          docker buildx imagetools create -t "$ECR_REPO:$VERSION" \
+            "$ECR_REPO:$VERSION-amd64" "$ECR_REPO:$VERSION-arm64"
+
+      # Verify the just-published index before anything operators consume moves:
+      # exactly the two expected platforms, and the amd64 entry actually boots.
+      - name: Verify the published index
+        if: env.PUBLISH == 'true'
+        run: |
+          docker buildx imagetools inspect "$ECR_REPO:$VERSION" | tee inspect.txt
+          grep -q 'linux/amd64' inspect.txt
+          grep -q 'linux/arm64' inspect.txt
+          test "$(grep -c 'Platform:' inspect.txt)" = 2
+
+      - name: Boot-check the published image
+        if: env.PUBLISH == 'true'
+        run: |
+          docker pull "$ECR_REPO:$VERSION"
+          docker tag "$ECR_REPO:$VERSION" sds-image:latest
+          docker compose down || true
+          docker compose up --wait --wait-timeout 180 --no-build
+          curl -fsS http://localhost:8080/ | grep -qi pytorch
+
+      # Only a full release moves what operators consume by default. A prerelease
+      # stops after the versioned tags, so it can exercise this whole path
+      # against real ECR without touching latest or the moving arch tags.
+      - name: Move the moving arch tags and latest index
+        if: env.PUBLISH == 'true' && env.PRERELEASE == 'false'
+        run: |
+          docker tag "$AMD64_TAG" "$ECR_REPO:amd64"
+          docker tag "$ARM64_TAG" "$ECR_REPO:arm64"
+          docker push "$ECR_REPO:amd64"
+          docker push "$ECR_REPO:arm64"
+          docker buildx imagetools create -t "$ECR_REPO:latest" \
+            "$ECR_REPO:$VERSION-amd64" "$ECR_REPO:$VERSION-arm64"
+
+      - name: Dump logs on failure
+        if: failure()
+        run: |
+          docker compose logs || true
+          cat data/state/logs/* || true
